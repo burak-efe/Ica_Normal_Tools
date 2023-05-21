@@ -63,12 +63,11 @@ namespace IcaNormal
             dataArray.Dispose();
         }
 
-        public static void RecalculateNormalsAndSetToAnotherMesh(Mesh sourceMesh, Mesh targetMesh, float angle, NativeArray<Vector3> cache, bool recalculateTangents = true)
+        public static void RecalculateNormals(Mesh mesh, float angle, ref Vector3[] normalOut, ref Vector4[] tangentOut)
         {
-            //Debug.Log(Marshal.SizeOf<VertexEntry>());
-            var dataArray = Mesh.AcquireReadOnlyMeshData(sourceMesh);
+            var dataArray = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = dataArray[0];
-            var outputData = new NativeArray<float3>(data.vertexCount, Allocator.TempJob);
+            var outputNormals = new NativeArray<float3>(data.vertexCount, Allocator.TempJob);
             var outputTangents = new NativeArray<float4>(data.vertexCount, Allocator.TempJob);
 
 
@@ -76,23 +75,20 @@ namespace IcaNormal
             {
                 Data = data,
                 Angle = angle,
-                Normals = outputData,
+                Normals = outputNormals,
                 Tangents = outputTangents,
-                RecalculateTangents = recalculateTangents
+                RecalculateTangents = true
             };
             var handle = normalJob.Schedule();
             handle.Complete();
 
-            //normalJob.Execute();
-
-            if (recalculateTangents)
-            {
-                targetMesh.SetTangents(outputTangents);
-            }
-
-            targetMesh.SetNormals(outputData);
-            outputData.CopyTo(cache.Reinterpret<float3>());
-            outputData.Dispose();
+            //tangentOut = new Vector4[outputTangents.Length];
+            outputTangents.Reinterpret<Vector4>().CopyTo(tangentOut);
+            
+            //normalOut = new Vector3[outputNormals.Length];
+            outputNormals.Reinterpret<Vector3>().CopyTo(normalOut);
+            
+            outputNormals.Dispose();
             outputTangents.Dispose();
             dataArray.Dispose();
         }

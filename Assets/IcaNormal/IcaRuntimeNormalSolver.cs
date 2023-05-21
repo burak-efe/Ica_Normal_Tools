@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
@@ -13,32 +14,54 @@ namespace IcaNormal
             public List<int> DuplicateIndexes;
         }
 
+        public enum NormalRecalculateMethodEnum
+        {
+            Cached,
+            Bursted,
+        }
+
         public enum NormalOutputEnum
         {
             WriteToMesh,
             WriteToMaterial
         }
 
+        public NormalRecalculateMethodEnum Method = NormalRecalculateMethodEnum.Cached;
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
+        [Range(0, 180)] public float SmoothingAngle = 120f;
         public bool RecalculateOnStart;
         public bool CalculateBlendShapes;
         public GameObject ModelPrefab;
 
-        //public bool DuplicateMaterialsOnStart;
         [SerializeField, HideInInspector] private List<DuplicateMap> map;
 
         private Renderer _renderer;
         private Mesh _mesh;
-        private List<Vector3> _normals;
+        private List<Vector3> _normalsList;
+        private Vector3[] _normals;
+        private Vector4[] _tangents;
 
         private ComputeBuffer _normalsOutBuffer;
         private ComputeBuffer _tangentsOutBuffer;
+        private Mesh _tempMesh;
 
 
-        private void Awake()
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                RecalculateNormals();
+            }
+        }
+
+        private void Start()
         {
             Init();
-            _normals = new List<Vector3>(_mesh.vertexCount);
+            
+            _normalsList = new List<Vector3>(_mesh.vertexCount);
+            _normals = new Vector3[_mesh.vertexCount];
+            _tangents = new Vector4[_mesh.vertexCount];
+            _tempMesh = new Mesh();
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -49,25 +72,17 @@ namespace IcaNormal
                 _normalsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 3);
                 _tangentsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 4);
 
-                _mesh.GetNormals(_normals);
-                _normalsOutBuffer.SetData(_normals.ToArray());
+                _mesh.GetNormals(_normalsList);
+                _normals = _normalsList.ToArray();
+                _normalsOutBuffer.SetData(_normals);
 
 
                 for (int i = 0; i < _renderer.materials.Length; i++)
                 {
                     _renderer.materials[i] = new Material(_renderer.materials[i]);
 
-                    //var mat = new Material(_smr.materials[i]);
-                    //var initId = Shader.PropertyToID("_Initialized");
-                    //Debug.Log(initId);
-                    //var bufferId = Shader.PropertyToID("normalsOutBuffer");
-                    //Debug.Log(bufferId);
-
-
                     _renderer.materials[i].SetBuffer("normalsOutBuffer", _normalsOutBuffer);
                     _renderer.materials[i].SetFloat("_Initialized", 1);
-                    //mat.SetBuffer("_tangentsOutBuffer",_tangentsOutBuffer);
-                    //_smr.materials[i].SetColor("_Color",Color.blue);
                 }
             }
 
@@ -89,8 +104,7 @@ namespace IcaNormal
             {
                 _mesh = GetComponent<MeshFilter>().sharedMesh;
             }
-
-            //_mesh = _renderer ;
+            
         }
 
         private void OnDestroy()
@@ -144,6 +158,58 @@ namespace IcaNormal
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
+            if (Method == NormalRecalculateMethodEnum.Bursted)
+            {
+                RecalculateBursted();
+            }
+            else if (Method == NormalRecalculateMethodEnum.Cached)
+            {
+                RecalculateCached();
+            }
+        }
+
+        private void RecalculateBursted()
+        {
+            Profiler.BeginSample("RecalculateBursted");
+
+            if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
+            {
+                var tempObj = Instantiate(ModelPrefab);
+                var tempSmr = tempObj.GetComponentInChildren<SkinnedMeshRenderer>();
+                
+                tempSmr.sharedMesh = _mesh;
+                for (int i = 0; i < smr.sharedMesh.blendShapeCount; i++)
+                {
+                    tempSmr.SetBlendShapeWeight(i, smr.GetBlendShapeWeight(i));
+                }
+
+                tempSmr.BakeMesh(_tempMesh);
+
+                IcaNormalSolverUtils.RecalculateNormals(_tempMesh, SmoothingAngle, ref _normals, ref _tangents);
+                Destroy(tempObj);
+            }
+            else
+            {
+                IcaNormalSolverUtils.RecalculateNormals(_mesh, SmoothingAngle, ref _normals, ref _tangents);
+            }
+            
+            
+            if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
+            {
+                _mesh.SetNormals(_normals);
+                _mesh.SetTangents(_tangents);
+            }
+            else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
+            {
+                _normalsOutBuffer.SetData(_normals);
+            }
+            Profiler.EndSample();
+            
+        }
+
+        private void RecalculateCached()
+        {
+            Profiler.BeginSample("RecalculateCached");
             var mapCount = map.Count;
 
             if (mapCount == 0)
@@ -151,37 +217,32 @@ namespace IcaNormal
                 Debug.Log("Mesh Data of " + _mesh.name + " not found. Please do not forget the cache data on contex menu or on start method before recalculating normals");
                 return;
             }
-
-            Mesh tempMesh = new Mesh();
+            
 
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
-                //var tempObj = new GameObject("tempMesh");
-                //var tempSmr = tempObj.AddComponent<SkinnedMeshRenderer>();
                 var tempObj = Instantiate(ModelPrefab);
                 var tempSmr = tempObj.GetComponentInChildren<SkinnedMeshRenderer>();
                 
                 tempSmr.sharedMesh = _mesh;
                 for (int i = 0; i < smr.sharedMesh.blendShapeCount; i++)
                 {
-                    tempSmr.SetBlendShapeWeight(i,smr.GetBlendShapeWeight(i));
+                    tempSmr.SetBlendShapeWeight(i, smr.GetBlendShapeWeight(i));
                 }
-                tempSmr.BakeMesh(tempMesh);
-                
-                tempMesh.RecalculateNormals();
-                tempMesh.GetNormals(_normals);
+
+                tempSmr.BakeMesh(_tempMesh);
+
+                _tempMesh.RecalculateNormals();
+                _tempMesh.GetNormals(_normalsList);
                 Destroy(tempObj);
             }
             else
             {
-                tempMesh = _mesh;
-                
-                tempMesh.RecalculateNormals();
-                tempMesh.GetNormals(_normals);
+                _tempMesh = _mesh;
+
+                _tempMesh.RecalculateNormals();
+                _tempMesh.GetNormals(_normalsList);
             }
-
-
-   
 
 
             for (int listIndex = 0; listIndex < mapCount; listIndex++)
@@ -191,25 +252,26 @@ namespace IcaNormal
 
                 for (int i = 0; i < listCount; i++)
                 {
-                    sum += _normals[map[listIndex].DuplicateIndexes[i]];
+                    sum += _normalsList[map[listIndex].DuplicateIndexes[i]];
                 }
 
                 sum = sum.normalized;
 
                 for (int i = 0; i < listCount; i++)
                 {
-                    _normals[map[listIndex].DuplicateIndexes[i]] = sum;
+                    _normalsList[map[listIndex].DuplicateIndexes[i]] = sum;
                 }
             }
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
-                _mesh.SetNormals(_normals);
+                _mesh.SetNormals(_normalsList);
             }
             else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
             {
-                _normalsOutBuffer.SetData(_normals.ToArray());
+                _normalsOutBuffer.SetData(_normalsList);
             }
+            Profiler.EndSample();
         }
     }
 }

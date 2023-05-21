@@ -181,7 +181,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: fe83237dc224d054a8c5ee2fde05ccdc, type: 2}
     - target: {fileID: 919132149155446097, guid: a31913c3c53d2df428f79c71b6b25f38, type: 3}
       propertyPath: m_Name
-      value: Ch36_nonPBR
+      value: Cached_CustomMat_Example
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -222,7 +222,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Method: 0
   NormalOutputTarget: 0
+  SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 0
   ModelPrefab: {fileID: 0}
@@ -1864,7 +1866,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Method: 0
   NormalOutputTarget: 1
+  SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 1
   ModelPrefab: {fileID: 919132149155446097, guid: 23d3e4404f7d46e4b8e0787e5ebaffab, type: 3}
@@ -2087,7 +2091,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Method: 0
   NormalOutputTarget: 1
+  SmoothingAngle: 120
   RecalculateOnStart: 0
   CalculateBlendShapes: 0
   ModelPrefab: {fileID: 0}

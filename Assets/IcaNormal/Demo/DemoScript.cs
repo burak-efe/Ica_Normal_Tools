@@ -12,7 +12,7 @@ public class DemoScript : MonoBehaviour
     public KeyCode FullMethod = KeyCode.F3;
 
     public Mesh TargetMesh;
-    public IcaRuntimeNormalSolver icaRuntimeNormalSolver;
+    [FormerlySerializedAs("icaCachedNormalSolver")] public IcaRuntimeNormalSolver icaRuntimeNormalSolver;
     void Start()
     {
         
