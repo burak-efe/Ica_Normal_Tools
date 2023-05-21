@@ -32,7 +32,7 @@ namespace IcaNormal
 {
     public static class IcaNormalSolverUtils
     {
-        public static void RecalculateNormalsSmooth(this Mesh mesh, float angle, bool recalculateTangents = true)
+        public static void RecalculateNormalsBursted(this Mesh mesh, float angle, bool recalculateTangents = true)
         {
             var dataArray = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = dataArray[0];
@@ -63,7 +63,7 @@ namespace IcaNormal
             dataArray.Dispose();
         }
 
-        public static void CalculateNormalData(Mesh mesh, float angle, ref Vector3[] normalOut, ref Vector4[] tangentOut)
+        public static void CalculateNormalDataBursted(Mesh mesh, float angle, ref Vector3[] normalOut, ref Vector4[] tangentOut)
         {
             var dataArray = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = dataArray[0];
@@ -94,7 +94,7 @@ namespace IcaNormal
         }
 
         [BurstCompile]
-        public struct NormalJob : IJob
+        private struct NormalJob : IJob
         {
             [ReadOnly] public Mesh.MeshData Data;
             [ReadOnly] public float Angle;
@@ -328,7 +328,7 @@ namespace IcaNormal
 
         #region vertexMapStructs
 
-        public struct VertexKey : IEquatable<VertexKey>
+        public readonly struct VertexKey : IEquatable<VertexKey>
         {
             private readonly long _x;
             private readonly long _y;
@@ -351,7 +351,7 @@ namespace IcaNormal
 
             public override int GetHashCode()
             {
-                //return HashCode.Combine(_x, _y, _z);
+                //return HashCode.Combine(_x, _y, _z); not usable in burst so instead we do this :
                 unchecked
                 {
                     int hash = 17;

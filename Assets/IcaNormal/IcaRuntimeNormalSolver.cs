@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 
 namespace IcaNormal
 {
     [RequireComponent(typeof(Renderer))]
     public class IcaRuntimeNormalSolver : MonoBehaviour
     {
+
 
 
         public enum NormalRecalculateMethodEnum
@@ -24,12 +26,18 @@ namespace IcaNormal
 
         public NormalRecalculateMethodEnum Method = NormalRecalculateMethodEnum.Cached;
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
+
+        [Tooltip("Smoothing angle only usable with bursted method")]
         [Range(0, 180)] public float SmoothingAngle = 120f;
+        
         public bool RecalculateOnStart;
+        
         public bool CalculateBlendShapes;
+        
+        [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")]
         public GameObject ModelPrefab;
 
-        [SerializeField, HideInInspector] private List<IcaMeshDataCaching.DuplicateMap> map;
+        [SerializeField, HideInInspector] private List<IcaMeshDataCaching.DuplicateMap> _cachedMeshData;
 
         private Renderer _renderer;
         private Mesh _mesh;
@@ -37,22 +45,15 @@ namespace IcaNormal
         private Vector3[] _normals;
         private Vector4[] _tangents;
 
+        //compute buffer bor passing data into shaders
         private ComputeBuffer _normalsOutBuffer;
         private ComputeBuffer _tangentsOutBuffer;
+        
         private Mesh _tempMesh;
-
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                RecalculateNormals();
-            }
-        }
-
+        
         private void Start()
         {
-            Init();
+            CacheComponents();
             
             _normalsList = new List<Vector3>(_mesh.vertexCount);
             _normals = new Vector3[_mesh.vertexCount];
@@ -67,12 +68,11 @@ namespace IcaNormal
             {
                 _normalsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 3);
                 _tangentsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 4);
-
                 _mesh.GetNormals(_normalsList);
                 _normals = _normalsList.ToArray();
                 _normalsOutBuffer.SetData(_normals);
-
-
+                
+                //duplicate all materials here
                 for (int i = 0; i < _renderer.materials.Length; i++)
                 {
                     _renderer.materials[i] = new Material(_renderer.materials[i]);
@@ -88,42 +88,40 @@ namespace IcaNormal
             }
         }
 
-        private void Init()
+        private void CacheComponents()
         {
             _renderer = GetComponent<Renderer>();
-
             if (_renderer is SkinnedMeshRenderer smr)
             {
                 _mesh = smr.sharedMesh;
             }
-            else if (_renderer is MeshRenderer mr)
+            else if (_renderer is MeshRenderer)
             {
                 _mesh = GetComponent<MeshFilter>().sharedMesh;
             }
-            
         }
 
         private void OnDestroy()
         {
+            //Compute buffers need to be destroyed
             if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
             {
                 _normalsOutBuffer.Release();
                 _tangentsOutBuffer.Release();
             }
         }
+        
 #if UNITY_EDITOR
         [ContextMenu("CacheVertices")]
+        //Cache data when component added to an object
         private void Reset()
         {
-            Init();
-            map = IcaMeshDataCaching.GetDuplicateVerticesMap(_mesh);
+            CacheComponents();
+            _cachedMeshData = IcaMeshDataCaching.GetDuplicateVerticesMap(_mesh);
         }
 #endif
 
-
-  
-
-
+        
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
@@ -154,12 +152,12 @@ namespace IcaNormal
 
                 tempSmr.BakeMesh(_tempMesh);
 
-                IcaNormalSolverUtils.CalculateNormalData(_tempMesh, SmoothingAngle, ref _normals, ref _tangents);
+                IcaNormalSolverUtils.CalculateNormalDataBursted(_tempMesh, SmoothingAngle, ref _normals, ref _tangents);
                 Destroy(tempObj);
             }
             else
             {
-                IcaNormalSolverUtils.CalculateNormalData(_mesh, SmoothingAngle, ref _normals, ref _tangents);
+                IcaNormalSolverUtils.CalculateNormalDataBursted(_mesh, SmoothingAngle, ref _normals, ref _tangents);
             }
             
             
@@ -179,7 +177,7 @@ namespace IcaNormal
         private void RecalculateCached()
         {
             Profiler.BeginSample("RecalculateCached");
-            var mapCount = map.Count;
+            var mapCount = _cachedMeshData.Count;
 
             if (mapCount == 0)
             {
@@ -217,18 +215,18 @@ namespace IcaNormal
             for (int listIndex = 0; listIndex < mapCount; listIndex++)
             {
                 Vector3 sum = Vector3.zero;
-                var listCount = map[listIndex].DuplicateIndexes.Count;
+                var listCount = _cachedMeshData[listIndex].DuplicateIndexes.Count;
 
                 for (int i = 0; i < listCount; i++)
                 {
-                    sum += _normalsList[map[listIndex].DuplicateIndexes[i]];
+                    sum += _normalsList[_cachedMeshData[listIndex].DuplicateIndexes[i]];
                 }
 
                 sum = sum.normalized;
 
                 for (int i = 0; i < listCount; i++)
                 {
-                    _normalsList[map[listIndex].DuplicateIndexes[i]] = sum;
+                    _normalsList[_cachedMeshData[listIndex].DuplicateIndexes[i]] = sum;
                 }
             }
 
