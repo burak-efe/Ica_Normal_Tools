@@ -27,9 +27,12 @@ For Procedural Created Meshes > use Bursted method and write to mesh<br />
 ## About custom shader:<br />
 NormalReceiver Shader just basic shader graph that sends custom normal and tangent data to material output. And can be used in all render pipelines.<br />
 
+## Caveats
+1: Meshes should be imported as readWrite enabled. <br />
+2: A scriptable object needed every mesh asset when using Cached Method. <br />
 
 ## Planned Features:
-Compute Shader Recalculation Method
-Using Job System on Cached Method
-Using Mesh Sharp edges for Cached Method
+Compute Shader Recalculation Method <br />
+Using Job System on Cached Method <br />
+Using Mesh Sharp edges for Cached Method <br />
 
