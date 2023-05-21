@@ -145,6 +145,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 0
   CalculateBlendShapes: 0
+  DataCache: {fileID: 11400000, guid: ce6bf3fc1adabfe47a46822bb6ff020f, type: 2}
   ModelPrefab: {fileID: 0}
   _cachedMeshData:
   - DuplicateIndexes: 00000000a4eb0000
@@ -3313,6 +3314,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 0
   CalculateBlendShapes: 0
+  DataCache: {fileID: 11400000, guid: ce6bf3fc1adabfe47a46822bb6ff020f, type: 2}
   ModelPrefab: {fileID: 0}
   _cachedMeshData:
   - DuplicateIndexes: 00000000a4eb0000
@@ -6214,6 +6216,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 0
   CalculateBlendShapes: 0
+  DataCache: {fileID: 11400000, guid: ce6bf3fc1adabfe47a46822bb6ff020f, type: 2}
   ModelPrefab: {fileID: 0}
   _cachedMeshData:
   - DuplicateIndexes: 00000000a4eb0000
@@ -9221,6 +9224,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 0
   CalculateBlendShapes: 0
+  DataCache: {fileID: 11400000, guid: ce6bf3fc1adabfe47a46822bb6ff020f, type: 2}
   ModelPrefab: {fileID: 0}
   _cachedMeshData:
   - DuplicateIndexes: 00000000a4eb0000

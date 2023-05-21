@@ -4,9 +4,24 @@ using UnityEngine;
 
 namespace IcaNormal
 {
-
-    public static class IcaMeshDataCaching
+    [CreateAssetMenu(menuName = "Plugins/IcaNormalRecalculation/MeshDataCache",fileName = "IcaMeshDataCache")]
+    [PreferBinarySerialization]
+    public class IcaMeshDataCache :ScriptableObject
     {
+        public Mesh TargetMesh;
+        
+        [SerializeField, HideInInspector] public List<DuplicateMap> DuplicatesData;
+        [SerializeField, HideInInspector] public List<Vector3> NormalsList;
+        [SerializeField, HideInInspector] public List<Vector4> TangentsList;
+
+        [ContextMenu("CacheData")]
+        public void CacheData()
+        {
+            DuplicatesData = GetDuplicateVerticesMap(TargetMesh);
+            TargetMesh.GetNormals(NormalsList);
+            TargetMesh.GetTangents(TangentsList);
+        }
+        
         [Serializable]
         public struct DuplicateMap
         {
@@ -15,7 +30,6 @@ namespace IcaNormal
 
         public static  List<DuplicateMap> GetDuplicateVerticesMap(Mesh mesh)
         {
-            //Init();
             var vertices = mesh.vertices;
             var tempMap = new Dictionary<Vector3, List<int>>(mesh.vertexCount);
             var map = new List<DuplicateMap>();

@@ -30,9 +30,10 @@ namespace IcaNormal
 
         public bool CalculateBlendShapes;
 
+        [SerializeField] private IcaMeshDataCache DataCache;
         [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")] public GameObject ModelPrefab;
 
-        [SerializeField, HideInInspector] private List<IcaMeshDataCaching.DuplicateMap> _cachedMeshData;
+        [SerializeField, HideInInspector] private List<IcaMeshDataCache.DuplicateMap> _cachedMeshData;
 
         private Renderer _renderer;
         private Mesh _mesh;
@@ -51,10 +52,11 @@ namespace IcaNormal
         {
             CacheComponents();
 
-            _normalsList = new List<Vector3>(_mesh.vertexCount);
-            _tangentsList = new List<Vector4>(_mesh.vertexCount);
-            _normals = new Vector3[_mesh.vertexCount];
-            _tangents = new Vector4[_mesh.vertexCount];
+            _normalsList = new List<Vector3>(DataCache.NormalsList);
+            _tangentsList = new List<Vector4>(DataCache.TangentsList);
+            //_normals = new Vector3[_mesh.vertexCount];
+            _normals = _normalsList.ToArray();
+            _tangents = _tangentsList.ToArray();
             _tempMesh = new Mesh();
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
@@ -65,9 +67,11 @@ namespace IcaNormal
             {
                 _normalsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 3);
                 _tangentsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 4);
-                _mesh.GetNormals(_normalsList);
-                _normals = _normalsList.ToArray();
+                //_mesh.GetNormals(_normalsList);
+                //_normalsList = DataCache.NormalsList;
+                //_normals = _normalsList.ToArray();
                 _normalsOutBuffer.SetData(_normals);
+                _tangentsOutBuffer.SetData(_tangents);
 
                 //duplicate all materials here
                 for (int i = 0; i < _renderer.materials.Length; i++)
@@ -114,7 +118,7 @@ namespace IcaNormal
         private void Reset()
         {
             CacheComponents();
-            _cachedMeshData = IcaMeshDataCaching.GetDuplicateVerticesMap(_mesh);
+            _cachedMeshData = IcaMeshDataCache.GetDuplicateVerticesMap(_mesh);
         }
 #endif
 
