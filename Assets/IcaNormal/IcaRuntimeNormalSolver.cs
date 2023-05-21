@@ -8,11 +8,7 @@ namespace IcaNormal
     [RequireComponent(typeof(Renderer))]
     public class IcaRuntimeNormalSolver : MonoBehaviour
     {
-        [Serializable]
-        public struct DuplicateMap
-        {
-            public List<int> DuplicateIndexes;
-        }
+
 
         public enum NormalRecalculateMethodEnum
         {
@@ -33,7 +29,7 @@ namespace IcaNormal
         public bool CalculateBlendShapes;
         public GameObject ModelPrefab;
 
-        [SerializeField, HideInInspector] private List<DuplicateMap> map;
+        [SerializeField, HideInInspector] private List<IcaMeshDataCaching.DuplicateMap> map;
 
         private Renderer _renderer;
         private Mesh _mesh;
@@ -116,44 +112,17 @@ namespace IcaNormal
             }
         }
 #if UNITY_EDITOR
+        [ContextMenu("CacheVertices")]
         private void Reset()
         {
-            CacheVertices();
+            Init();
+            map = IcaMeshDataCaching.GetDuplicateVerticesMap(_mesh);
         }
 #endif
 
 
-        [ContextMenu("CacheVertices")]
-        public void CacheVertices()
-        {
-            Init();
-            var vertices = _mesh.vertices;
-            var tempMap = new Dictionary<Vector3, List<int>>(_mesh.vertexCount);
-            map = new List<DuplicateMap>();
+  
 
-            for (int vertexIndex = 0; vertexIndex < _mesh.vertexCount; vertexIndex++)
-            {
-                List<int> entryList;
-
-                if (!tempMap.TryGetValue(vertices[vertexIndex], out entryList))
-                {
-                    entryList = new List<int>();
-                    tempMap.Add(vertices[vertexIndex], entryList);
-                }
-
-                entryList.Add(vertexIndex);
-            }
-
-            foreach (var kvp in tempMap)
-            {
-                if (kvp.Value.Count > 1)
-                {
-                    map.Add(new DuplicateMap { DuplicateIndexes = kvp.Value });
-                }
-            }
-
-            Debug.Log("Number of Duplicate Vertices Cached: " + map.Count);
-        }
 
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
@@ -185,12 +154,12 @@ namespace IcaNormal
 
                 tempSmr.BakeMesh(_tempMesh);
 
-                IcaNormalSolverUtils.RecalculateNormals(_tempMesh, SmoothingAngle, ref _normals, ref _tangents);
+                IcaNormalSolverUtils.CalculateNormalData(_tempMesh, SmoothingAngle, ref _normals, ref _tangents);
                 Destroy(tempObj);
             }
             else
             {
-                IcaNormalSolverUtils.RecalculateNormals(_mesh, SmoothingAngle, ref _normals, ref _tangents);
+                IcaNormalSolverUtils.CalculateNormalData(_mesh, SmoothingAngle, ref _normals, ref _tangents);
             }
             
             

@@ -63,7 +63,7 @@ namespace IcaNormal
             dataArray.Dispose();
         }
 
-        public static void RecalculateNormals(Mesh mesh, float angle, ref Vector3[] normalOut, ref Vector4[] tangentOut)
+        public static void CalculateNormalData(Mesh mesh, float angle, ref Vector3[] normalOut, ref Vector4[] tangentOut)
         {
             var dataArray = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = dataArray[0];
