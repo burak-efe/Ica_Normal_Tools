@@ -34,7 +34,6 @@ namespace IcaNormal
     {
         public static void RecalculateNormalsSmooth(this Mesh mesh, float angle, bool recalculateTangents = true)
         {
-            //Debug.Log(Marshal.SizeOf<VertexEntry>());
             var dataArray = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = dataArray[0];
             var outputData = new NativeArray<float3>(data.vertexCount, Allocator.TempJob);
@@ -63,39 +62,40 @@ namespace IcaNormal
             outputTangents.Dispose();
             dataArray.Dispose();
         }
-        // public static void RecalculateNormalsAndSetToAnotherMesh(Mesh sourceMesh,Mesh targetMesh, float angle,NativeArray<Vector3> cache, bool recalculateTangents = true)
-        // {
-        //     //Debug.Log(Marshal.SizeOf<VertexEntry>());
-        //     var dataArray = Mesh.AcquireReadOnlyMeshData(sourceMesh);
-        //     var data = dataArray[0];
-        //     var outputData = new NativeArray<float3>(data.vertexCount, Allocator.TempJob);
-        //     var outputTangents = new NativeArray<float4>(data.vertexCount, Allocator.TempJob);
-        //
-        //
-        //     var normalJob = new NormalJob
-        //     {
-        //         data = data,
-        //         angle = angle,
-        //         normals = outputData,
-        //         tangents = outputTangents,
-        //         recalculateTangents = recalculateTangents
-        //     };
-        //     var handle = normalJob.Schedule();
-        //     handle.Complete();
-        //
-        //     //normalJob.Execute();
-        //
-        //     if (recalculateTangents)
-        //     {
-        //         targetMesh.SetTangents(outputTangents);
-        //     }
-        //
-        //     targetMesh.SetNormals(outputData);
-        //     outputData.CopyTo(cache.Reinterpret<float3>());
-        //     outputData.Dispose();
-        //     outputTangents.Dispose();
-        //     dataArray.Dispose();
-        // }
+
+        public static void RecalculateNormalsAndSetToAnotherMesh(Mesh sourceMesh, Mesh targetMesh, float angle, NativeArray<Vector3> cache, bool recalculateTangents = true)
+        {
+            //Debug.Log(Marshal.SizeOf<VertexEntry>());
+            var dataArray = Mesh.AcquireReadOnlyMeshData(sourceMesh);
+            var data = dataArray[0];
+            var outputData = new NativeArray<float3>(data.vertexCount, Allocator.TempJob);
+            var outputTangents = new NativeArray<float4>(data.vertexCount, Allocator.TempJob);
+
+
+            var normalJob = new NormalJob
+            {
+                Data = data,
+                Angle = angle,
+                Normals = outputData,
+                Tangents = outputTangents,
+                RecalculateTangents = recalculateTangents
+            };
+            var handle = normalJob.Schedule();
+            handle.Complete();
+
+            //normalJob.Execute();
+
+            if (recalculateTangents)
+            {
+                targetMesh.SetTangents(outputTangents);
+            }
+
+            targetMesh.SetNormals(outputData);
+            outputData.CopyTo(cache.Reinterpret<float3>());
+            outputData.Dispose();
+            outputTangents.Dispose();
+            dataArray.Dispose();
+        }
 
         [BurstCompile]
         public struct NormalJob : IJob
