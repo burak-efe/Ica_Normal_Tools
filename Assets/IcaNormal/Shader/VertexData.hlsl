@@ -1,4 +1,6 @@
-//StructuredBuffer<float3> verticesOutBuffer;
+#pragma warning (disable : 3571)
+#pragma warning (disable : 3206)
+
 StructuredBuffer<float3> normalsOutBuffer;
 StructuredBuffer<float4> tangentsOutBuffer;
 

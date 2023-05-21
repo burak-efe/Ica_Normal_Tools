@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Benchmark/BenchMarkScene.unity
+    guid: 00da221cd21fe1242bf8df05c3262e1f
   m_configObjects: {}
