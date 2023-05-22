@@ -20,6 +20,8 @@ Also built in method not takes angle as an argument,so smooth all vertices no ma
 
 2: Write to Material : This method needs a very basic custom shader whic included in the package. <br />
    This method compatible with meshes that require different normals but shared same mesh, like skinned mesh renderers that use blendshapes and shraing same model<br />
+   
+![2023-05-22 07_53_58-Window](https://github.com/burak-efe/Ica-Normal-Recalculation/assets/82805019/e6f4172c-49d5-4b53-ac9c-ab37722b85b2)
 
 ## Tips:
 For BlendShaped Character Models > use Cached method and write to custom shader<br />
