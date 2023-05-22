@@ -8,10 +8,11 @@ But there is a problem, this method not counting vertices that same position on 
 	
 Also built in method not takes angle as an argument,so smooth all vertices no matter of how sharp is angle. Another downside this method not suitable for fix blendshape normals directly.<br />
 
+![compare](https://github.com/burak-efe/Ica-Normal-Recalculation/assets/82805019/9fee8357-13d9-40f2-8e76-44c5d894b08a)
+
 ## Ica Normal Recalculation Provides 2 Normal Recalculation method
 1: Bursted : Angle based method that uses job system <br />
 	(Derived from https://medium.com/@fra3point/runtime-normals-recalculation-in-unity-a-complete-approach-db42490a5644 converted by using job system,mathematic and burst libraries, but not multithreaded due to limitations)<br />
-	
 2: Cached: Faster method that uses builtin method then normalizing duplicate vertices based on cached data of duplicates. This method smooth all vertices no matter of angle or sharp edge<br />
 
 ## And 2 way to use calculated data
@@ -19,6 +20,24 @@ Also built in method not takes angle as an argument,so smooth all vertices no ma
 
 2: Write to Material : This method needs a very basic custom shader whic included in the package. <br />
    This method compatible with meshes that require different normals but shared same mesh, like skinned mesh renderers that use blendshapes and shraing same model<br />
+   
+![2023-05-22 07_53_58-Window](https://github.com/burak-efe/Ica-Normal-Recalculation/assets/82805019/e6f4172c-49d5-4b53-ac9c-ab37722b85b2)
+## How To Use
+1: Enable read/write permisson on asset import setting <br />
+2: Now you can use bursted method by MyMesh.RecalculateNormalsBursted(120f); this will write directly to the mesh <br />
+
+If you want to use Cached Method or write to material
+1: Add IcaRuntimeNormalSolver Component to to your mesh renderer or SMR. <br />
+
+if you want to use cached method
+Create new Mesh Data Cache asset on project. Assign your mesh on them then cached data on contex menu. <br />
+
+if you want use write to material output
+Make sure you are using Normal receiver shader. Or create your own shader basedon, whics is very easy.
+
+if you want to use blend shapes
+Make sure you assign model prefab that in zero pose (e.g. T-pose) to component.
+
 
 ## Tips:
 For BlendShaped Character Models > use Cached method and write to custom shader<br />
@@ -27,9 +46,16 @@ For Procedural Created Meshes > use Bursted method and write to mesh<br />
 ## About custom shader:<br />
 NormalReceiver Shader just basic shader graph that sends custom normal and tangent data to material output. And can be used in all render pipelines.<br />
 
+## Requirements
+1: Burst Package <br />
+2: Collections Package <br />
+3: Mathematics Package <br />
+4: Shader Graph Package (for custom material output shader) <br />
+
 ## Caveats
-1: Meshes should be imported as readWrite enabled. <br />
-2: A scriptable object needed every mesh asset when using Cached Method. <br />
+1: Meshes should be imported as Read/Write enabled. <br />
+2: A scriptable object needed every mesh asset that use runtime recalculate component. <br />
+3: Runtime component also recalculate tangents and can not be disabled.<br />
 
 ## Planned Features:
 Compute Shader Recalculation Method <br />
