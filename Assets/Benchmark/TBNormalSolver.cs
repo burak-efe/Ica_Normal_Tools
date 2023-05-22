@@ -83,7 +83,7 @@ namespace TB
         /// </param>
         public static void RecalculateNormals(this Mesh mesh, float angle)
         {
-            UnweldVertices(mesh);
+            //UnweldVertices(mesh);
 
             float cosineThreshold = Mathf.Cos(angle * Mathf.Deg2Rad);
 

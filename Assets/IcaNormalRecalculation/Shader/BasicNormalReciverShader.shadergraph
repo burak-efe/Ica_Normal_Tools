@@ -70,8 +70,16 @@
             "m_Id": "891273bec10c4df9bb893af4c4e700fa"
         }
     ],
-    "m_GroupDatas": [],
-    "m_StickyNoteDatas": [],
+    "m_GroupDatas": [
+        {
+            "m_Id": "400a5f95d68e49498003a9e6281a1662"
+        }
+    ],
+    "m_StickyNoteDatas": [
+        {
+            "m_Id": "e75fed5c6c214ff487f06258b8e814a5"
+        }
+    ],
     "m_Edges": [
         {
             "m_OutputSlot": {
@@ -398,17 +406,17 @@
     "m_Type": "UnityEditor.ShaderGraph.VertexIDNode",
     "m_ObjectId": "18e4a8b9a3e2466e98c4c874a9e07671",
     "m_Group": {
-        "m_Id": ""
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     },
     "m_Name": "Vertex ID",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -837.0,
-            "y": -27.000011444091798,
+            "x": -918.0001220703125,
+            "y": -39.00000762939453,
             "width": 99.0,
-            "height": 77.0
+            "height": 77.00003051757813
         }
     },
     "m_Slots": [
@@ -586,6 +594,17 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.GroupData",
+    "m_ObjectId": "400a5f95d68e49498003a9e6281a1662",
+    "m_Title": "Vertex Data Receiver",
+    "m_Position": {
+        "x": -943.0001220703125,
+        "y": -247.00001525878907
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
     "m_ObjectId": "4a4ac98a19404bc895a153e368977a5a",
     "m_Id": 0,
@@ -735,17 +754,17 @@
     "m_Type": "UnityEditor.ShaderGraph.LerpNode",
     "m_ObjectId": "5de11e4141f24c31a277fd86d5b6db76",
     "m_Group": {
-        "m_Id": ""
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     },
     "m_Name": "Lerp",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -361.0000915527344,
-            "y": 129.0,
-            "width": 130.0,
-            "height": 141.99996948242188
+            "x": -457.0,
+            "y": 80.00001525878906,
+            "width": 129.99996948242188,
+            "height": 141.99998474121095
         }
     },
     "m_Slots": [
@@ -781,16 +800,16 @@
     "m_Type": "UnityEditor.ShaderGraph.CustomFunctionNode",
     "m_ObjectId": "5e04527b6852455bb57da7d2f4618c44",
     "m_Group": {
-        "m_Id": ""
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     },
     "m_Name": "GetVertexNormals (Custom Function)",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -721.9999389648438,
-            "y": -27.000011444091798,
-            "width": 259.9999694824219,
+            "x": -798.0001220703125,
+            "y": -39.00000762939453,
+            "width": 260.00006103515627,
             "height": 118.00001525878906
         }
     },
@@ -913,17 +932,17 @@
     "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
     "m_ObjectId": "891273bec10c4df9bb893af4c4e700fa",
     "m_Group": {
-        "m_Id": ""
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     },
     "m_Name": "Property",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -596.0,
-            "y": 295.0,
+            "x": -693.0001220703125,
+            "y": 227.00001525878907,
             "width": 115.0,
-            "height": 34.0
+            "height": 34.00004577636719
         }
     },
     "m_Slots": [
@@ -1007,17 +1026,17 @@
     "m_Type": "UnityEditor.ShaderGraph.LerpNode",
     "m_ObjectId": "8f7b96439e8840aa9a5cf160398d4b07",
     "m_Group": {
-        "m_Id": ""
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     },
     "m_Name": "Lerp",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -360.9999694824219,
-            "y": -21.00001335144043,
-            "width": 129.9999542236328,
-            "height": 142.0
+            "x": -457.0,
+            "y": -81.0,
+            "width": 129.99996948242188,
+            "height": 142.00003051757813
         }
     },
     "m_Slots": [
@@ -1053,17 +1072,17 @@
     "m_Type": "UnityEditor.ShaderGraph.TangentVectorNode",
     "m_ObjectId": "8fb29c03108e4f489f7ff0fa140fd109",
     "m_Group": {
-        "m_Id": ""
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     },
     "m_Name": "Tangent Vector",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -711.0,
-            "y": 120.99999237060547,
-            "width": 206.00003051757813,
-            "height": 131.00003051757813
+            "x": -784.0001220703125,
+            "y": 91.00001525878906,
+            "width": 206.0,
+            "height": 130.99998474121095
         }
     },
     "m_Slots": [
@@ -1110,16 +1129,16 @@
     "m_Type": "UnityEditor.ShaderGraph.NormalVectorNode",
     "m_ObjectId": "9c49a725755240d8b2534c5bbf138413",
     "m_Group": {
-        "m_Id": ""
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     },
     "m_Name": "Normal Vector",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -703.9999389648438,
-            "y": -158.00001525878907,
-            "width": 205.99996948242188,
+            "x": -777.0001220703125,
+            "y": -188.0,
+            "width": 206.00006103515626,
             "height": 131.0
         }
     },
@@ -1487,6 +1506,26 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
+    }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "e75fed5c6c214ff487f06258b8e814a5",
+    "m_Title": "",
+    "m_Content": "Make sure you have Initialized propert in your black board:\ntype: float\nname Initialized\nreferance: _Initialized\ndefault: 0\nExposed: false\n",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -732.0,
+        "y": 266.0,
+        "width": 166.0,
+        "height": 133.0
+    },
+    "m_Group": {
+        "m_Id": "400a5f95d68e49498003a9e6281a1662"
     }
 }
 

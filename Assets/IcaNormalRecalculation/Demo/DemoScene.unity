@@ -227,6 +227,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 0
+  DataCache: {fileID: 0}
   ModelPrefab: {fileID: 0}
   _cachedMeshData: []
 --- !u!23 &427257503
@@ -540,6 +541,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 1
+  DataCache: {fileID: 0}
   ModelPrefab: {fileID: 919132149155446097, guid: 23d3e4404f7d46e4b8e0787e5ebaffab, type: 3}
   _cachedMeshData: []
 --- !u!1 &963194225
@@ -700,6 +702,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 0
+  DataCache: {fileID: 0}
   ModelPrefab: {fileID: 0}
   _cachedMeshData: []
 --- !u!1001 &1891487506
