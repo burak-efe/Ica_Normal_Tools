@@ -222,14 +222,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Method: 0
+  CalculateMethod: 0
   NormalOutputTarget: 0
   SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 0
-  DataCache: {fileID: 0}
+  _dataCache: {fileID: 11400000, guid: 31c1509ae3d6f6141bbae5eee033d9f7, type: 2}
   ModelPrefab: {fileID: 0}
-  _cachedMeshData: []
 --- !u!23 &427257503
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -536,14 +535,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Method: 1
+  CalculateMethod: 1
   NormalOutputTarget: 1
   SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 1
-  DataCache: {fileID: 0}
+  _dataCache: {fileID: 11400000, guid: c17e7e99939589d4f8ac630cf9c1caca, type: 2}
   ModelPrefab: {fileID: 919132149155446097, guid: 23d3e4404f7d46e4b8e0787e5ebaffab, type: 3}
-  _cachedMeshData: []
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -697,14 +695,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Method: 0
+  CalculateMethod: 0
   NormalOutputTarget: 1
   SmoothingAngle: 120
   RecalculateOnStart: 1
   CalculateBlendShapes: 0
-  DataCache: {fileID: 0}
+  _dataCache: {fileID: 11400000, guid: 31c1509ae3d6f6141bbae5eee033d9f7, type: 2}
   ModelPrefab: {fileID: 0}
-  _cachedMeshData: []
 --- !u!1001 &1891487506
 PrefabInstance:
   m_ObjectHideFlags: 0
