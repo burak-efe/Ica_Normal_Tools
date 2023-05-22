@@ -8,10 +8,11 @@ But there is a problem, this method not counting vertices that same position on 
 	
 Also built in method not takes angle as an argument,so smooth all vertices no matter of how sharp is angle. Another downside this method not suitable for fix blendshape normals directly.<br />
 
+![compare](https://github.com/burak-efe/Ica-Normal-Recalculation/assets/82805019/9fee8357-13d9-40f2-8e76-44c5d894b08a)
+
 ## Ica Normal Recalculation Provides 2 Normal Recalculation method
 1: Bursted : Angle based method that uses job system <br />
 	(Derived from https://medium.com/@fra3point/runtime-normals-recalculation-in-unity-a-complete-approach-db42490a5644 converted by using job system,mathematic and burst libraries, but not multithreaded due to limitations)<br />
-	
 2: Cached: Faster method that uses builtin method then normalizing duplicate vertices based on cached data of duplicates. This method smooth all vertices no matter of angle or sharp edge<br />
 
 ## And 2 way to use calculated data
@@ -26,6 +27,12 @@ For Procedural Created Meshes > use Bursted method and write to mesh<br />
 
 ## About custom shader:<br />
 NormalReceiver Shader just basic shader graph that sends custom normal and tangent data to material output. And can be used in all render pipelines.<br />
+
+## Requirements
+1: Burst Package <br />
+2: Collections Package <br />
+3: Mathematics Package <br />
+4: Shader Graph Package (for custom material output shader) <br />
 
 ## Caveats
 1: Meshes should be imported as Read/Write enabled. <br />
