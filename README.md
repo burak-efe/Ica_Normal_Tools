@@ -22,6 +22,22 @@ Also built in method not takes angle as an argument,so smooth all vertices no ma
    This method compatible with meshes that require different normals but shared same mesh, like skinned mesh renderers that use blendshapes and shraing same model<br />
    
 ![2023-05-22 07_53_58-Window](https://github.com/burak-efe/Ica-Normal-Recalculation/assets/82805019/e6f4172c-49d5-4b53-ac9c-ab37722b85b2)
+## How To Use
+1: Enable read/write permisson on asset import setting <br />
+2: Now you can use bursted method by MyMesh.RecalculateNormalsBursted(120f); this will write directly to the mesh <br />
+
+If you want to use Cached Method or write to material
+1: Add IcaRuntimeNormalSolver Component to to your mesh renderer or SMR. <br />
+
+if you want to use cached method
+Create new Mesh Data Cache asset on project. Assign your mesh on them then cached data on contex menu. <br />
+
+if you want use write to material output
+Make sure you are using Normal receiver shader. Or create your own shader basedon, whics is very easy.
+
+if you want to use blend shapes
+Make sure you assign model prefab that in zero pose (e.g. T-pose) to component.
+
 
 ## Tips:
 For BlendShaped Character Models > use Cached method and write to custom shader<br />
@@ -39,6 +55,7 @@ NormalReceiver Shader just basic shader graph that sends custom normal and tange
 ## Caveats
 1: Meshes should be imported as Read/Write enabled. <br />
 2: A scriptable object needed every mesh asset that use runtime recalculate component. <br />
+3: Runtime component also recalculate tangents and can not be disabled.<br />
 
 ## Planned Features:
 Compute Shader Recalculation Method <br />
