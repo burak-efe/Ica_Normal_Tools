@@ -2,7 +2,7 @@
   "dependencies": {
     "com.unity.burst": "1.8.4",
     "com.unity.collections": "2.1.4",
-    "com.unity.ide.rider": "3.0.21",
+    "com.unity.ide.rider": "3.0.22",
     "com.unity.render-pipelines.universal": "14.0.7",
     "com.unity.ugui": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
