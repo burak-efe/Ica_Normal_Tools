@@ -1,3 +1,5 @@
+# Warning!!
+this package still in alpha
 # Ica Normal Recalculation
 A Normal and Tangent recalculaton library for Unity
 
@@ -57,7 +59,7 @@ NormalReceiver Shader just basic shader graph that sends custom normal and tange
 2: A scriptable object needed every mesh asset that use runtime recalculate component. <br />
 3: Runtime component also recalculate tangents and can not be disabled.<br />
 
-## Planned Features:
+## TODO
 Compute Shader Recalculation Method <br />
 Using Job System on Cached Method <br />
 Using Mesh Sharp edges for Cached Method <br />
