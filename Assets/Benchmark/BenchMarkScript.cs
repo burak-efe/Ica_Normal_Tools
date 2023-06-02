@@ -19,10 +19,10 @@ public class BenchMarkScript : MonoBehaviour
 
     public Mesh BuiltInTargetMesh;
     public Mesh TB_TargetMesh;
-    public IcaRuntimeNormalSolver cachedToMesh;
-    public IcaRuntimeNormalSolver cachedToMaterial;
-    public IcaRuntimeNormalSolver burstedToMesh;
-    public IcaRuntimeNormalSolver burstedToMaterial;
+    public RuntimeNormalSolver cachedToMesh;
+    public RuntimeNormalSolver cachedToMaterial;
+    public RuntimeNormalSolver burstedToMesh;
+    public RuntimeNormalSolver burstedToMaterial;
 
 
 
