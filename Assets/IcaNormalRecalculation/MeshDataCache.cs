@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace IcaNormal
 {
@@ -29,7 +26,7 @@ namespace IcaNormal
         [Serializable]
         public struct DuplicateMap
         {
-            [FormerlySerializedAs("DuplicateIndexes")] public int[] DuplicateVertices;
+            public int[] DuplicateVertices;
         }
         
         
@@ -62,6 +59,14 @@ namespace IcaNormal
             Debug.Log("Number of Duplicate Vertices Cached: " + map.Count);
             return map;
         }
+        
+        
+        
+        
+        
+        
+        
+        
     }
 
 

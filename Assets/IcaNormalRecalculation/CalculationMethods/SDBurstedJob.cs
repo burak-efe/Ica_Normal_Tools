@@ -88,7 +88,7 @@ namespace IcaNormal
 
     #endregion
 
-    #region FullNormalJob
+    #region SDBurstedJob
 
     [BurstCompile]
     public struct SDBurstedJob : IJob
@@ -268,11 +268,14 @@ namespace IcaNormal
 
                 for (int a = 0; a < vertexCount; ++a)
                 {
-                    Vector3 n = Normals[a];
-                    Vector3 t = tan1[a];
+                    Vector3 nTemp = Normals[a];
+                    Vector3 tTemp = tan1[a];
 
-                    //TODO: Use math library and float3 here 
-                    Vector3.OrthoNormalize(ref n, ref t);
+                    //TODO: Use math library and float3 here, and remove temp values
+                    Vector3.OrthoNormalize(ref nTemp, ref tTemp);
+
+                    float3 n = nTemp;
+                    float3 t = tTemp;
 
                     var w = (math.dot(math.cross(n, t), tan2[a]) < 0.0f) ? -1.0f : 1.0f;
                     Tangents[a] = new float4(t.x, t.y, t.z, w);
