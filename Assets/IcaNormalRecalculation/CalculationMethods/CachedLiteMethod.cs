@@ -11,9 +11,8 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
-    public static class CachedMethod
+    public static class CachedLiteMethod
     {
-        
         
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

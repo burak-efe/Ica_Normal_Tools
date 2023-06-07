@@ -91,7 +91,7 @@ namespace IcaNormal
     #region FullNormalJob
 
     [BurstCompile]
-    public struct FullNormalJob : IJob
+    public struct SDBurstedJob : IJob
     {
         [ReadOnly] public Mesh.MeshData Data;
         [ReadOnly] public float Angle;

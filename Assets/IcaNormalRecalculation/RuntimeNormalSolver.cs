@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Profiling;
-using UnityEngine.Serialization;
 
 namespace IcaNormal
 {
@@ -14,8 +10,8 @@ namespace IcaNormal
     {
         public enum NormalRecalculateMethodEnum
         {
-            Cached,
-            Bursted
+            CachedLite,
+            SDBursted
         }
 
         public enum NormalOutputEnum
@@ -24,7 +20,7 @@ namespace IcaNormal
             WriteToMaterial
         }
 
-        public NormalRecalculateMethodEnum CalculateMethod = NormalRecalculateMethodEnum.Bursted;
+        public NormalRecalculateMethodEnum CalculateMethod = NormalRecalculateMethodEnum.SDBursted;
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
 
         [Tooltip("Smoothing angle only usable with bursted method")] [Range(0, 180)] public float SmoothingAngle = 120f;
@@ -40,34 +36,26 @@ namespace IcaNormal
 
         private Renderer _renderer;
         private Mesh _mesh;
-        //private List<Vector3> _normalsList;
-        //private List<Vector4> _tangentsList;
+        private Mesh _tempMesh;
+
+        private UnsafeList<NativeArray<int>> _nativeDuplicatesData;
         private NativeArray<float3> _normals;
         private NativeArray<float4> _tangents;
-        
         private NativeArray<Vector3> _normalsAsVector;
         private NativeArray<Vector4> _tangentsAsVector;
+        private Mesh.MeshDataArray _meshDataArray;
+        private Mesh.MeshData _mainMeshData;
+        private Mesh.MeshData _tempMeshData;
 
         //compute buffer for passing data into shaders
         private ComputeBuffer _normalsOutBuffer;
         private ComputeBuffer _tangentsOutBuffer;
         private bool _isComputeBuffersCreated;
 
-        private Mesh _tempMesh;
-
-        private Mesh.MeshDataArray _meshDataArray;
-        private Mesh.MeshData _mainMeshData;
-        private Mesh.MeshData _tempMeshData;
-
-        private UnsafeList<NativeArray<int>> _nativeDuplicatesData;
-
-
         private void Update()
         {
             if (Input.GetKey(KeyCode.Space))
-            {
                 RecalculateNormals();
-            }
         }
 
         private void Awake()
@@ -77,36 +65,10 @@ namespace IcaNormal
 
         private void Start()
         {
-            _nativeDuplicatesData = new UnsafeList<NativeArray<int>>(_dataCache.DuplicatesData.Count, Allocator.Persistent);
-            foreach (var data in _dataCache.DuplicatesData)
-            {
-                _nativeDuplicatesData.Add(new NativeArray<int>(data.DuplicateVertices ,Allocator.Persistent));
-            }
-            
-            _tempMesh = new Mesh();
-            
-            _normals = new NativeArray<float3>(_mesh.vertexCount,Allocator.Persistent);
-            _tangents = new NativeArray<float4>(_mesh.vertexCount,Allocator.Persistent);
+            AllocateNativeContainers();
 
-            _normalsAsVector = _normals.Reinterpret<Vector3>();
-            _tangentsAsVector = _tangents.Reinterpret<Vector4>();
-            
-            _meshDataArray = Mesh.AcquireReadOnlyMeshData(new []{_mesh,_tempMesh});
-            _mainMeshData = _meshDataArray[0];
-            _tempMeshData = _meshDataArray[1];
-            
-            _mainMeshData.GetNormals(_normalsAsVector);
-            _mainMeshData.GetTangents(_tangentsAsVector);
-            
-            
-            //_mesh.GetNormals(_normalsList);
-            //_mesh.GetTangents(_tangentsList);
-            //_normals = _normalsList.ToArray();
-            //_tangents = _tangentsList.ToArray();
-
-            if (CalculateMethod == NormalRecalculateMethodEnum.Cached && _dataCache == null)
+            if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite && _dataCache == null)
                 Debug.LogWarning("Cached Normal Calculate Method Needs Data File");
-
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -148,6 +110,33 @@ namespace IcaNormal
             }
         }
 
+        private void AllocateNativeContainers()
+        {
+            if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite)
+            {
+                _nativeDuplicatesData = new UnsafeList<NativeArray<int>>(_dataCache.DuplicatesData.Count, Allocator.Persistent);
+                foreach (var data in _dataCache.DuplicatesData)
+                {
+                    _nativeDuplicatesData.Add(new NativeArray<int>(data.DuplicateVertices, Allocator.Persistent));
+                }
+            }
+
+            _tempMesh = new Mesh();
+
+            _normals = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
+            _tangents = new NativeArray<float4>(_mesh.vertexCount, Allocator.Persistent);
+
+            _normalsAsVector = _normals.Reinterpret<Vector3>();
+            _tangentsAsVector = _tangents.Reinterpret<Vector4>();
+
+            _meshDataArray = Mesh.AcquireReadOnlyMeshData(new[] { _mesh, _tempMesh });
+            _mainMeshData = _meshDataArray[0];
+            _tempMeshData = _meshDataArray[1];
+
+            _mainMeshData.GetNormals(_normalsAsVector);
+            _mainMeshData.GetTangents(_tangentsAsVector);
+        }
+
         private void OnDestroy()
         {
             //Compute buffers need to be destroyed
@@ -160,27 +149,30 @@ namespace IcaNormal
             _normals.Dispose();
             _tangents.Dispose();
             _meshDataArray.Dispose();
-            foreach (var nativeArray in _nativeDuplicatesData)
+
+
+            if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite)
             {
-                nativeArray.Dispose();
+                foreach (var nativeArray in _nativeDuplicatesData)
+                {
+                    nativeArray.Dispose();
+                }
+
+                _nativeDuplicatesData.Dispose();
             }
-            _nativeDuplicatesData.Dispose();
         }
 
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
-            if (CalculateMethod == NormalRecalculateMethodEnum.Bursted)
-            {
-                RecalculateBursted();
-            }
-            else if (CalculateMethod == NormalRecalculateMethodEnum.Cached)
-            {
-                RecalculateCached();
-            }
+            if (CalculateMethod == NormalRecalculateMethodEnum.SDBursted)
+                RecalculateSDBursted();
+
+            else if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite)
+                RecalculateCachedLite();
         }
 
-        private void RecalculateBursted()
+        private void RecalculateSDBursted()
         {
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
@@ -195,27 +187,18 @@ namespace IcaNormal
 
                 tempSmr.BakeMesh(_tempMesh);
 
-                //FullMethod.CalculateNormalData(_tempMesh, SmoothingAngle, ref _normals, ref _tangents);
+                SDBurstedMethod.CalculateNormalData(_tempMeshData, SmoothingAngle, ref _normals, ref _tangents);
                 Destroy(tempObj);
             }
             else
             {
-               // FullMethod.CalculateNormalData(_mesh, SmoothingAngle, ref _normals, ref _tangents);
+                SDBurstedMethod.CalculateNormalData(_mainMeshData, SmoothingAngle, ref _normals, ref _tangents);
             }
 
-            if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
-            {
-                _mesh.SetNormals(_normals);
-                _mesh.SetTangents(_tangents);
-            }
-            else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
-            {
-                _normalsOutBuffer.SetData(_normals);
-                _tangentsOutBuffer.SetData(_tangents);
-            }
+            SetNormalsAndTangents(_normals, _tangents);
         }
 
-        private void RecalculateCached()
+        private void RecalculateCachedLite()
         {
             var mapCount = _dataCache.DuplicatesData.Count;
 
@@ -224,7 +207,6 @@ namespace IcaNormal
                 Debug.Log("Mesh Data of " + _mesh.name + " not found. Please do not forget the cache data on context menu or on start method before recalculating normals");
                 return;
             }
-
 
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
@@ -240,7 +222,6 @@ namespace IcaNormal
                 tempSmr.BakeMesh(_tempMesh);
                 _tempMeshData.GetNormals(_normalsAsVector);
                 _tempMeshData.GetTangents(_tangentsAsVector);
-
             }
             else
             {
@@ -248,8 +229,8 @@ namespace IcaNormal
                 _mainMeshData.GetTangents(_tangentsAsVector);
             }
 
-            CachedMethod.NormalizeDuplicateVertices(_nativeDuplicatesData, ref _normals, ref _tangents);
-            
+            CachedLiteMethod.NormalizeDuplicateVertices(_nativeDuplicatesData, ref _normals, ref _tangents);
+
             SetNormalsAndTangents(_normals, _tangents);
         }
 

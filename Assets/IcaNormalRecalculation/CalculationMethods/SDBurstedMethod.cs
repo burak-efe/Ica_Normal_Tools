@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace IcaNormal
 {
-    public static class FullMethod
+    public static class SDBurstedMethod
     {
         public static void RecalculateNormals(this Mesh mesh, float angle, bool recalculateTangents = true)
         {
@@ -16,7 +16,7 @@ namespace IcaNormal
             var outputData = new NativeArray<float3>(data.vertexCount, Allocator.TempJob);
             var outputTangents = new NativeArray<float4>(data.vertexCount, Allocator.TempJob);
             
-            var normalJob = new FullNormalJob
+            var normalJob = new SDBurstedJob
             {
                 Data = data,
                 Angle = angle,
@@ -39,31 +39,20 @@ namespace IcaNormal
             dataArray.Dispose();
         }
 
-        public static void CalculateNormalData(Mesh mesh, float angle, ref Vector3[] normalOut, ref Vector4[] tangentOut)
+        public static void CalculateNormalData(Mesh.MeshData meshData, float angle, ref NativeArray<float3> normalOut, ref NativeArray<float4> tangentOut)
         {
-            var dataArray = Mesh.AcquireReadOnlyMeshData(mesh);
-            var data = dataArray[0];
-            var outputNormals = new NativeArray<float3>(data.vertexCount, Allocator.TempJob);
-            var outputTangents = new NativeArray<float4>(data.vertexCount, Allocator.TempJob);
-
-
-            var normalJob = new FullNormalJob
+            
+            var normalJob = new SDBurstedJob
             {
-                Data = data,
+                Data = meshData,
                 Angle = angle,
-                Normals = outputNormals,
-                Tangents = outputTangents,
+                Normals = normalOut,
+                Tangents = tangentOut,
                 RecalculateTangents = true
             };
             var handle = normalJob.Schedule();
             handle.Complete();
-            
-            outputTangents.Reinterpret<Vector4>().CopyTo(tangentOut);
-            outputNormals.Reinterpret<Vector3>().CopyTo(normalOut);
-            
-            outputNormals.Dispose();
-            outputTangents.Dispose();
-            dataArray.Dispose();
+
         }
 
 
