@@ -203,6 +203,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 100kVertSphere
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -263,6 +267,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
       propertyPath: m_Name
       value: Cached_ToMesh
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -561,7 +569,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 388d6407ef8c86d4f9edc60c23717752, type: 2}
+      objectReference: {fileID: 2100000, guid: feb0fef4d986d8e4f9c0e9688d0699c3, type: 2}
     - target: {fileID: 919132149155446097, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
       propertyPath: m_Name
       value: Cached_ToMat
@@ -764,6 +772,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BurstedToMat
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -907,6 +919,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
       propertyPath: m_Name
       value: BurstedToMesh
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

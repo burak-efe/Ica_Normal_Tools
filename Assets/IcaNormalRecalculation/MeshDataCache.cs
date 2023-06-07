@@ -29,7 +29,7 @@ namespace IcaNormal
         [Serializable]
         public struct DuplicateMap
         {
-            public int[] DuplicateIndexes;
+            [FormerlySerializedAs("DuplicateIndexes")] public int[] DuplicateVertices;
         }
         
         
@@ -55,7 +55,7 @@ namespace IcaNormal
             {
                 if (kvp.Value.Count > 1)
                 {
-                    map.Add(new DuplicateMap { DuplicateIndexes = kvp.Value.ToArray() });
+                    map.Add(new DuplicateMap { DuplicateVertices = kvp.Value.ToArray() });
                 }
             }
             

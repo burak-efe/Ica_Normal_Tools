@@ -1,43 +1,73 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Profiling;
+
 
 namespace IcaNormal
 {
     public static class CachedMethod
     {
-        public static void CalculateNormalData(Mesh mesh, float angle, List<MeshDataCache.DuplicateMap> duplicateMap, ref Vector3[] normalOut, ref Vector4[] tangentOut)
+        
+        
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void NormalizeDuplicateVertices(UnsafeList<NativeArray<int>> duplicatesData, ref NativeArray<float3> normals, ref NativeArray<float4> tangents)
         {
-            var _normalsList = new List<Vector3>(mesh.vertexCount);
-            var _tangentsList = new List<Vector4>(mesh.vertexCount);
-            mesh.RecalculateNormals();
-            mesh.GetNormals(_normalsList);
-            mesh.RecalculateTangents();
-            mesh.GetTangents(_tangentsList);
-
-            var mapCount = duplicateMap.Count;
-            
-            for (int vertPos = 0; vertPos < mapCount; vertPos++)
+            Profiler.BeginSample("NormalizeDuplicateVertices");
+            var job = new NormalizeDuplicateVerticesJob
             {
-                Vector3 normalSum = Vector3.zero;
-                Vector4 tangentSum = Vector4.zero;
-                
-                var length = duplicateMap[vertPos].DuplicateIndexes.Length;
-                
-                for (int i = 0; i < length; i++)
+                DuplicatesData = duplicatesData,
+                Normals = normals,
+                Tangents = tangents
+            };
+            
+            job.Run();
+            Profiler.EndSample();
+        }
+        
+        
+        
+        [BurstCompile]
+        private struct NormalizeDuplicateVerticesJob : IJob
+        {
+            [ReadOnly] public UnsafeList<NativeArray<int>> DuplicatesData;
+            public NativeArray<float3> Normals;
+            public NativeArray<float4> Tangents;
+
+            public void Execute()
+            {
+                for (int duplicatePos = 0; duplicatePos < DuplicatesData.Length; duplicatePos++)
                 {
-                    normalSum += _normalsList[duplicateMap[vertPos].DuplicateIndexes[i]];
-                    tangentSum += _tangentsList[duplicateMap[vertPos].DuplicateIndexes[i]];
+                    var normalSum = float3.zero;
+                    var tangentSum = float4.zero;
+
+                    var length = DuplicatesData[duplicatePos].Length;
+
+                    for (int v = 0; v < length; v++)
+                    {
+                        normalSum += Normals[DuplicatesData[duplicatePos][v]];
+                        tangentSum += Tangents[DuplicatesData[duplicatePos][v]];
+                    }
+
+                    normalSum = math.normalize(normalSum);
+
+                    var tangXYZ = new float3(tangentSum.x, tangentSum.y, tangentSum.z);
+                    tangXYZ = math.normalize(tangXYZ);
+                    tangentSum = new Vector4(tangXYZ.x, tangXYZ.y, tangXYZ.z, math.clamp(tangentSum.w, -1f, 1f));
+
+                    for (int i = 0; i < length; i++)
+                    {
+                        Normals[DuplicatesData[duplicatePos][i]] = normalSum;
+                        Tangents[DuplicatesData[duplicatePos][i]] = tangentSum;
+                    }
                 }
 
-                normalSum = normalSum.normalized;
-                Vector3 tangXYZ = new Vector3(tangentSum.x, tangentSum.y, tangentSum.z);
-                tangXYZ = tangXYZ.normalized;
-                tangentSum = new Vector4(tangXYZ.normalized.x, tangXYZ.y, tangXYZ.z, Mathf.Clamp(tangentSum.w, -1f, 1f));
-                for (int i = 0; i < length; i++)
-                {
-                    _normalsList[duplicateMap[vertPos].DuplicateIndexes[i]] = normalSum;
-                    _tangentsList[duplicateMap[vertPos].DuplicateIndexes[i]] = tangentSum;
-                }
             }
         }
     }
