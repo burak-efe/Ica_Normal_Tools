@@ -9,8 +9,8 @@ namespace IcaNormal
 { 
     public static class CachedParallelMethod
     {
-        public static void CalculateNormalData(Mesh.MeshData meshData, int indicesCount, NativeArray<int> indices, NativeArray<float3> normals,
-            NativeArray<float4> tangents, NativeArray<int> adjacencyList, NativeArray<int2> adjacencyMap)
+        public static void CalculateNormalData(Mesh.MeshData meshData, int indicesCount, NativeArray<int> indices, ref NativeArray<float3> normals,
+            ref NativeArray<float4> tangents, NativeArray<int> adjacencyList, NativeArray<int2> adjacencyMap)
         {
             Profiler.BeginSample("Allocate");
             var triNormals = new NativeArray<float3>(indicesCount / 3, Allocator.TempJob);
@@ -33,7 +33,7 @@ namespace IcaNormal
             var vertexNormalJob = new VertexNormalJob
             {
                 AdjacencyList = adjacencyList,
-                AdjacencyMap = adjacencyMap,
+                AdjacencyMapper = adjacencyMap,
                 TriNormals = triNormals,
                 Normals = normals
             };
@@ -80,19 +80,19 @@ namespace IcaNormal
         private struct VertexNormalJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;
-            [ReadOnly] public NativeArray<int2> AdjacencyMap;
+            [ReadOnly] public NativeArray<int2> AdjacencyMapper;
             [ReadOnly] public NativeArray<float3> TriNormals;
             [WriteOnly] public NativeArray<float3> Normals;
 
             public void Execute(int vertexIndex)
             {
-                int2 adjacencyOffsetCount = AdjacencyMap[vertexIndex];
+                int2 adjacencyOffsetCount = AdjacencyMapper[vertexIndex];
                 float3 dotProdSum = 0;
 
                 for (int i = 0; i < adjacencyOffsetCount.y; ++i)
                 {
                     int triID = AdjacencyList[adjacencyOffsetCount.x + i];
-                    dotProdSum += AdjacencyList[triID];
+                    dotProdSum += TriNormals[triID];
                 }
 
                 Normals[vertexIndex] = math.normalize(dotProdSum);
