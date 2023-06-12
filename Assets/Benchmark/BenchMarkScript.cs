@@ -8,21 +8,18 @@ using UnityEngine.Serialization;
 public class BenchMarkScript : MonoBehaviour
 {
     public KeyCode UnityBuiltIn = KeyCode.F1;
-    
     public KeyCode TB_NormalSolver = KeyCode.F2;
-    
-    public KeyCode Ica_Cached_WriteToMesh_Method = KeyCode.F3;
-    public KeyCode Ica_Cached_WriteToMaterial_Method = KeyCode.F4;
-    
-    public KeyCode Ica_Bursted_WriteToMesh_Method = KeyCode.F5;
-    public KeyCode Ica_Bursted_WriteToMaterial_Method = KeyCode.F6;
+    public KeyCode SDBursted = KeyCode.F3;
+    public KeyCode CachedLite = KeyCode.F4;
+    public KeyCode CachedParallel = KeyCode.F5;
+    //public KeyCode Ica_Bursted_WriteToMaterial_Method = KeyCode.F6;
 
     public Mesh BuiltInTargetMesh;
     public Mesh TB_TargetMesh;
-    public RuntimeNormalSolver cachedToMesh;
-    public RuntimeNormalSolver cachedToMaterial;
-    public RuntimeNormalSolver burstedToMesh;
-    public RuntimeNormalSolver burstedToMaterial;
+    public RuntimeNormalSolver SDBurstedRuntimeNormalSolver;
+    public RuntimeNormalSolver CachedLiteRuntimeNormalSolver;
+    public RuntimeNormalSolver CachedParallelRuntimeNormalSolver;
+    //public RuntimeNormalSolver burstedToMaterial;
 
 
 
@@ -40,26 +37,24 @@ public class BenchMarkScript : MonoBehaviour
             TB.TBNormalSolver.RecalculateTangents(TB_TargetMesh);
         }
         
-        if (Input.GetKey(Ica_Cached_WriteToMesh_Method))
+        
+        
+        if (Input.GetKey(SDBursted))
         {
-            cachedToMesh.RecalculateNormals();
+            SDBurstedRuntimeNormalSolver.RecalculateNormals();
         }
         
-        if (Input.GetKey(Ica_Cached_WriteToMaterial_Method))
+        if (Input.GetKey(CachedLite))
         {
-            cachedToMaterial.RecalculateNormals();
+            CachedLiteRuntimeNormalSolver.RecalculateNormals();
             
         }
         
-        if (Input.GetKey(Ica_Bursted_WriteToMesh_Method))
+        if (Input.GetKey(CachedParallel))
         {
-            burstedToMesh.RecalculateNormals();
+            CachedParallelRuntimeNormalSolver.RecalculateNormals();
         }
         
-        if (Input.GetKey(Ica_Bursted_WriteToMaterial_Method))
-        {
-            burstedToMaterial.RecalculateNormals();
-        }
 
     }
 }

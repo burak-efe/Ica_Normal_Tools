@@ -72,10 +72,14 @@ namespace IcaNormal
 
         private void Start()
         {
+            
+            if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite && _dataCache == null)
+            {
+                Debug.LogWarning("Cached Normal Calculate Method Needs Data File");
+                return;
+            }
             AllocateNativeContainers();
 
-            if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite && _dataCache == null)
-                Debug.LogWarning("Cached Normal Calculate Method Needs Data File");
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -113,6 +117,8 @@ namespace IcaNormal
 
         private void CacheComponents()
         {
+
+            
             _renderer = GetComponent<Renderer>();
             if (_renderer is SkinnedMeshRenderer smr)
             {
@@ -122,6 +128,7 @@ namespace IcaNormal
             {
                 _mesh = GetComponent<MeshFilter>().sharedMesh;
             }
+            
         }
 
         private void AllocateNativeContainers()
@@ -218,11 +225,7 @@ namespace IcaNormal
 
         private void RecalculateCachedLite()
         {
-            if (_dataCache.DuplicatesData == null)
-            {
-                Debug.LogWarning("Mesh Data of " + _mesh.name + " not found. Please do not forget the cache data on context menu or on start method before recalculating normals");
-                return;
-            }
+
 
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
