@@ -14,7 +14,7 @@ namespace IcaNormal
             SDBursted,
             CachedParallel
         }
-
+        
         public enum NormalOutputEnum
         {
             WriteToMesh,
@@ -24,16 +24,19 @@ namespace IcaNormal
         public NormalRecalculateMethodEnum CalculateMethod = NormalRecalculateMethodEnum.SDBursted;
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
 
-        [Tooltip("Smoothing angle only usable with bursted method")] [Range(0, 180)] public float SmoothingAngle = 120f;
+        [Range(0, 180)]
+        [Tooltip("Smoothing angle only usable with bursted method")]
+        public float SmoothingAngle = 120f;
 
         public bool RecalculateOnStart;
-
         public bool CalculateBlendShapes;
 
-        [SerializeField] [Tooltip("Data cache asset required when using cached method. You can create this on project tab context menu/plugins /Mesh data cache.")]
+        [SerializeField]
+        [Tooltip("Data cache asset required when using cached method. You can create this on project tab context menu/plugins /Mesh data cache.")]
         private MeshDataCache _dataCache;
 
-        [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")] public GameObject ModelPrefab;
+        [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")]
+        public GameObject ModelPrefab;
 
         private Renderer _renderer;
         private Mesh _mesh;
@@ -53,17 +56,10 @@ namespace IcaNormal
         private Mesh.MeshDataArray _meshDataArray;
         private Mesh.MeshData _mainMeshData;
 
-
         //compute buffer for passing data into shaders
         private ComputeBuffer _normalsOutBuffer;
         private ComputeBuffer _tangentsOutBuffer;
         private bool _isComputeBuffersCreated;
-
-        private void Update()
-        {
-            if (Input.GetKey(KeyCode.Space))
-                RecalculateNormals();
-        }
 
         private void Awake()
         {
@@ -72,14 +68,13 @@ namespace IcaNormal
 
         private void Start()
         {
-            
             if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite && _dataCache == null)
             {
                 Debug.LogWarning("Cached Normal Calculate Method Needs Data File");
                 return;
             }
-            AllocateNativeContainers();
 
+            AllocateNativeContainers();
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -117,9 +112,8 @@ namespace IcaNormal
 
         private void CacheComponents()
         {
-
-            
             _renderer = GetComponent<Renderer>();
+
             if (_renderer is SkinnedMeshRenderer smr)
             {
                 _mesh = smr.sharedMesh;
@@ -128,7 +122,6 @@ namespace IcaNormal
             {
                 _mesh = GetComponent<MeshFilter>().sharedMesh;
             }
-            
         }
 
         private void AllocateNativeContainers()
@@ -177,7 +170,6 @@ namespace IcaNormal
             _tangents.Dispose();
             _meshDataArray.Dispose();
 
-
             if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite)
             {
                 foreach (var nativeArray in _nativeDuplicatesData)
@@ -209,7 +201,7 @@ namespace IcaNormal
         {
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
-                SmrUtils.CopyBlendShapes(smr,_tempSmr);
+                SmrUtils.CopyBlendShapes(smr, _tempSmr);
                 _tempSmr.BakeMesh(_tempMesh);
                 var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
                 SDBurstedMethod.CalculateNormalData(mda[0], SmoothingAngle, ref _normals, ref _tangents);
@@ -225,13 +217,11 @@ namespace IcaNormal
 
         private void RecalculateCachedLite()
         {
-
-
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
-                SmrUtils.CopyBlendShapes(smr,_tempSmr);
+                SmrUtils.CopyBlendShapes(smr, _tempSmr);
                 _tempSmr.BakeMesh(_tempMesh);
-                
+
                 _tempMesh.RecalculateNormals();
                 _tempMesh.RecalculateTangents();
 
@@ -245,6 +235,7 @@ namespace IcaNormal
                 _mainMeshData.GetNormals(_normalsAsVector);
                 _mainMeshData.GetTangents(_tangentsAsVector);
             }
+
             CachedLiteMethod.NormalizeDuplicateVertices(_nativeDuplicatesData, ref _normals, ref _tangents);
             SetNormalsAndTangents(_normals, _tangents);
         }
@@ -254,7 +245,7 @@ namespace IcaNormal
         {
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
-                SmrUtils.CopyBlendShapes(smr,_tempSmr);
+                SmrUtils.CopyBlendShapes(smr, _tempSmr);
                 _tempSmr.BakeMesh(_tempMesh);
                 var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
                 mda[0].GetNormals(_normalsAsVector);
@@ -266,10 +257,9 @@ namespace IcaNormal
             {
                 CachedParallelMethod.CalculateNormalData(_mainMeshData, _dataCache.IndicesCount, _indices, ref _normals, ref _tangents, _nativeAdjacencyList, _nativeAdjacencyMap);
             }
-            SetNormalsAndTangents(_normals,_tangents);
-        }
 
-        
+            SetNormalsAndTangents(_normals, _tangents);
+        }
 
         private void SetNormalsAndTangents(NativeArray<float3> normals, NativeArray<float4> tangents)
         {
