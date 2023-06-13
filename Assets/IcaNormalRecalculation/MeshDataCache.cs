@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -31,14 +32,14 @@ namespace IcaNormal
 
             var vertices = new NativeArray<float3>(data.vertexCount, Allocator.Temp);
             data.GetVertices(vertices.Reinterpret<Vector3>());
-            
-            
+
+
             Profiler.BeginSample("GetIndices");
             var indices = new NativeList<int>(Allocator.Temp);
             for (int i = 0; i < data.subMeshCount; i++)
             {
-                var temp = new NativeArray<int>(data.GetSubMesh(i).indexCount,Allocator.Temp);
-                data.GetIndices(temp,i);
+                var temp = new NativeArray<int>(data.GetSubMesh(i).indexCount, Allocator.Temp);
+                data.GetIndices(temp, i);
                 indices.AddRange(temp);
             }
 
@@ -47,22 +48,31 @@ namespace IcaNormal
 
 
             Profiler.BeginSample("GetGraphs");
-            var posGraph = MeshAdjacency.GetVertexPosGraph(vertices, Allocator.Temp);
-            var nativeVertMap = MeshAdjacency.GetDuplicateVerticesMap(posGraph, Allocator.Temp);
+
+            var posGraph = new UnsafeHashMap<float3, NativeList<int>>();
+            VertexPositionMapper.GetVertexPosGraph(ref vertices, ref posGraph, Allocator.Temp);
+
+            var nativeVertMap = new UnsafeList<NativeArray<int>>();
+            DuplicateVerticesMapper.GetDuplicateVerticesMap(ref posGraph,ref nativeVertMap,Allocator.Temp);
             Profiler.EndSample();
-            
+
 
             Profiler.BeginSample("DuplicatesToManaged");
-            SerializedDuplicatesData = MeshAdjacency.GetManagedDuplicateVerticesMap(nativeVertMap);
+            SerializedDuplicatesData = NativeToManagedUtils.GetManagedDuplicateVerticesMap(nativeVertMap);
+            Profiler.EndSample();
+
+
+            Profiler.BeginSample("Adjacency");
+            Profiler.BeginSample("Calculate");
+            var adjacencyList = new NativeList<int>();
+            var adjacencyMapper = new NativeArray<int2>();
+            AdjacencyMapper.CalculateAdjacencyData(ref vertices, ref indices, ref posGraph, ref adjacencyList, ref adjacencyMapper, Allocator.Temp);
             Profiler.EndSample();
             
-            
-            Profiler.BeginSample("Adjacency");
-            MeshAdjacency.CalculateAdjacencyData(vertices, indices, posGraph, out var adjacencyList, out var adjacencyMapper, Allocator.Temp);
-            adjacencyList.CopyTo(SerializedAdjacencyList);
+            adjacencyList.AsArray().CopyTo(SerializedAdjacencyList);
             adjacencyMapper.CopyTo(SerializedAdjacencyMapper);
             Profiler.EndSample();
-            
+
             mda.Dispose();
 
 #if UNITY_EDITOR
