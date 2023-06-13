@@ -99,7 +99,7 @@ namespace IcaNormal
                 _tangentsOutBuffer.SetData(_tangents);
             }
 
-            if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
+            if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer)
             {
                 _tempObj = Instantiate(ModelPrefab, transform);
                 _tempSmr = GetComponentInChildren<SkinnedMeshRenderer>();
@@ -128,8 +128,8 @@ namespace IcaNormal
         {
             if (CalculateMethod == NormalRecalculateMethodEnum.CachedLite)
             {
-                _nativeDuplicatesData = new UnsafeList<NativeArray<int>>(_dataCache.DuplicatesData.Count, Allocator.Persistent);
-                foreach (var data in _dataCache.DuplicatesData)
+                _nativeDuplicatesData = new UnsafeList<NativeArray<int>>(_dataCache.SerializedDuplicatesData.Count, Allocator.Persistent);
+                foreach (var data in _dataCache.SerializedDuplicatesData)
                 {
                     _nativeDuplicatesData.Add(new NativeArray<int>(data.Value, Allocator.Persistent));
                 }
@@ -137,8 +137,8 @@ namespace IcaNormal
 
             if (CalculateMethod == NormalRecalculateMethodEnum.CachedParallel)
             {
-                _nativeAdjacencyList = new NativeArray<int>(_dataCache.AdjacencyList, Allocator.Persistent);
-                _nativeAdjacencyMap = new NativeArray<int2>(_dataCache.AdjacencyMapper, Allocator.Persistent);
+                _nativeAdjacencyList = new NativeArray<int>(_dataCache.SerializedAdjacencyList, Allocator.Persistent);
+                _nativeAdjacencyMap = new NativeArray<int2>(_dataCache.SerializedAdjacencyMapper, Allocator.Persistent);
                 _indices = new NativeArray<int>(_mesh.triangles, Allocator.Persistent);
             }
 
@@ -260,7 +260,7 @@ namespace IcaNormal
 
             SetNormalsAndTangents(_normals, _tangents);
         }
-
+        
         private void SetNormalsAndTangents(NativeArray<float3> normals, NativeArray<float4> tangents)
         {
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
