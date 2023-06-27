@@ -11,14 +11,15 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
+    [BurstCompile]
     public static class CachedLiteMethod
     {
         
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NormalizeDuplicateVertices(UnsafeList<NativeArray<int>> duplicatesData, ref NativeArray<float3> normals, ref NativeArray<float4> tangents)
+        [BurstCompile]
+        public static void NormalizeDuplicateVertices(in UnsafeList<NativeArray<int>> duplicatesData, ref NativeArray<float3> normals, ref NativeArray<float4> tangents)
         {
-            Profiler.BeginSample("NormalizeDuplicateVertices");
             var job = new NormalizeDuplicateVerticesJob
             {
                 DuplicatesData = duplicatesData,
@@ -27,7 +28,6 @@ namespace IcaNormal
             };
             
             job.Run();
-            Profiler.EndSample();
         }
         
         

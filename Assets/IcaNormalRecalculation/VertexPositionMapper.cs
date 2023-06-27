@@ -17,7 +17,7 @@ namespace IcaNormal
         /// <param name="allocator"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
-        public static void GetPosVertexIndicesDict(in NativeArray<float3> vertices, ref UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair, Allocator allocator)
+        public static void GetPosVertexIndicesDict(in NativeArray<float3> vertices, out UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair, Allocator allocator)
         {
             posVertexIndicesPair = new UnsafeHashMap<float3, NativeList<int>>(vertices.Length, allocator);
 

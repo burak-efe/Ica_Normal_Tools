@@ -9,7 +9,7 @@ namespace IcaNormal
     public static class GetIndicesUtil
     {
         [BurstCompile]
-        public static void GetIndices(ref Mesh.MeshData data, ref NativeList<int> outIndices, Allocator allocator)
+        public static void GetIndices(in Mesh.MeshData data, out NativeList<int> outIndices, Allocator allocator)
         {
             var submeshCount = data.subMeshCount;
             var indexCount = 0;

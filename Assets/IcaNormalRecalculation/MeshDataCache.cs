@@ -38,20 +38,20 @@ namespace IcaNormal
             Profiler.EndSample();
 
             Profiler.BeginSample("GetIndices");
-            var indices = new NativeList<int>();
-            GetIndicesUtil.GetIndices(ref data, ref indices, Allocator.Temp);
+            //var indices = new NativeList<int>();
+            GetIndicesUtil.GetIndices(in data, out var indices, Allocator.Temp);
             IndicesCount = indices.Length;
             Profiler.EndSample();
 
 
             Profiler.BeginSample("GetPosGraph");
-            var posGraph = new UnsafeHashMap<float3, NativeList<int>>();
-            VertexPositionMapper.GetPosVertexIndicesDict(in vertices, ref posGraph, Allocator.Temp);
+            //var posGraph = new UnsafeHashMap<float3, NativeList<int>>();
+            VertexPositionMapper.GetPosVertexIndicesDict(in vertices, out var posGraph, Allocator.Temp);
             Profiler.EndSample();
 
             Profiler.BeginSample("GetDuplicatesGraph");
-            var nativeVertMap = new UnsafeList<NativeArray<int>>();
-            DuplicateVerticesMapper.GetDuplicateVerticesMap(ref posGraph, ref nativeVertMap, Allocator.Temp);
+            //var nativeVertMap = new UnsafeList<NativeArray<int>>();
+            DuplicateVerticesMapper.GetDuplicateVerticesMap(in posGraph, out var nativeVertMap, Allocator.Temp);
             Profiler.EndSample();
 
 
@@ -62,11 +62,13 @@ namespace IcaNormal
 
             Profiler.BeginSample("Adjacency");
             Profiler.BeginSample("Calculate");
-            var adjacencyList = new NativeList<int>();
-            var adjacencyMapper = new NativeArray<int2>();
-            AdjacencyMapper.CalculateAdjacencyData(ref vertices, ref indices, ref posGraph, ref adjacencyList, ref adjacencyMapper, Allocator.Temp);
+            // var adjacencyList = new NativeList<int>();
+            // var adjacencyMapper = new NativeArray<int2>();
+            AdjacencyMapper.CalculateAdjacencyData(in vertices, in indices, in posGraph, out var  adjacencyList, out var adjacencyMapper, Allocator.Temp);
             Profiler.EndSample();
 
+            SerializedAdjacencyList = new int[adjacencyList.Length];
+            SerializedAdjacencyMapper = new int2[adjacencyMapper.Length];
             adjacencyList.AsArray().CopyTo(SerializedAdjacencyList);
             adjacencyMapper.CopyTo(SerializedAdjacencyMapper);
             Profiler.EndSample();

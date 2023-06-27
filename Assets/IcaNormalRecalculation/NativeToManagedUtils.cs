@@ -7,7 +7,6 @@ namespace IcaNormal
 {
     public static class NativeToManagedUtils
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<DuplicateVerticesList> GetManagedDuplicateVerticesMap(UnsafeList<NativeArray<int>> from)
         {
             var list = new List<DuplicateVerticesList>(from.Length);

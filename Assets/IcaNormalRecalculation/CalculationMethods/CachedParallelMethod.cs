@@ -2,26 +2,35 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace IcaNormal
-{ 
+{
+    [BurstCompile]
     public static class CachedParallelMethod
     {
-        public static void CalculateNormalData(Mesh.MeshData meshData, int indicesCount, NativeArray<int> indices, ref NativeArray<float3> normals,
-            ref NativeArray<float4> tangents, NativeArray<int> adjacencyList, NativeArray<int2> adjacencyMap)
+        [BurstCompile]
+        public static void CalculateNormalData(in Mesh.MeshData meshData, int indicesCount, in NativeArray<int> indices, ref NativeArray<float3> outNormals,
+            ref NativeArray<float4> outTangents, in NativeArray<int> adjacencyList, in NativeArray<int2> adjacencyMap)
         {
-            Profiler.BeginSample("Allocate");
+
+            var pAllocate = new ProfilerMarker("Allocate");
+            pAllocate.Begin();
             var triNormals = new NativeArray<float3>(indicesCount / 3, Allocator.TempJob);
             var vertices = new NativeArray<float3>(meshData.vertexCount, Allocator.TempJob);
             var verticesAsVector = vertices.Reinterpret<Vector3>();
-            Profiler.EndSample();
+            pAllocate.End();
 
-            Profiler.BeginSample("GetVertices");
+
+            var pGetVertices = new ProfilerMarker("pGetVertices");
+            pGetVertices.Begin();
             meshData.GetVertices(verticesAsVector);
-            Profiler.EndSample();
+            pGetVertices.End();
 
+            var pSchedule = new ProfilerMarker("pSchedule");
+            pSchedule.Begin();
 
             var triNormalJob = new TriNormalJob
             {
@@ -35,30 +44,32 @@ namespace IcaNormal
                 AdjacencyList = adjacencyList,
                 AdjacencyMapper = adjacencyMap,
                 TriNormals = triNormals,
-                Normals = normals
+                Normals = outNormals
             };
 
-            Profiler.BeginSample("Schedule");
-            
+
+
             var tJobHandle = triNormalJob.ScheduleParallel
                 (indices.Length / 3, indices.Length / 3 / 64, default);
 
             var vJobHandle = vertexNormalJob.ScheduleParallel
                 (meshData.vertexCount, meshData.vertexCount / 64, tJobHandle);
-            
-            Profiler.EndSample();
+
+            pSchedule.End();
 
             vJobHandle.Complete();
-            
+
+            var pDispose = new ProfilerMarker("Dispose");
+            pDispose.Begin();
             triNormals.Dispose();
             vertices.Dispose();
+            pDispose.End();
         }
 
 
         [BurstCompile]
         private struct TriNormalJob : IJobFor
         {
-            //public Mesh.MeshData Data;
             [ReadOnly] public NativeArray<int> Indices;
             [ReadOnly] public NativeArray<float3> Vertices;
             [WriteOnly] public NativeArray<float3> TriNormals;
@@ -75,7 +86,7 @@ namespace IcaNormal
             }
         }
 
-        
+
         [BurstCompile]
         private struct VertexNormalJob : IJobFor
         {

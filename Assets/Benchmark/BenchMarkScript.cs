@@ -4,7 +4,7 @@ using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 using UnityEngine;
 using IcaNormal;
 using UnityEngine.Serialization;
-
+[DefaultExecutionOrder(-9999)]
 public class BenchMarkScript : MonoBehaviour
 {
     public KeyCode UnityBuiltIn = KeyCode.F1;
@@ -28,7 +28,7 @@ public class BenchMarkScript : MonoBehaviour
         if (Input.GetKey(UnityBuiltIn))
         {
             BuiltInTargetMesh.RecalculateNormals();
-            BuiltInTargetMesh.RecalculateTangents();
+            //BuiltInTargetMesh.RecalculateTangents();
         }
         
         if (Input.GetKey(TB_NormalSolver))

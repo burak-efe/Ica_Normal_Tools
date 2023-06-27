@@ -13,7 +13,7 @@ namespace IcaNormal
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
-        public static void GetDuplicateVerticesMap(ref UnsafeHashMap<float3, NativeList<int>> posGraph, ref UnsafeList<NativeArray<int>> outMap,  Allocator allocator)
+        public static void GetDuplicateVerticesMap(in UnsafeHashMap<float3, NativeList<int>> posGraph, out UnsafeList<NativeArray<int>> outMap,  Allocator allocator)
         {
             outMap = new UnsafeList<NativeArray<int>>(10, allocator);
 

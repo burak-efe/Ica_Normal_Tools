@@ -21,8 +21,8 @@ namespace IcaNormal
         [BurstCompile]
         public static void CalculateAdjacencyData
         (
-            ref NativeArray<float3> vertices, ref NativeList<int> indices, ref UnsafeHashMap<float3, NativeList<int>> posGraph,
-            ref NativeList<int> outAdjacencyList, ref NativeArray<int2> outAdjacencyMapper, Allocator allocator
+            in NativeArray<float3> vertices, in NativeList<int> indices, in UnsafeHashMap<float3, NativeList<int>> posGraph,
+            out NativeList<int> outAdjacencyList, out NativeArray<int2> outAdjacencyMapper, Allocator allocator
         )
         {
             var pTempAllocate = new ProfilerMarker("TempAllocate");

@@ -2,6 +2,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
@@ -219,6 +220,7 @@ namespace IcaNormal
         {
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
+                Profiler.BeginSample("GetSMRData");
                 SmrUtils.CopyBlendShapes(smr, _tempSmr);
                 _tempSmr.BakeMesh(_tempMesh);
 
@@ -229,9 +231,12 @@ namespace IcaNormal
                 mda[0].GetNormals(_normalsAsVector);
                 mda[0].GetTangents(_tangentsAsVector);
                 mda.Dispose();
+                Profiler.EndSample();
             }
             else
             {
+                _mesh.RecalculateNormals();
+                _mesh.RecalculateTangents();
                 _mainMeshData.GetNormals(_normalsAsVector);
                 _mainMeshData.GetTangents(_tangentsAsVector);
             }
@@ -245,13 +250,15 @@ namespace IcaNormal
         {
             if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
             {
+                Profiler.BeginSample("GetSMRData");
                 SmrUtils.CopyBlendShapes(smr, _tempSmr);
                 _tempSmr.BakeMesh(_tempMesh);
                 var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
-                mda[0].GetNormals(_normalsAsVector);
-                mda[0].GetTangents(_tangentsAsVector);
+                //mda[0].GetNormals(_normalsAsVector);
+                //mda[0].GetTangents(_tangentsAsVector);
                 CachedParallelMethod.CalculateNormalData(mda[0], _dataCache.IndicesCount, _indices, ref _normals, ref _tangents, _nativeAdjacencyList, _nativeAdjacencyMap);
                 mda.Dispose();
+                Profiler.EndSample();
             }
             else
             {
@@ -265,13 +272,17 @@ namespace IcaNormal
         {
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
+                Profiler.BeginSample("WriteToMesh");
                 _mesh.SetNormals(normals);
                 _mesh.SetTangents(tangents);
+                Profiler.EndSample();
             }
             else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
             {
+                Profiler.BeginSample("WriteToMaterial");
                 _normalsOutBuffer.SetData(normals);
                 _tangentsOutBuffer.SetData(tangents);
+                Profiler.EndSample();
             }
         }
     }
