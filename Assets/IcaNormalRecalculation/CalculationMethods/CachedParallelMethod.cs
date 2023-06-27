@@ -12,17 +12,22 @@ namespace IcaNormal
     public static class CachedParallelMethod
     {
         [BurstCompile]
-        public static void CalculateNormalData(in Mesh.MeshData meshData, int indicesCount, in NativeArray<int> indices, ref NativeArray<float3> outNormals,
-            ref NativeArray<float4> outTangents, in NativeArray<int> adjacencyList, in NativeArray<int2> adjacencyMap)
+        public static void CalculateNormalData
+        (
+            in Mesh.MeshData meshData,
+            in NativeArray<int> indices,
+            ref NativeArray<float3> outNormals,
+            ref NativeArray<float4> outTangents,
+            in NativeArray<int> adjacencyList,
+            in NativeArray<int2> adjacencyMap
+        )
         {
-
             var pAllocate = new ProfilerMarker("Allocate");
             pAllocate.Begin();
-            var triNormals = new NativeArray<float3>(indicesCount / 3, Allocator.TempJob);
+            var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
             var vertices = new NativeArray<float3>(meshData.vertexCount, Allocator.TempJob);
             var verticesAsVector = vertices.Reinterpret<Vector3>();
             pAllocate.End();
-
 
             var pGetVertices = new ProfilerMarker("pGetVertices");
             pGetVertices.Begin();
@@ -46,8 +51,6 @@ namespace IcaNormal
                 TriNormals = triNormals,
                 Normals = outNormals
             };
-
-
 
             var tJobHandle = triNormalJob.ScheduleParallel
                 (indices.Length / 3, indices.Length / 3 / 64, default);
@@ -107,6 +110,149 @@ namespace IcaNormal
                 }
 
                 Normals[vertexIndex] = math.normalize(dotProdSum);
+            }
+        }
+
+
+        [BurstCompile]
+        public static void CalculateTangentData
+        (
+            in Mesh.MeshData meshData,
+            in NativeArray<float3> normals,
+            in NativeArray<int> indices,
+            in NativeArray<float2> uv,
+            in NativeArray<int> adjacencyList,
+            in NativeArray<int2> adjacencyMap,
+            ref NativeArray<float4> outTangents
+        )
+        {
+            var vertices = new NativeArray<float3>(meshData.vertexCount, Allocator.TempJob);
+            meshData.GetVertices(vertices.Reinterpret<Vector3>());
+
+            // var normals = new NativeArray<float3>(meshData.vertexCount, Allocator.TempJob);
+            // meshData.GetNormals(normals.Reinterpret<Vector3>());
+
+            // var UV = new NativeArray<float2>(meshData.vertexCount, Allocator.TempJob);
+            // meshData.GetUVs(0, UV.Reinterpret<Vector2>());
+
+            var tan1 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
+            var tan2 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
+
+            var triTangentJob = new TriTangentJob
+            {
+                Indices = indices,
+                Vertices = vertices,
+                UV = uv,
+                Tan1 = tan1,
+                Tan2 = tan2
+            };
+
+            var vertexTangentJob = new VertexTangentJob
+            {
+                AdjacencyList = adjacencyList,
+                AdjacencyMapper = adjacencyMap,
+                Normals = normals,
+                Tan1 = tan1,
+                Tan2 = tan2,
+                Tangents = outTangents
+            };
+
+
+            var triHandle = triTangentJob.ScheduleParallel
+                (indices.Length / 3, indices.Length / 3 / 64, default);
+
+            var vertHandle = vertexTangentJob.ScheduleParallel
+                (meshData.vertexCount, meshData.vertexCount / 64, triHandle);
+
+            vertHandle.Complete();
+            vertices.Dispose();
+            //normals.Dispose();
+            //uv.Dispose();
+            tan1.Dispose();
+            tan2.Dispose();
+        }
+
+
+        [BurstCompile]
+        private struct TriTangentJob : IJobFor
+        {
+            [ReadOnly] public NativeArray<int> Indices;
+            [ReadOnly] public NativeArray<float3> Vertices;
+            [ReadOnly] public NativeArray<float2> UV;
+            [WriteOnly] public NativeArray<float3> Tan1;
+            [WriteOnly] public NativeArray<float3> Tan2;
+
+            public void Execute(int triIndex)
+            {
+                int i1 = Indices[triIndex * 3];
+                int i2 = Indices[triIndex * 3 + 1];
+                int i3 = Indices[triIndex * 3 + 2];
+
+                float3 v1 = Vertices[i1];
+                float3 v2 = Vertices[i2];
+                float3 v3 = Vertices[i3];
+
+                float2 w1 = UV[i1];
+                float2 w2 = UV[i2];
+                float2 w3 = UV[i3];
+
+                float x1 = v2.x - v1.x;
+                float x2 = v3.x - v1.x;
+                float y1 = v2.y - v1.y;
+                float y2 = v3.y - v1.y;
+                float z1 = v2.z - v1.z;
+                float z2 = v3.z - v1.z;
+
+                float s1 = w2.x - w1.x;
+                float s2 = w3.x - w1.x;
+                float t1 = w2.y - w1.y;
+                float t2 = w3.y - w1.y;
+
+                float div = s1 * t2 - s2 * t1;
+                float r = div == 0.0f ? 0.0f : 1.0f / div;
+
+                var sDir = new float3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+                var tDir = new float3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+
+                Tan1[triIndex] = sDir;
+                Tan2[triIndex] = tDir;
+            }
+        }
+
+        [BurstCompile]
+        private struct VertexTangentJob : IJobFor
+        {
+            [ReadOnly] public NativeArray<int> AdjacencyList;
+            [ReadOnly] public NativeArray<int2> AdjacencyMapper;
+            [ReadOnly] public NativeArray<float3> Normals;
+            [ReadOnly] public NativeArray<float3> Tan1;
+            [ReadOnly] public NativeArray<float3> Tan2;
+            [WriteOnly] public NativeArray<float4> Tangents;
+
+            public void Execute(int vertexIndex)
+            {
+                int2 adjacencyOffsetCount = AdjacencyMapper[vertexIndex];
+                float3 t1Sum = 0;
+                float3 t2Sum = 0;
+
+                for (int i = 0; i < adjacencyOffsetCount.y; ++i)
+                {
+                    int triID = AdjacencyList[adjacencyOffsetCount.x + i];
+                    t1Sum += Tan1[triID];
+                    t2Sum += Tan2[triID];
+                }
+
+
+                Vector3 nTemp = Normals[vertexIndex];
+                Vector3 tTemp = t1Sum;
+
+                //TODO: Use math library and float3 here, and remove temp values
+                Vector3.OrthoNormalize(ref nTemp, ref tTemp);
+
+                float3 n = nTemp;
+                float3 t = tTemp;
+                var w = (math.dot(math.cross(n, t), t2Sum) < 0.0f) ? -1.0f : 1.0f;
+                Tangents[vertexIndex] = new float4(t.x, t.y, t.z, w);
             }
         }
     }

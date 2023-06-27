@@ -12,14 +12,14 @@ public class BenchMarkScript : MonoBehaviour
     public KeyCode SDBursted = KeyCode.F3;
     public KeyCode CachedLite = KeyCode.F4;
     public KeyCode CachedParallel = KeyCode.F5;
-    //public KeyCode Ica_Bursted_WriteToMaterial_Method = KeyCode.F6;
+    public KeyCode TangentOnly = KeyCode.F6;
+    public KeyCode BuiltInTangentOnly = KeyCode.F7;
 
     public Mesh BuiltInTargetMesh;
     public Mesh TB_TargetMesh;
     public RuntimeNormalSolver SDBurstedRuntimeNormalSolver;
     public RuntimeNormalSolver CachedLiteRuntimeNormalSolver;
     public RuntimeNormalSolver CachedParallelRuntimeNormalSolver;
-    //public RuntimeNormalSolver burstedToMaterial;
 
 
 
@@ -28,7 +28,7 @@ public class BenchMarkScript : MonoBehaviour
         if (Input.GetKey(UnityBuiltIn))
         {
             BuiltInTargetMesh.RecalculateNormals();
-            //BuiltInTargetMesh.RecalculateTangents();
+            
         }
         
         if (Input.GetKey(TB_NormalSolver))
@@ -53,6 +53,15 @@ public class BenchMarkScript : MonoBehaviour
         if (Input.GetKey(CachedParallel))
         {
             CachedParallelRuntimeNormalSolver.RecalculateNormals();
+        }
+        
+        if (Input.GetKey(TangentOnly))
+        {
+            CachedParallelRuntimeNormalSolver.TangentsOnlyTest();
+        }
+        if (Input.GetKey(BuiltInTangentOnly))
+        {
+            BuiltInTargetMesh.RecalculateTangents();
         }
         
 

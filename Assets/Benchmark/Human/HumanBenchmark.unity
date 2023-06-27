@@ -237,7 +237,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CalculateMethod: 2
+  CalculateMethod: 1
   NormalOutputTarget: 1
   SmoothingAngle: 120
   RecalculateOnStart: 0
@@ -591,6 +591,7 @@ MonoBehaviour:
   SDBursted: 284
   CachedLite: 285
   CachedParallel: 286
+  TangentOnly: 287
   BuiltInTargetMesh: {fileID: -6750983737991033809, guid: f571c6c88e476574986ad0537cbbfbc1, type: 3}
   TB_TargetMesh: {fileID: 0}
   SDBurstedRuntimeNormalSolver: {fileID: 0}
