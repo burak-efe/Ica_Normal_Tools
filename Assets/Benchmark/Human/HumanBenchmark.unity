@@ -242,7 +242,7 @@ MonoBehaviour:
   SmoothingAngle: 120
   RecalculateOnStart: 0
   CalculateBlendShapes: 0
-  _dataCache: {fileID: 11400000, guid: e9d015d0c3343464a82391cc98074f40, type: 2}
+  _dataCache: {fileID: 0}
   ModelPrefab: {fileID: 0}
 --- !u!1 &645202379
 GameObject:
@@ -592,8 +592,9 @@ MonoBehaviour:
   CachedLite: 285
   CachedParallel: 286
   TangentOnly: 287
+  BuiltInTangentOnly: 288
   BuiltInTargetMesh: {fileID: -6750983737991033809, guid: f571c6c88e476574986ad0537cbbfbc1, type: 3}
-  TB_TargetMesh: {fileID: 0}
+  TB_TargetMesh: {fileID: -6750983737991033809, guid: f571c6c88e476574986ad0537cbbfbc1, type: 3}
   SDBurstedRuntimeNormalSolver: {fileID: 0}
   CachedLiteRuntimeNormalSolver: {fileID: 0}
   CachedParallelRuntimeNormalSolver: {fileID: 586909880}

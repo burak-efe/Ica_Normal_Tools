@@ -27,19 +27,19 @@ namespace IcaNormal
         {
             var pTempAllocate = new ProfilerMarker("TempAllocate");
             pTempAllocate.Begin();
-            
-            var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
-            
-            pTempAllocate.End();
-            
-            
-            var pTempSubAllocate = new ProfilerMarker("pTempSubAllocate");
-            pTempSubAllocate.Begin();
 
-             for (int i = 0; i < vertices.Length; i++)
-                 tempAdjData.Add(new NativeList<int>(6, Allocator.Temp));
- 
-            pTempSubAllocate.End();
+            var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
+
+            var pTempSubAllocate = new ProfilerMarker("pTempSubAllocate");
+
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                pTempSubAllocate.Begin();
+                tempAdjData.Add(new NativeList<int>(6, Allocator.Temp));
+                pTempSubAllocate.End();
+            }
+
+            pTempAllocate.End();
 
 
             var p1 = new ProfilerMarker("Map");
@@ -51,9 +51,9 @@ namespace IcaNormal
             {
                 var triIndex = indicesIndex / 3;
                 //for three connected vertex of triangle
-                for (int j = 0; j < 3; j++)
+                for (int v = 0; v < 3; v++)
                 {
-                    var subVertexOfTriangle = indices[indicesIndex + j];
+                    var subVertexOfTriangle = indices[indicesIndex + v];
 
                     foreach (int vertexIndex in posGraph[vertices[subVertexOfTriangle]])
                     {
@@ -68,15 +68,12 @@ namespace IcaNormal
 
             var pOut = new ProfilerMarker("AllocateOut");
             pOut.Begin();
-
             outAdjacencyList = new NativeArray<int>(unrolledListLength, allocator);
             outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator);
             pOut.End();
 
-
             var p2 = new ProfilerMarker("Unroll");
             p2.Begin();
-
             var tempList = new NativeList<int>(unrolledListLength, Allocator.Temp);
             int currentStartIndex = 0;
             for (int i = 0; i < vertices.Length; i++)
@@ -86,11 +83,10 @@ namespace IcaNormal
                 outAdjacencyMapper[i] = new int2(currentStartIndex, size);
                 currentStartIndex += size;
             }
-            outAdjacencyList.CopyFrom(tempList.AsArray());
 
+            outAdjacencyList.CopyFrom(tempList.AsArray());
             p2.End();
         }
-
 
 
         [BurstCompile]
@@ -101,7 +97,7 @@ namespace IcaNormal
                 target.Add(new NativeList<int>());
             }
 
-            
+
             var job = new AllocateNestedJob
             {
                 Target = target
