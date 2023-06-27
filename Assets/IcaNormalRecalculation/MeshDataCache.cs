@@ -46,7 +46,7 @@ namespace IcaNormal
 
             Profiler.BeginSample("GetPosGraph");
             var posGraph = new UnsafeHashMap<float3, NativeList<int>>();
-            VertexPositionMapper.GetVertexPosGraph(ref vertices, ref posGraph, Allocator.Temp);
+            VertexPositionMapper.GetPosVertexIndicesDict(in vertices, ref posGraph, Allocator.Temp);
             Profiler.EndSample();
 
             Profiler.BeginSample("GetDuplicatesGraph");

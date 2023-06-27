@@ -9,27 +9,27 @@ namespace IcaNormal
     [BurstCompile]
     public static class VertexPositionMapper
     {
+        /// <summary>
+        /// Get a HashMap where keys are position and values a list of indices of vertices that locate that key. If Value List only have one member that means that vertex have not a duplicate. 
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="posVertexIndicesPair"></param>
+        /// <param name="allocator"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
-        public static void GetVertexPosGraph(ref NativeArray<float3> vertices, ref UnsafeHashMap<float3, NativeList<int>> graph, Allocator allocator)
+        public static void GetPosVertexIndicesDict(in NativeArray<float3> vertices, ref UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair, Allocator allocator)
         {
-             graph = new UnsafeHashMap<float3, NativeList<int>>(vertices.Length, allocator);
+            posVertexIndicesPair = new UnsafeHashMap<float3, NativeList<int>>(vertices.Length, allocator);
 
             for (int vertexIndex = 0; vertexIndex < vertices.Length; vertexIndex++)
             {
-                NativeList<int> entryList;
-
-                if (!graph.TryGetValue(vertices[vertexIndex], out entryList))
+                if (!posVertexIndicesPair.TryGetValue(vertices[vertexIndex], out var entryList))
                 {
                     entryList = new NativeList<int>(allocator);
-                    graph.Add(vertices[vertexIndex], entryList);
+                    posVertexIndicesPair.Add(vertices[vertexIndex], entryList);
                 }
-
                 entryList.Add(vertexIndex);
             }
-
-            //outGraph
-            //return graph;
         }
     }
 }
