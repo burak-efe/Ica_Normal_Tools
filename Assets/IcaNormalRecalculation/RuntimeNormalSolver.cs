@@ -30,6 +30,7 @@ namespace IcaNormal
         public float SmoothingAngle = 120f;
 
         public bool RecalculateOnStart;
+        public bool RecalculateTangents;
         public bool CalculateBlendShapes;
 
         [SerializeField]
@@ -44,15 +45,16 @@ namespace IcaNormal
         private Mesh _tempMesh;
         private GameObject _tempObj;
         private SkinnedMeshRenderer _tempSmr;
+
         private NativeArray<int> _nativeAdjacencyList;
         private NativeArray<int2> _nativeAdjacencyMap;
         private NativeArray<int> _indices;
         private NativeArray<float3> _vertices;
-        private NativeArray<float2> _uv;
         private NativeArray<float3> _normals;
         private NativeArray<float4> _tangents;
-        private NativeArray<Vector3> _normalsAsVector;
-        private NativeArray<Vector4> _tangentsAsVector;
+
+        private NativeArray<float2> _uvs;
+
         private Mesh.MeshDataArray _meshDataArray;
         private Mesh.MeshData _mainMeshData;
 
@@ -80,7 +82,6 @@ namespace IcaNormal
                 for (int i = 0; i < _renderer.materials.Length; i++)
                 {
                     _renderer.materials[i] = new Material(_renderer.materials[i]);
-
                     _renderer.materials[i].SetBuffer("normalsOutBuffer", _normalsOutBuffer);
                     _renderer.materials[i].SetBuffer("tangentsOutBuffer", _tangentsOutBuffer);
                     _renderer.materials[i].SetFloat("_Initialized", 1);
@@ -118,17 +119,15 @@ namespace IcaNormal
         private void InitNativeContainers()
         {
             _tempMesh = new Mesh();
+            _meshDataArray = Mesh.AcquireReadOnlyMeshData(_mesh);
+            _mainMeshData = _meshDataArray[0];
             _vertices = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
             _normals = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
             _tangents = new NativeArray<float4>(_mesh.vertexCount, Allocator.Persistent);
-            _normalsAsVector = _normals.Reinterpret<Vector3>();
-            _tangentsAsVector = _tangents.Reinterpret<Vector4>();
-            _meshDataArray = Mesh.AcquireReadOnlyMeshData(_mesh);
-            _mainMeshData = _meshDataArray[0];
-            _mainMeshData.GetNormals(_normalsAsVector);
-            _mainMeshData.GetTangents(_tangentsAsVector);
-            _uv = new NativeArray<float2>(_mesh.vertexCount, Allocator.Persistent);
-            _mainMeshData.GetUVs(0, _uv.Reinterpret<Vector2>());
+            _uvs = new NativeArray<float2>(_mesh.vertexCount, Allocator.Persistent);
+            _mainMeshData.GetNormals(_normals.Reinterpret<Vector3>());
+            _mainMeshData.GetTangents(_tangents.Reinterpret<Vector4>());
+            _mainMeshData.GetUVs(0, _uvs.Reinterpret<Vector2>());
 
             if (CalculateMethod == NormalRecalculateMethodEnum.CachedParallel)
             {
@@ -160,7 +159,7 @@ namespace IcaNormal
             _normals.Dispose();
             _tangents.Dispose();
             _meshDataArray.Dispose();
-            _uv.Dispose();
+            _uvs.Dispose();
 
             if (CalculateMethod == NormalRecalculateMethodEnum.CachedParallel)
             {
@@ -184,7 +183,7 @@ namespace IcaNormal
             Profiler.BeginSample("CalculateCacheData");
 
             Profiler.BeginSample("GetIndices");
-            GetIndicesUtil.GetAllIndices(in _mainMeshData, out _indices, Allocator.Persistent);
+            _mainMeshData.GetAllIndices(out _indices, Allocator.Persistent);
             Profiler.EndSample();
 
             Profiler.BeginSample("GetVertices");
@@ -224,25 +223,16 @@ namespace IcaNormal
 
         private void RecalculateCachedParallel()
         {
-            if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
-            {
-                Profiler.BeginSample("GetSMRData");
-                SmrUtils.CopyBlendShapes(smr, _tempSmr);
-                _tempSmr.BakeMesh(_tempMesh);
-                var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
-                UpdateNativeVertices(mda[0]);
-                CachedParallelMethod.CalculateNormalData( _vertices, _indices, ref _normals, _nativeAdjacencyList, _nativeAdjacencyMap);
-
-                mda.Dispose();
-                Profiler.EndSample();
-            }
-            else
-            {
-                UpdateNativeVertices(_mainMeshData);
-                CachedParallelMethod.CalculateNormalData(_vertices, _indices, ref _normals, _nativeAdjacencyList, _nativeAdjacencyMap);
-            }
-
+            UpdateNativeVertices();
+            CachedParallelMethod.CalculateNormalData(_vertices, _indices, ref _normals, _nativeAdjacencyList, _nativeAdjacencyMap);
             SetNormals(_normals);
+            
+            if (RecalculateTangents)
+            {
+                CachedParallelMethod.CalculateTangentData(_vertices, _normals, _indices, _uvs, _nativeAdjacencyList, _nativeAdjacencyMap, ref _tangents);
+                
+                SetTangents(_tangents);
+            }
         }
 
         private void SetNormals(NativeArray<float3> normals)
@@ -279,12 +269,30 @@ namespace IcaNormal
 
         public void TangentsOnlyTest()
         {
-            UpdateNativeVertices(_mainMeshData);
-            CachedParallelMethod.CalculateTangentData(_mainMeshData, _vertices, _normals, _indices, _uv, _nativeAdjacencyList, _nativeAdjacencyMap, ref _tangents);
+            UpdateNativeVerticesFromMeshData(_mainMeshData);
+            CachedParallelMethod.CalculateTangentData(_vertices, _normals, _indices, _uvs, _nativeAdjacencyList, _nativeAdjacencyMap, ref _tangents);
             SetTangents(_tangents);
         }
 
-        private void UpdateNativeVertices(Mesh.MeshData data)
+        private void UpdateNativeVertices()
+        {
+            if (CalculateBlendShapes && _renderer is SkinnedMeshRenderer smr)
+            {
+                Profiler.BeginSample("GetSMRData");
+                SmrUtils.CopyBlendShapes(smr, _tempSmr);
+                _tempSmr.BakeMesh(_tempMesh);
+                var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
+                UpdateNativeVerticesFromMeshData(mda[0]);
+                mda.Dispose();
+                Profiler.EndSample();
+            }
+            else
+            {
+                UpdateNativeVerticesFromMeshData(_mainMeshData);
+            }
+        }
+
+        private void UpdateNativeVerticesFromMeshData(Mesh.MeshData data)
         {
             data.GetVertices(_vertices.Reinterpret<Vector3>());
         }

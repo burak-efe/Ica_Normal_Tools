@@ -14,21 +14,12 @@ using UnityEngine;
 public class ProtoManager : MonoBehaviour
 {
     public List<Mesh> Meshes;
-    // public List<List<int>> nestedList = new List<List<int>>();
+    public SkinnedMeshRenderer smr;
 
     private void Start()
     {
-        // var mesh = Meshes[0];
-        // var v = new NativeArray<Vector3>(mesh.vertices, Allocator.TempJob);
-        // var n = new NativeArray<float3>(mesh.vertexCount, Allocator.TempJob);
-        // var i = new NativeArray<int>(mesh.triangles, Allocator.TempJob);
-        // // NewMethod();
-        // CachedParallelMethod.CalculateNormalDataUncached(v.Reinterpret<float3>(), i, ref n);
-        // mesh.SetNormals(n);
-        // v.Dispose();
-        // n.Dispose();
-        // i.Dispose();
-        NewMethod();
+
+        //NewMethod();
     }
 
     private void NewMethod()
@@ -44,10 +35,9 @@ public class ProtoManager : MonoBehaviour
         }
 
         UnRoller(vList, out var vMap, out var vMerged, Allocator.TempJob);
-
-
+        
         var nMerged = new NativeArray<float3>(vMerged.Length, Allocator.TempJob);
-
+        
         var iList = new UnsafeList<NativeArray<int>>(2, Allocator.Temp);
         for (int meshIndex = 0; meshIndex < mda.Length; meshIndex++)
         {
@@ -57,7 +47,6 @@ public class ProtoManager : MonoBehaviour
                 Debug.Log("added to every index " + vMap[meshIndex]);
                 indices[index] += vMap[meshIndex];
             }
-
             iList.Add(indices);
         }
 
@@ -70,20 +59,11 @@ public class ProtoManager : MonoBehaviour
         for (int i = 0; i < mda.Length; i++)
         {
             var sub = nMerged.GetSubArray(vMap[i], vMap[i + 1] - vMap[i]);
-            //Debug.Log(sub.Length);
+
             Meshes[i].SetNormals(sub);
         }
 
-        // foreach (var l in vList)
-        // {
-        //     l.Dispose();
-        // }
-        // vList.Dispose();
-        // foreach (var l in iList)
-        // {
-        //     l.Dispose();
-        // }
-        // iList.Dispose();
+
         vMap.Dispose();
         iMap.Dispose();
         vMerged.Dispose();

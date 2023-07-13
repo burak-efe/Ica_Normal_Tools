@@ -138,9 +138,9 @@ namespace IcaNormal
         [BurstCompile]
         public static void CalculateTangentData
         (
-            in Mesh.MeshData meshData,
-            in NativeArray<float3> normals,
+
             in NativeArray<float3> vertices,
+            in NativeArray<float3> normals,
             in NativeArray<int> indices,
             in NativeArray<float2> uv,
             in NativeArray<int> adjacencyList,
@@ -148,6 +148,8 @@ namespace IcaNormal
             ref NativeArray<float4> outTangents
         )
         {
+            var p = new ProfilerMarker("pCachedParallelTangent");
+            p.Begin();
             //var vertices = new NativeArray<float3>(meshData.vertexCount, Allocator.TempJob);
             //meshData.GetVertices(vertices.Reinterpret<Vector3>());
             var tan1 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
@@ -177,12 +179,13 @@ namespace IcaNormal
                 (indices.Length / 3, indices.Length / 3 / 64, default);
 
             var vertHandle = vertexTangentJob.ScheduleParallel
-                (meshData.vertexCount, meshData.vertexCount / 64, triHandle);
+                (vertices.Length, vertices.Length / 64, triHandle);
 
             vertHandle.Complete();
             //vertices.Dispose();
             tan1.Dispose();
             tan2.Dispose();
+            p.End();
         }
 
 

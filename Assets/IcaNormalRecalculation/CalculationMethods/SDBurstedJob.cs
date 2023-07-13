@@ -104,6 +104,7 @@ namespace IcaNormal
         {
             var vertexCount = Data.vertexCount;
             float cosineThreshold = math.cos(Angle * 0.017453292f);
+            
             var vertices = new NativeArray<float3>(vertexCount, Allocator.Temp);
             Data.GetVertices(vertices.Reinterpret<Vector3>());
 
