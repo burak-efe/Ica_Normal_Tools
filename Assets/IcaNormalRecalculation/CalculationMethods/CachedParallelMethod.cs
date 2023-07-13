@@ -11,7 +11,7 @@ namespace IcaNormal
     [BurstCompile]
     public static class CachedParallelMethod
     {
-        [BurstCompile]
+        //[BurstCompile]
         public static void CalculateNormalDataUncached
         (
             in NativeArray<float3> vertices,
@@ -23,6 +23,14 @@ namespace IcaNormal
             //DuplicateVerticesMapper.GetDuplicateVerticesMap(posMap, out var duplicateMap, Allocator.TempJob);
             AdjacencyMapper.CalculateAdjacencyData(vertices,indices,posMap,out var adjacencyList,out var adjacencyMapper,Allocator.TempJob);
             CalculateNormalData(vertices,indices,ref outNormals,adjacencyList,adjacencyMapper);
+
+            foreach (var kvPair in posMap)
+            {
+                kvPair.Value.Dispose();
+            }
+            posMap.Dispose();
+            adjacencyList.Dispose();
+            adjacencyMapper.Dispose();
         }
 
         [BurstCompile]

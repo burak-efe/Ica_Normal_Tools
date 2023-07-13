@@ -665,7 +665,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CalculateMethod: 2
+  CalculateMethod: 1
   NormalOutputTarget: 1
   SmoothingAngle: 120
   RecalculateOnStart: 1

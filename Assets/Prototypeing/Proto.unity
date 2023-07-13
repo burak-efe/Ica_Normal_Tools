@@ -167,11 +167,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bf843e44c9b2f948809482a8722b4cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mesh1: {fileID: 0}
-  mesh2: {fileID: 0}
-  array: 01000000010000000100000001000000010000000100000001000000010000000100000001000000
-  array2: 02000000020000000200000002000000020000000200000002000000020000000200000002000000
-  array3: 03000000030000000300000003000000030000000300000003000000030000000300000003000000
+  Meshes:
+  - {fileID: 6784873868971000533, guid: f4cd85f2f92ebc144a661f87163b43b4, type: 3}
+  - {fileID: -8575278983011329057, guid: f4cd85f2f92ebc144a661f87163b43b4, type: 3}
 --- !u!1001 &880565286
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -230,7 +228,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: f4cd85f2f92ebc144a661f87163b43b4, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
