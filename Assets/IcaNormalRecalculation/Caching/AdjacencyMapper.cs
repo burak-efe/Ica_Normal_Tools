@@ -21,8 +21,12 @@ namespace IcaNormal
         [BurstCompile]
         public static void CalculateAdjacencyData
         (
-            in NativeArray<float3> vertices, in NativeArray<int> indices, in UnsafeHashMap<float3, NativeList<int>> posGraph,
-            out NativeArray<int> outAdjacencyList, out NativeArray<int2> outAdjacencyMapper, Allocator allocator
+            in NativeArray<float3> vertices,
+            in NativeArray<int> indices,
+            in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
+            out NativeArray<int> outAdjacencyList,
+            out NativeArray<int2> outAdjacencyMapper,
+            Allocator allocator
         )
         {
             var pTempAllocate = new ProfilerMarker("TempAllocate");
@@ -55,7 +59,7 @@ namespace IcaNormal
                 {
                     var subVertexOfTriangle = indices[indicesIndex + v];
 
-                    foreach (int vertexIndex in posGraph[vertices[subVertexOfTriangle]])
+                    foreach (int vertexIndex in vertexPosHashMap[vertices[subVertexOfTriangle]])
                     {
                         //if (!tempAdjData[vertexIndex].Contains(triIndex))
                         tempAdjData[vertexIndex].Add(triIndex);
@@ -68,12 +72,14 @@ namespace IcaNormal
 
             var pOut = new ProfilerMarker("AllocateOut");
             pOut.Begin();
+
             outAdjacencyList = new NativeArray<int>(unrolledListLength, allocator);
             outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator);
             pOut.End();
 
             var p2 = new ProfilerMarker("Unroll");
             p2.Begin();
+
             var tempList = new NativeList<int>(unrolledListLength, Allocator.Temp);
             int currentStartIndex = 0;
             for (int i = 0; i < vertices.Length; i++)
@@ -86,43 +92,6 @@ namespace IcaNormal
 
             outAdjacencyList.CopyFrom(tempList.AsArray());
             p2.End();
-        }
-
-
-        [BurstCompile]
-        private static void AllocateNested(ref UnsafeList<NativeList<int>> target)
-        {
-            for (int i = 0; i < target.Capacity; i++)
-            {
-                target.Add(new NativeList<int>());
-            }
-
-
-            var job = new AllocateNestedJob
-            {
-                Target = target
-            };
-
-            var handle = job.ScheduleParallel(target.Length, target.Length / 32, default);
-            handle.Complete();
-        }
-
-        [BurstCompile]
-        private struct AllocateNestedJob : IJobFor
-        {
-            public UnsafeList<NativeList<int>> Target;
-
-            public void Execute(int index)
-            {
-                Target[index] = new NativeList<int>(6, Allocator.Temp);
-            }
-        }
-
-        private struct AdjacencyDataJob : IJobFor
-        {
-            public void Execute(int triangleIndex)
-            {
-            }
         }
     }
 }

@@ -4,6 +4,7 @@ using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 using UnityEngine;
 using IcaNormal;
 using UnityEngine.Serialization;
+
 [DefaultExecutionOrder(-9999)]
 public class BenchMarkScript : MonoBehaviour
 {
@@ -22,48 +23,36 @@ public class BenchMarkScript : MonoBehaviour
     public RuntimeNormalSolver CachedParallelRuntimeNormalSolver;
 
 
-
     void Update()
     {
         if (Input.GetKey(UnityBuiltIn))
         {
             BuiltInTargetMesh.RecalculateNormals();
-            
         }
-        
-        if (Input.GetKey(TB_NormalSolver))
+        else if (Input.GetKey(TB_NormalSolver))
         {
-            TB.TBNormalSolver.RecalculateNormals(TB_TargetMesh,120f);
+            TB.TBNormalSolver.RecalculateNormals(TB_TargetMesh, 120f);
             TB.TBNormalSolver.RecalculateTangents(TB_TargetMesh);
         }
-        
-        
-        
-        if (Input.GetKey(SDBursted))
+        else if (Input.GetKey(SDBursted))
         {
             SDBurstedRuntimeNormalSolver.RecalculateNormals();
         }
-        
-        if (Input.GetKey(CachedLite))
+        else if (Input.GetKey(CachedLite))
         {
             CachedLiteRuntimeNormalSolver.RecalculateNormals();
-            
         }
-        
-        if (Input.GetKey(CachedParallel))
+        else if (Input.GetKey(CachedParallel))
         {
             CachedParallelRuntimeNormalSolver.RecalculateNormals();
         }
-        
-        if (Input.GetKey(TangentOnly))
+        else if (Input.GetKey(TangentOnly))
         {
             CachedParallelRuntimeNormalSolver.TangentsOnlyTest();
         }
-        if (Input.GetKey(BuiltInTangentOnly))
+        else if (Input.GetKey(BuiltInTangentOnly))
         {
             BuiltInTargetMesh.RecalculateTangents();
         }
-        
-
     }
 }

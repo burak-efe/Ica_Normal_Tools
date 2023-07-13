@@ -47,13 +47,13 @@ namespace IcaNormal
         private NativeArray<int> _nativeAdjacencyList;
         private NativeArray<int2> _nativeAdjacencyMap;
         private NativeArray<int> _indices;
+        private NativeArray<float3> _vertices;
         private NativeArray<float2> _uv;
         private NativeArray<float3> _normals;
         private NativeArray<float4> _tangents;
         private NativeArray<Vector3> _normalsAsVector;
         private NativeArray<Vector4> _tangentsAsVector;
         private Mesh.MeshDataArray _meshDataArray;
-
         private Mesh.MeshData _mainMeshData;
 
         //compute buffer for passing data into shaders
@@ -118,6 +118,7 @@ namespace IcaNormal
         private void InitNativeContainers()
         {
             _tempMesh = new Mesh();
+            _vertices = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
             _normals = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
             _tangents = new NativeArray<float4>(_mesh.vertexCount, Allocator.Persistent);
             _normalsAsVector = _normals.Reinterpret<Vector3>();
@@ -127,7 +128,7 @@ namespace IcaNormal
             _mainMeshData.GetNormals(_normalsAsVector);
             _mainMeshData.GetTangents(_tangentsAsVector);
             _uv = new NativeArray<float2>(_mesh.vertexCount, Allocator.Persistent);
-            _mainMeshData.GetUVs(0,_uv.Reinterpret<Vector2>());
+            _mainMeshData.GetUVs(0, _uv.Reinterpret<Vector2>());
 
             if (CalculateMethod == NormalRecalculateMethodEnum.CachedParallel)
             {
@@ -155,6 +156,7 @@ namespace IcaNormal
                 _tangentsOutBuffer.Release();
             }
 
+            _vertices.Dispose();
             _normals.Dispose();
             _tangents.Dispose();
             _meshDataArray.Dispose();
@@ -182,10 +184,8 @@ namespace IcaNormal
             Profiler.BeginSample("CalculateCacheData");
 
             Profiler.BeginSample("GetIndices");
-            GetIndicesUtil.GetIndices(in _mainMeshData, out _indices, Allocator.Persistent);
+            GetIndicesUtil.GetAllIndices(in _mainMeshData, out _indices, Allocator.Persistent);
             Profiler.EndSample();
-            
-            
 
             Profiler.BeginSample("GetVertices");
             var tempVertices = new NativeArray<float3>(_mainMeshData.vertexCount, Allocator.Temp);
@@ -230,13 +230,16 @@ namespace IcaNormal
                 SmrUtils.CopyBlendShapes(smr, _tempSmr);
                 _tempSmr.BakeMesh(_tempMesh);
                 var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
-                CachedParallelMethod.CalculateNormalData(mda[0], _indices, ref _normals, ref _tangents, _nativeAdjacencyList, _nativeAdjacencyMap);
+                UpdateNativeVertices(mda[0]);
+                CachedParallelMethod.CalculateNormalData( _vertices, _indices, ref _normals, _nativeAdjacencyList, _nativeAdjacencyMap);
+
                 mda.Dispose();
                 Profiler.EndSample();
             }
             else
             {
-                CachedParallelMethod.CalculateNormalData(_mainMeshData, _indices, ref _normals, ref _tangents, _nativeAdjacencyList, _nativeAdjacencyMap);
+                UpdateNativeVertices(_mainMeshData);
+                CachedParallelMethod.CalculateNormalData(_vertices, _indices, ref _normals, _nativeAdjacencyList, _nativeAdjacencyMap);
             }
 
             SetNormals(_normals);
@@ -257,8 +260,8 @@ namespace IcaNormal
                 Profiler.EndSample();
             }
         }
-        
-        private void SetTangents( NativeArray<float4> tangents)
+
+        private void SetTangents(NativeArray<float4> tangents)
         {
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -276,8 +279,14 @@ namespace IcaNormal
 
         public void TangentsOnlyTest()
         {
-            CachedParallelMethod.CalculateTangentData(_mainMeshData,_normals, _indices,_uv, _nativeAdjacencyList, _nativeAdjacencyMap, ref _tangents);
+            UpdateNativeVertices(_mainMeshData);
+            CachedParallelMethod.CalculateTangentData(_mainMeshData, _vertices, _normals, _indices, _uv, _nativeAdjacencyList, _nativeAdjacencyMap, ref _tangents);
             SetTangents(_tangents);
+        }
+
+        private void UpdateNativeVertices(Mesh.MeshData data)
+        {
+            data.GetVertices(_vertices.Reinterpret<Vector3>());
         }
     }
 }

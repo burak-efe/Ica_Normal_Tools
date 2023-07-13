@@ -38,7 +38,7 @@ namespace IcaNormal
             Profiler.EndSample();
 
             Profiler.BeginSample("GetIndices");
-            GetIndicesUtil.GetIndices(in data, out var indices, Allocator.Temp);
+            GetIndicesUtil.GetAllIndices(in data, out var indices, Allocator.Temp);
             //Indices = indices.Length;
             Profiler.EndSample();
 

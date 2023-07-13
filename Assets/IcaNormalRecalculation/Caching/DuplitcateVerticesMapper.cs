@@ -13,11 +13,14 @@ namespace IcaNormal
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
-        public static void GetDuplicateVerticesMap(in UnsafeHashMap<float3, NativeList<int>> posGraph, out UnsafeList<NativeArray<int>> outMap,  Allocator allocator)
+        
+        public static void GetDuplicateVerticesMap
+        (in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap, 
+            out UnsafeList<NativeArray<int>> outMap,  Allocator allocator)
         {
-            outMap = new UnsafeList<NativeArray<int>>(10, allocator);
-
-            foreach (var kvp in posGraph)
+            outMap = new UnsafeList<NativeArray<int>>(16, allocator);
+            
+            foreach (var kvp in vertexPosHashMap)
             {
                 if (kvp.Value.Length > 1)
                 {
@@ -25,7 +28,6 @@ namespace IcaNormal
                 }
             }
 
-            //Debug.Log("Number of Duplicate Vertices Cached: " + outMap.Length);
         }
     }
 }

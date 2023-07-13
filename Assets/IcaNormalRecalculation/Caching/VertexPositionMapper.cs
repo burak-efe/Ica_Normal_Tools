@@ -12,7 +12,7 @@ namespace IcaNormal
     public static class VertexPositionMapper
     {
         /// <summary>
-        /// Get a HashMap where keys are position and values a list of indices of vertices that locate that key. If Value List only have one member that means that vertex have not a duplicate. 
+        /// Get a HashMap where keys are position and values a list of indices of vertices that locate on that position. If Value List only have one member that means that vertex have not a duplicate. 
         /// </summary>
         /// <param name="vertices"></param>
         /// <param name="posVertexIndicesPair"></param>

@@ -144,7 +144,7 @@ MonoBehaviour:
   NormalOutputTarget: 1
   SmoothingAngle: 120
   RecalculateOnStart: 1
-  CalculateBlendShapes: 1
+  CalculateBlendShapes: 0
   _dataCache: {fileID: 11400000, guid: ce6bf3fc1adabfe47a46822bb6ff020f, type: 2}
   ModelPrefab: {fileID: 0}
 --- !u!1001 &703273129
@@ -573,7 +573,7 @@ MonoBehaviour:
   NormalOutputTarget: 1
   SmoothingAngle: 120
   RecalculateOnStart: 1
-  CalculateBlendShapes: 1
+  CalculateBlendShapes: 0
   _dataCache: {fileID: 11400000, guid: ce6bf3fc1adabfe47a46822bb6ff020f, type: 2}
   ModelPrefab: {fileID: 0}
 --- !u!1001 &1695515889
@@ -669,7 +669,7 @@ MonoBehaviour:
   NormalOutputTarget: 1
   SmoothingAngle: 120
   RecalculateOnStart: 1
-  CalculateBlendShapes: 1
+  CalculateBlendShapes: 0
   _dataCache: {fileID: 11400000, guid: ce6bf3fc1adabfe47a46822bb6ff020f, type: 2}
   ModelPrefab: {fileID: 0}
 --- !u!1 &1926853244
@@ -706,6 +706,8 @@ MonoBehaviour:
   SDBursted: 284
   CachedLite: 285
   CachedParallel: 286
+  TangentOnly: 287
+  BuiltInTangentOnly: 288
   BuiltInTargetMesh: {fileID: 4711208715938537054, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
   TB_TargetMesh: {fileID: 4711208715938537054, guid: 2bf5f581b50f3bc4385443c445bd272e, type: 3}
   SDBurstedRuntimeNormalSolver: {fileID: 1428768214}
