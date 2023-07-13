@@ -16,83 +16,63 @@ public class ProtoManager : MonoBehaviour
     public List<Mesh> Meshes;
     public SkinnedMeshRenderer smr;
 
+
     private void Start()
     {
-
         //NewMethod();
     }
 
+
     private void NewMethod()
     {
+
+        // var vertexList = new UnsafeList<NativeArray<float3>>(2, Allocator.Temp);
+        // for (int i = 0; i < mda.Length; i++)
+        // {
+        //     var v = new NativeArray<float3>(mda[i].vertexCount, Allocator.Temp);
+        //     mda[i].GetVertices(v.Reinterpret<Vector3>());
+        //     vertexList.Add(v);
+        // }
+        // NativeContainerUtils.UnRoller(vertexList, out var vMap, out var vMerged, Allocator.TempJob);
+        //
+        //
+        // var indexList = new UnsafeList<NativeArray<int>>(2, Allocator.Temp);
+        // for (int meshIndex = 0; meshIndex < mda.Length; meshIndex++)
+        // {
+        //     mda[meshIndex].GetAllIndices(out var indices, Allocator.Temp);
+        //     for (int index = 0; index < indices.Length; index++)
+        //     {
+        //         Debug.Log("added to every index " + vMap[meshIndex]);
+        //         indices[index] += vMap[meshIndex];
+        //     }
+        //     indexList.Add(indices);
+        // }
+        //
+        // NativeContainerUtils.UnRoller(indexList, ref _indicesMap, ref  _indicesMerged, Allocator.TempJob);
+        //
+        //
+        
         var mda = Mesh.AcquireReadOnlyMeshData(Meshes);
 
-        var vList = new UnsafeList<NativeArray<float3>>(2, Allocator.Temp);
-        for (int i = 0; i < mda.Length; i++)
-        {
-            var v = new NativeArray<float3>(mda[i].vertexCount, Allocator.Temp);
-            mda[i].GetVertices(v.Reinterpret<Vector3>());
-            vList.Add(v);
-        }
+        NativeContainerUtils.CreateMergedVertices(mda, out var mergedVertices, out var vMap, Allocator.TempJob);
+        NativeContainerUtils.CreateMergedIndices(mda, out var mergedIndices, out var iMap, Allocator.TempJob);
+        var mergedNormals = new NativeList<float3>(mergedVertices.Length, Allocator.TempJob);
+         CachedParallelMethod.CalculateNormalDataUncached(mergedVertices, mergedIndices, ref mergedNormals);
 
-        UnRoller(vList, out var vMap, out var vMerged, Allocator.TempJob);
-        
-        var nMerged = new NativeArray<float3>(vMerged.Length, Allocator.TempJob);
-        
-        var iList = new UnsafeList<NativeArray<int>>(2, Allocator.Temp);
-        for (int meshIndex = 0; meshIndex < mda.Length; meshIndex++)
-        {
-            mda[meshIndex].GetAllIndices(out var indices, Allocator.Temp);
-            for (int index = 0; index < indices.Length; index++)
-            {
-                Debug.Log("added to every index " + vMap[meshIndex]);
-                indices[index] += vMap[meshIndex];
-            }
-            iList.Add(indices);
-        }
-
-        UnRoller(iList, out var iMap, out var iMerged, Allocator.TempJob);
-
-        CachedParallelMethod.CalculateNormalDataUncached(vMerged.AsArray(), iMerged.AsArray(), ref nMerged);
-
-        
         // Apply
         for (int i = 0; i < mda.Length; i++)
         {
-            var sub = nMerged.GetSubArray(vMap[i], vMap[i + 1] - vMap[i]);
+            var sub = mergedNormals.AsArray().GetSubArray(vMap[i], vMap[i + 1] - vMap[i]);
 
             Meshes[i].SetNormals(sub);
         }
 
 
+        mergedNormals.Dispose();
+        mergedVertices.Dispose();
+        mergedIndices.Dispose();
         vMap.Dispose();
         iMap.Dispose();
-        vMerged.Dispose();
-        nMerged.Dispose();
-        iMerged.Dispose();
         mda.Dispose();
-    }
-
-
-    [BurstCompile]
-    private void UnRoller<T>(UnsafeList<NativeArray<T>> nestedData, out NativeArray<int> outMapper, out NativeList<T> outUnrolledData, Allocator allocator) where T : unmanaged
-    {
-        var size = 0;
-        for (int i = 0; i < nestedData.Length; i++)
-        {
-            size += nestedData[i].Length;
-        }
-
-        outUnrolledData = new NativeList<T>(size, allocator);
-        outMapper = new NativeArray<int>(nestedData.Length + 1, allocator);
-        var mapperIndex = 0;
-
-        for (int i = 0; i < nestedData.Length; i++)
-        {
-            outUnrolledData.AddRange(nestedData[i]);
-            outMapper[i] = mapperIndex;
-            mapperIndex += nestedData[i].Length;
-        }
-
-        outMapper[^1] = mapperIndex;
     }
 }

@@ -21,11 +21,11 @@ namespace IcaNormal
         [BurstCompile]
         public static void CalculateAdjacencyData
         (
-            in NativeArray<float3> vertices,
-            in NativeArray<int> indices,
+            in NativeList<float3> vertices,
+            in NativeList<int> indices,
             in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
-            out NativeArray<int> outAdjacencyList,
-            out NativeArray<int2> outAdjacencyMapper,
+            out NativeList<int> outAdjacencyList,
+            out NativeList<int2> outAdjacencyMapper,
             Allocator allocator
         )
         {
@@ -73,24 +73,25 @@ namespace IcaNormal
             var pOut = new ProfilerMarker("AllocateOut");
             pOut.Begin();
 
-            outAdjacencyList = new NativeArray<int>(unrolledListLength, allocator);
-            outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator);
+            outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
+            outAdjacencyMapper = new NativeList<int2>(vertices.Length, allocator);
             pOut.End();
 
             var p2 = new ProfilerMarker("Unroll");
             p2.Begin();
 
-            var tempList = new NativeList<int>(unrolledListLength, Allocator.Temp);
+            //var tempList = new NativeList<int>(unrolledListLength, Allocator.Temp);
             int currentStartIndex = 0;
             for (int i = 0; i < vertices.Length; i++)
             {
                 int size = tempAdjData[i].Length;
-                tempList.AddRange(tempAdjData[i].AsArray());
+                //tempList.AddRange(tempAdjData[i].AsArray());
+                outAdjacencyList.AddRange(tempAdjData[i].AsArray());
                 outAdjacencyMapper[i] = new int2(currentStartIndex, size);
                 currentStartIndex += size;
             }
 
-            outAdjacencyList.CopyFrom(tempList.AsArray());
+            //outAdjacencyList.CopyFrom(tempList.AsArray());
             p2.End();
         }
     }

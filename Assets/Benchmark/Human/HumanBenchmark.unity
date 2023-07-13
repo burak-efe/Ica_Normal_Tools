@@ -240,7 +240,8 @@ MonoBehaviour:
   CalculateMethod: 1
   NormalOutputTarget: 1
   SmoothingAngle: 120
-  RecalculateOnStart: 0
+  RecalculateOnStart: 1
+  RecalculateTangents: 1
   CalculateBlendShapes: 0
   _dataCache: {fileID: 0}
   ModelPrefab: {fileID: 0}

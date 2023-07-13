@@ -1,80 +1,126 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Profiling;
-using UnityEngine.Serialization;
+using UnityEngine.Rendering;
 
 namespace IcaNormal
 {
-    [PreferBinarySerialization]
-    [CreateAssetMenu(menuName = "Plugins/IcaNormalRecalculation/MeshDataCache", fileName = "IcaMeshDataCache")]
-    public class MeshDataCache : ScriptableObject
+    public class MeshDataCache : IDisposable
     {
-        public Mesh TargetMesh;
-        //[SerializeField, HideInInspector] public List<DuplicateVerticesList> SerializedDuplicatesData;
-        [FormerlySerializedAs("IndicesCount")] [SerializeField, HideInInspector] public int[] SerializedIndices;
-        [SerializeField, HideInInspector] public int[] SerializedAdjacencyList;
-        [SerializeField, HideInInspector] public int2[] SerializedAdjacencyMapper;
-#if UNITY_EDITOR
-        public string LastCacheDate = "Never";
-#endif
+        public NativeList<int> _nativeAdjacencyList;
+        public NativeList<int2> _nativeAdjacencyMap;
+        public NativeList<int> _indices;
+        public NativeList<float3> _vertices;
+        public NativeList<float3> _normals;
+        public NativeList<float4> _tangents;
+        public NativeList<float2> _uvs;
+        public Mesh.MeshData _mainMeshData;
 
+        private Mesh.MeshDataArray _mda;
 
-        [ContextMenu("CacheData")]
-        public void CacheData()
+        public MeshDataCache(List<Mesh> m, bool shouldCacheForTangents = true)
         {
-            Profiler.BeginSample("GetMDA");
-            var mda = Mesh.AcquireReadOnlyMeshData(TargetMesh);
-            var data = mda[0];
-            Profiler.EndSample();
+            _mda = Mesh.AcquireReadOnlyMeshData(m);
+            _mainMeshData = _mda[0];
+            CalculateCache();
             
-            Profiler.BeginSample("GetVertices");
-            var vertices = new NativeArray<float3>(data.vertexCount, Allocator.Temp);
-            data.GetVertices(vertices.Reinterpret<Vector3>());
-            Profiler.EndSample();
+        }
+        
+        public void CalculateCache()
+        {
+            
+            
 
-            Profiler.BeginSample("GetIndices");
-            GetIndicesUtil.GetAllIndices(in data, out var indices, Allocator.Temp);
-            //Indices = indices.Length;
-            Profiler.EndSample();
+            NativeContainerUtils.CreateMergedVertices(_mda, out  _vertices, out var vMap, Allocator.TempJob);
+            NativeContainerUtils.CreateMergedIndices(_mda, out  _indices, out var iMap, Allocator.TempJob);
+             _normals = new NativeList<float3>(_vertices.Length, Allocator.TempJob);
+            VertexPositionMapper.GetVertexPosHashMap( _vertices.AsArray(), out var tempPosGraph, Allocator.Temp);
+            AdjacencyMapper.CalculateAdjacencyData( _vertices,  _indices,  tempPosGraph, out _nativeAdjacencyList, out _nativeAdjacencyMap, Allocator.Persistent);
+            
+            
+            //CachedParallelMethod.CalculateNormalDataUncached(mergedVertices.AsArray(), mergedIndices.AsArray(), ref mergedNormals);
+
+            // Apply
+            // for (int i = 0; i < _mda.Length; i++)
+            // {
+            //     var sub = mergedNormals.GetSubArray(vMap[i], vMap[i + 1] - vMap[i]);
+            //
+            //     Meshes[i].SetNormals(sub);
+            // }
+            //
+            
+            //_tempMesh = new Mesh();
+            //_meshDataArray = Mesh.AcquireReadOnlyMeshData(_mesh);
+            // _mainMeshData = _meshDataArray[0];
+            // _vertices = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
+            // _normals = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
+            // _tangents = new NativeArray<float4>(_mesh.vertexCount, Allocator.Persistent);
+            // _uvs = new NativeArray<float2>(_mesh.vertexCount, Allocator.Persistent);
+            // _mainMeshData.GetNormals(_normals.Reinterpret<Vector3>());
+            // _mainMeshData.GetTangents(_tangents.Reinterpret<Vector4>());
+            // _mainMeshData.GetUVs(0, _uvs.Reinterpret<Vector2>());
+            //
+            //_mainMeshData.GetAllIndices(out _indices, Allocator.Persistent);
+            //var tempVertices = new NativeArray<float3>(_mainMeshData.vertexCount, Allocator.Temp);
+            //_mainMeshData.GetVertices(tempVertices.Reinterpret<Vector3>());
+
+        }
 
 
-            Profiler.BeginSample("GetPosGraph");
-            VertexPositionMapper.GetVertexPosHashMap(in vertices, out var posMap, Allocator.Temp);
-            Profiler.EndSample();
+        public void Dispose()
+        {
+            _mda.Dispose();
+            _nativeAdjacencyList.Dispose();
+            _nativeAdjacencyMap.Dispose();
+            _indices.Dispose();
+            _vertices.Dispose();
+            _normals.Dispose();
+            _tangents.Dispose();
+            _uvs.Dispose();
+        }
 
-            Profiler.BeginSample("GetDuplicatesGraph");
-            //DuplicateVerticesMapper.GetDuplicateVerticesMap(in posGraph, out var nativeVertMap, Allocator.Temp);
-            Profiler.EndSample();
 
+        public static Mesh MakeReadableMeshCopy(Mesh nonReadableMesh)
+        {
+            Mesh meshCopy = new Mesh();
+            meshCopy.indexFormat = nonReadableMesh.indexFormat;
 
-            Profiler.BeginSample("DuplicatesToManaged");
-            //SerializedDuplicatesData = NativeToManagedUtils.GetManagedDuplicateVerticesMap(nativeVertMap);
-            Profiler.EndSample();
+            // Handle vertices
+            GraphicsBuffer verticesBuffer = nonReadableMesh.GetVertexBuffer(0);
+            int totalSize = verticesBuffer.stride * verticesBuffer.count;
+            byte[] data = new byte[totalSize];
+            verticesBuffer.GetData(data);
+            meshCopy.SetVertexBufferParams(nonReadableMesh.vertexCount, nonReadableMesh.GetVertexAttributes());
+            meshCopy.SetVertexBufferData(data, 0, 0, totalSize);
+            verticesBuffer.Release();
 
+            // Handle triangles
+            meshCopy.subMeshCount = nonReadableMesh.subMeshCount;
+            GraphicsBuffer indexesBuffer = nonReadableMesh.GetIndexBuffer();
+            int tot = indexesBuffer.stride * indexesBuffer.count;
+            byte[] indexesData = new byte[tot];
+            indexesBuffer.GetData(indexesData);
+            meshCopy.SetIndexBufferParams(indexesBuffer.count, nonReadableMesh.indexFormat);
+            meshCopy.SetIndexBufferData(indexesData, 0, 0, tot);
+            indexesBuffer.Release();
 
-            Profiler.BeginSample("Adjacency");
-            Profiler.BeginSample("Calculate");
-            AdjacencyMapper.CalculateAdjacencyData(in vertices, in indices, in posMap, out var  adjacencyList, out var adjacencyMapper, Allocator.Temp);
-            Profiler.EndSample();
+            // Restore submesh structure
+            uint currentIndexOffset = 0;
+            for (int i = 0; i < meshCopy.subMeshCount; i++)
+            {
+                uint subMeshIndexCount = nonReadableMesh.GetIndexCount(i);
+                meshCopy.SetSubMesh(i, new SubMeshDescriptor((int)currentIndexOffset, (int)subMeshIndexCount));
+                currentIndexOffset += subMeshIndexCount;
+            }
 
-            SerializedAdjacencyList = new int[adjacencyList.Length];
-            SerializedAdjacencyMapper = new int2[adjacencyMapper.Length];
-            SerializedIndices = new int[indices.Length];
-            adjacencyList.CopyTo(SerializedAdjacencyList);
-            adjacencyMapper.CopyTo(SerializedAdjacencyMapper);
-            indices.CopyTo(SerializedIndices);
-            Profiler.EndSample();
+            // Recalculate normals and bounds
+            meshCopy.RecalculateNormals();
+            meshCopy.RecalculateBounds();
 
-            mda.Dispose();
-
-#if UNITY_EDITOR
-            LastCacheDate = System.DateTime.Now.ToShortDateString() + " " + System.DateTime.Now.ToShortTimeString();
-#endif
+            return meshCopy;
         }
     }
 }

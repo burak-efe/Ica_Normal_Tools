@@ -96,8 +96,8 @@ namespace IcaNormal
         [ReadOnly] public Mesh.MeshData Data;
         [ReadOnly] public float Angle;
         [ReadOnly] public bool RecalculateTangents;
-        public NativeArray<float3> Normals;
-        public NativeArray<float4> Tangents;
+        public NativeList<float3> Normals;
+        public NativeList<float4> Tangents;
 
 
         public void Execute()

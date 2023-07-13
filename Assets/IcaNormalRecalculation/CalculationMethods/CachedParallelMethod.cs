@@ -14,9 +14,9 @@ namespace IcaNormal
         //[BurstCompile]
         public static void CalculateNormalDataUncached
         (
-            in NativeArray<float3> vertices,
-            in NativeArray<int> indices,
-            ref NativeArray<float3> outNormals
+            in NativeList<float3> vertices,
+            in NativeList<int> indices,
+            ref NativeList<float3> outNormals
         )
         {
             VertexPositionMapper.GetVertexPosHashMap(vertices, out var posMap, Allocator.TempJob);
@@ -36,11 +36,11 @@ namespace IcaNormal
         [BurstCompile]
         public static void CalculateNormalData
         (
-            in NativeArray<float3> vertices,
-            in NativeArray<int> indices,
-            ref NativeArray<float3> outNormals,
-            in NativeArray<int> adjacencyList,
-            in NativeArray<int2> adjacencyMap
+            in NativeList<float3> vertices,
+            in NativeList<int> indices,
+            ref NativeList<float3> outNormals,
+            in NativeList<int> adjacencyList,
+            in NativeList<int2> adjacencyMap
         )
         {
             var pAllocate = new ProfilerMarker("Allocate");
@@ -60,17 +60,17 @@ namespace IcaNormal
 
             var triNormalJob = new TriNormalJob
             {
-                Indices = indices,
+                Indices = indices.AsArray(),
                 TriNormals = triNormals,
-                Vertices = vertices
+                Vertices = vertices.AsArray()
             };
 
             var vertexNormalJob = new VertexNormalJob
             {
-                AdjacencyList = adjacencyList,
-                AdjacencyMapper = adjacencyMap,
+                AdjacencyList = adjacencyList.AsArray(),
+                AdjacencyMapper = adjacencyMap.AsArray(),
                 TriNormals = triNormals,
-                Normals = outNormals
+                Normals = outNormals.AsArray()
             };
 
             var tJobHandle = triNormalJob.ScheduleParallel
@@ -139,13 +139,13 @@ namespace IcaNormal
         public static void CalculateTangentData
         (
 
-            in NativeArray<float3> vertices,
-            in NativeArray<float3> normals,
-            in NativeArray<int> indices,
-            in NativeArray<float2> uv,
-            in NativeArray<int> adjacencyList,
-            in NativeArray<int2> adjacencyMap,
-            ref NativeArray<float4> outTangents
+            in NativeList<float3> vertices,
+            in NativeList<float3> normals,
+            in NativeList<int> indices,
+            in NativeList<float2> uv,
+            in NativeList<int> adjacencyList,
+            in NativeList<int2> adjacencyMap,
+            ref NativeList<float4> outTangents
         )
         {
             var p = new ProfilerMarker("pCachedParallelTangent");
@@ -157,21 +157,21 @@ namespace IcaNormal
 
             var triTangentJob = new TriTangentJob
             {
-                Indices = indices,
-                Vertices = vertices,
-                UV = uv,
+                Indices = indices.AsArray(),
+                Vertices = vertices.AsArray(),
+                UV = uv.AsArray(),
                 Tan1 = tan1,
                 Tan2 = tan2
             };
 
             var vertexTangentJob = new VertexTangentJob
             {
-                AdjacencyList = adjacencyList,
-                AdjacencyMapper = adjacencyMap,
-                Normals = normals,
+                AdjacencyList = adjacencyList.AsArray(),
+                AdjacencyMapper = adjacencyMap.AsArray(),
+                Normals = normals.AsArray(),
                 Tan1 = tan1,
                 Tan2 = tan2,
-                Tangents = outTangents
+                Tangents = outTangents.AsArray()
             };
 
 
