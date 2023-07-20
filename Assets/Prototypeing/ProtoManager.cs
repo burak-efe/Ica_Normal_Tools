@@ -54,8 +54,8 @@ public class ProtoManager : MonoBehaviour
         
         var mda = Mesh.AcquireReadOnlyMeshData(Meshes);
 
-        NativeContainerUtils.CreateMergedVertices(mda, out var mergedVertices, out var vMap, Allocator.TempJob);
-        NativeContainerUtils.CreateMergedIndices(mda, out var mergedIndices, out var iMap, Allocator.TempJob);
+        NativeContainerUtils.CreateAndGetMergedVertices(mda, out var mergedVertices, out var vMap, Allocator.TempJob);
+        NativeContainerUtils.GetMergedIndices(mda, out var mergedIndices, out var iMap, Allocator.TempJob);
         var mergedNormals = new NativeList<float3>(mergedVertices.Length, Allocator.TempJob);
          CachedParallelMethod.CalculateNormalDataUncached(mergedVertices, mergedIndices, ref mergedNormals);
 

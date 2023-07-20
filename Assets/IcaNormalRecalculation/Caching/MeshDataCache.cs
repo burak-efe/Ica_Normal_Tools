@@ -10,37 +10,77 @@ namespace IcaNormal
 {
     public class MeshDataCache : IDisposable
     {
-        public NativeList<int> _nativeAdjacencyList;
-        public NativeList<int2> _nativeAdjacencyMap;
-        public NativeList<int> _indices;
-        public NativeList<float3> _vertices;
-        public NativeList<float3> _normals;
-        public NativeList<float4> _tangents;
-        public NativeList<float2> _uvs;
-        public Mesh.MeshData _mainMeshData;
+        public int VertexCount { get; private set; }
+        
+        public NativeList<float3> VertexData;
+        public NativeList<int> IndexData;
+        public NativeList<float3> NormalData;
+        public NativeList<float4> TangentData;
+        public NativeList<float2> UVData;
 
+        public NativeList<int> AdjacencyList;
+        public NativeList<int2> AdjacencyMapper;
+        
         private Mesh.MeshDataArray _mda;
+        public Mesh.MeshData MeshData;
 
-        public MeshDataCache(List<Mesh> m, bool shouldCacheForTangents = true)
+        private bool _initialized;
+
+        private NativeList<int> _seperatorData;
+
+        public void InitFromMesh(Mesh mesh)
         {
-            _mda = Mesh.AcquireReadOnlyMeshData(m);
-            _mainMeshData = _mda[0];
-            CalculateCache();
+            Dispose();
+            _mda = Mesh.AcquireReadOnlyMeshData(mesh);
+            MeshData = _mda[0];
+            VertexCount = MeshData.vertexCount;
+
+            VertexData = new NativeList<float3>(VertexCount, Allocator.Persistent);
+            NormalData = new NativeList<float3>(VertexCount, Allocator.Persistent);
+            TangentData = new NativeList<float4>(VertexCount, Allocator.Persistent);
+            UVData = new NativeList<float2>(VertexCount, Allocator.Persistent);
+            MeshData.GetAllIndicesWithNewNativeContainer(out IndexData, Allocator.Persistent);
+
+            MeshData.GetVertices(VertexData.AsArray().Reinterpret<Vector3>());
+            MeshData.GetNormals(NormalData.AsArray().Reinterpret<Vector3>());
+            MeshData.GetTangents(TangentData.AsArray().Reinterpret<Vector4>());
+            MeshData.GetUVs(0, UVData.AsArray().Reinterpret<Vector2>());
+ 
+            
+            VertexPositionMapper.GetVertexPosHashMap(VertexData, out var tempPosGraph, Allocator.Temp);
+            IcaNormal.AdjacencyMapper.CalculateAdjacencyData(VertexData, IndexData, tempPosGraph, out AdjacencyList, out AdjacencyMapper, Allocator.Persistent);
+            _initialized = true;
             
         }
-        
+
+        public void InitFromMultipleMesh(List<Mesh> meshes)
+        {
+            Dispose();
+            _mda = Mesh.AcquireReadOnlyMeshData(meshes);
+            NativeContainerUtils.CreateAndGetMergedVertices(_mda, out VertexData, out _seperatorData, Allocator.Persistent);
+        }
+
         public void CalculateCache()
         {
-            
-            
+            // VertexCount = MeshData.vertexCount;
+            //
+            // VertexData = new NativeList<float3>(VertexCount, Allocator.Persistent);
+            // NormalData = new NativeList<float3>(VertexCount, Allocator.Persistent);
+            // TangentData = new NativeList<float4>(VertexCount, Allocator.Persistent);
+            // UVData = new NativeList<float2>(VertexCount, Allocator.Persistent);
+            // MeshData.GetAllIndicesWithNewNativeContainer(out IndexData, Allocator.Persistent);
+            //
+            // MeshData.GetVertices(VertexData.AsArray().Reinterpret<Vector3>());
+            // MeshData.GetNormals(NormalData.AsArray().Reinterpret<Vector3>());
+            // MeshData.GetTangents(TangentData.AsArray().Reinterpret<Vector4>());
+            // MeshData.GetUVs(0, UVData.AsArray().Reinterpret<Vector2>());
+            //
+            //
+            // VertexPositionMapper.GetVertexPosHashMap(VertexData, out var tempPosGraph, Allocator.Temp);
+            // IcaNormal.AdjacencyMapper.CalculateAdjacencyData(VertexData, IndexData, tempPosGraph, out AdjacencyList, out AdjacencyMapper, Allocator.Persistent);
+            // _initialized = true;
 
-            NativeContainerUtils.CreateMergedVertices(_mda, out  _vertices, out var vMap, Allocator.TempJob);
-            NativeContainerUtils.CreateMergedIndices(_mda, out  _indices, out var iMap, Allocator.TempJob);
-             _normals = new NativeList<float3>(_vertices.Length, Allocator.TempJob);
-            VertexPositionMapper.GetVertexPosHashMap( _vertices.AsArray(), out var tempPosGraph, Allocator.Temp);
-            AdjacencyMapper.CalculateAdjacencyData( _vertices,  _indices,  tempPosGraph, out _nativeAdjacencyList, out _nativeAdjacencyMap, Allocator.Persistent);
-            
-            
+
             //CachedParallelMethod.CalculateNormalDataUncached(mergedVertices.AsArray(), mergedIndices.AsArray(), ref mergedNormals);
 
             // Apply
@@ -51,7 +91,7 @@ namespace IcaNormal
             //     Meshes[i].SetNormals(sub);
             // }
             //
-            
+
             //_tempMesh = new Mesh();
             //_meshDataArray = Mesh.AcquireReadOnlyMeshData(_mesh);
             // _mainMeshData = _meshDataArray[0];
@@ -66,23 +106,28 @@ namespace IcaNormal
             //_mainMeshData.GetAllIndices(out _indices, Allocator.Persistent);
             //var tempVertices = new NativeArray<float3>(_mainMeshData.vertexCount, Allocator.Temp);
             //_mainMeshData.GetVertices(tempVertices.Reinterpret<Vector3>());
-
         }
 
 
         public void Dispose()
         {
+            if (_initialized == false)
+            {
+                return;
+            }
             _mda.Dispose();
-            _nativeAdjacencyList.Dispose();
-            _nativeAdjacencyMap.Dispose();
-            _indices.Dispose();
-            _vertices.Dispose();
-            _normals.Dispose();
-            _tangents.Dispose();
-            _uvs.Dispose();
+            
+            VertexData.Dispose();
+            IndexData.Dispose();
+            NormalData.Dispose();
+            TangentData.Dispose();
+            UVData.Dispose();
+            
+            AdjacencyList.Dispose();
+            AdjacencyMapper.Dispose();
         }
 
-
+// ?? is this working?
         public static Mesh MakeReadableMeshCopy(Mesh nonReadableMesh)
         {
             Mesh meshCopy = new Mesh();
