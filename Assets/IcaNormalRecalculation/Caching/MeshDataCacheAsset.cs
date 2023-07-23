@@ -66,7 +66,7 @@ namespace IcaNormal
             SerializedAdjacencyMapper = new int2[adjacencyMapper.Length];
             SerializedIndices = new int[indices.Length];
             adjacencyList.AsArray().CopyTo(SerializedAdjacencyList);
-            adjacencyMapper.AsArray().CopyTo(SerializedAdjacencyMapper);
+            adjacencyMapper.CopyTo(SerializedAdjacencyMapper);
             indices.AsArray().CopyTo(SerializedIndices);
             Profiler.EndSample();
 

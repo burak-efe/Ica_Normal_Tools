@@ -11,21 +11,21 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
-    [BurstCompile]
+  //  [BurstCompile]
     public static class AdjacencyMapper
     {
         /// <summary>
         /// Calculate adjacency data of every vertex
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [BurstCompile]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //[BurstCompile]
         public static void CalculateAdjacencyData
         (
-            in NativeList<float3> vertices,
+            in NativeArray<float3> vertices,
             in NativeList<int> indices,
             in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
             out NativeList<int> outAdjacencyList,
-            out NativeList<int2> outAdjacencyMapper,
+            out NativeArray<int2> outAdjacencyMapper,
             Allocator allocator
         )
         {
@@ -74,7 +74,7 @@ namespace IcaNormal
             pOut.Begin();
 
             outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
-            outAdjacencyMapper = new NativeList<int2>(vertices.Length, allocator);
+            outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator);
             pOut.End();
 
             var p2 = new ProfilerMarker("Unroll");

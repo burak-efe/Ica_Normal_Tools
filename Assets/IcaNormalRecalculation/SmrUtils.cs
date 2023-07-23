@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 
 namespace IcaNormal
@@ -13,5 +14,21 @@ namespace IcaNormal
                 to.SetBlendShapeWeight(i, from.GetBlendShapeWeight(i));
             }
         }
+
+        [MenuItem("CONTEXT/SkinnedMeshRenderer/RecalculateNormals", false, 1923)]
+        public static void  RecalculateNormals()
+        {
+            var objs = Selection.gameObjects;
+
+            foreach (var o in objs)
+            {
+                if (o != null && o.GetComponent<SkinnedMeshRenderer>() != null)
+                {
+                     o.GetComponent<SkinnedMeshRenderer>().sharedMesh.RecalculateNormals();
+ 
+                }
+            }
+        }
     }
-}
+    }
+

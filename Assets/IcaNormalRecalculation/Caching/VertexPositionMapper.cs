@@ -18,7 +18,7 @@ namespace IcaNormal
         /// <param name="posVertexIndicesPair"></param>
         /// <param name="allocator"></param>
         [BurstCompile]
-        public static void GetVertexPosHashMap(in NativeList<float3> vertices, out UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair, Allocator allocator)
+        public static void GetVertexPosHashMap(in NativeArray<float3> vertices, out UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair, Allocator allocator)
         {
             var pAllocateOut = new ProfilerMarker("pAllocateOut");
             pAllocateOut.Begin();

@@ -52,27 +52,27 @@ public class ProtoManager : MonoBehaviour
         //
         //
         
-        var mda = Mesh.AcquireReadOnlyMeshData(Meshes);
-
-        NativeContainerUtils.CreateAndGetMergedVertices(mda, out var mergedVertices, out var vMap, Allocator.TempJob);
-        NativeContainerUtils.GetMergedIndices(mda, out var mergedIndices, out var iMap, Allocator.TempJob);
-        var mergedNormals = new NativeList<float3>(mergedVertices.Length, Allocator.TempJob);
-         CachedParallelMethod.CalculateNormalDataUncached(mergedVertices, mergedIndices, ref mergedNormals);
-
-        // Apply
-        for (int i = 0; i < mda.Length; i++)
-        {
-            var sub = mergedNormals.AsArray().GetSubArray(vMap[i], vMap[i + 1] - vMap[i]);
-
-            Meshes[i].SetNormals(sub);
-        }
-
-
-        mergedNormals.Dispose();
-        mergedVertices.Dispose();
-        mergedIndices.Dispose();
-        vMap.Dispose();
-        iMap.Dispose();
-        mda.Dispose();
+        // var mda = Mesh.AcquireReadOnlyMeshData(Meshes);
+        //
+        // NativeContainerUtils.CreateAndGetMergedVertices(mda, out var mergedVertices, out var vMap, Allocator.TempJob);
+        // NativeContainerUtils.GetMergedIndices(mda, out var mergedIndices, out var iMap, Allocator.TempJob);
+        // var mergedNormals = new NativeList<float3>(mergedVertices.Length, Allocator.TempJob);
+        //  CachedParallelMethod.CalculateNormalDataUncached(mergedVertices, mergedIndices, ref mergedNormals);
+        //
+        // // Apply
+        // for (int i = 0; i < mda.Length; i++)
+        // {
+        //     var sub = mergedNormals.AsArray().GetSubArray(vMap[i], vMap[i + 1] - vMap[i]);
+        //
+        //     Meshes[i].SetNormals(sub);
+        // }
+        //
+        //
+        // mergedNormals.Dispose();
+        // mergedVertices.Dispose();
+        // mergedIndices.Dispose();
+        // vMap.Dispose();
+        // iMap.Dispose();
+        // mda.Dispose();
     }
 }

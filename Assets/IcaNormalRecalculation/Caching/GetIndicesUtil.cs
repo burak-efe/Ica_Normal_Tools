@@ -1,5 +1,6 @@
 ﻿using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -43,7 +44,7 @@ namespace IcaNormal
         }
         
         [BurstCompile]
-        public static void GetAllIndicesCountOfGivenMeshes(  Mesh.MeshDataArray data, out int count)
+        public static void GetAllIndicesCountOfMDA(  Mesh.MeshDataArray data, out int count)
         {
             count = 0;
             for (int i = 0; i < data.Length; i++)
@@ -53,6 +54,43 @@ namespace IcaNormal
             }
 
         }
+        
+        
+        
+        
+        [BurstCompile]
+        public static void CreateAndGetMergedIndices(
+            Mesh.MeshDataArray mda,
+            out NativeList<int> outMergedIndices,
+            out NativeArray<int> outMergedIndicesMap,
+            Allocator allocator
+        )
+        {
+            GetIndicesUtil.GetAllIndicesCountOfMDA(mda, out int totalIndexCount);
+            outMergedIndices = new NativeList<int>(totalIndexCount, allocator);
+            outMergedIndicesMap = new NativeList<int>(totalIndexCount + 1, allocator);
+            
+            GetMergedIndices(mda, ref outMergedIndices, ref outMergedIndicesMap);
+        }
+
+
+        [BurstCompile]
+        public static void GetMergedIndices(
+            Mesh.MeshDataArray mda,
+            ref NativeList<int> mergedIndices,
+            ref NativeArray<int> mergedIndicesMap
+        )
+        {
+            var indexList = new UnsafeList<NativeList<int>>(1, Allocator.Temp);
+            for (int i = 0; i < mda.Length; i++)
+            {
+                mda[i].GetAllIndicesWithNewNativeContainer(out var indices, Allocator.Temp);
+                indexList.Add(indices);
+            }
+
+            NativeContainerUtils.GetUnrollNestedDataToNativeList(indexList, ref mergedIndicesMap, ref mergedIndices);
+        }
+
         
     }
 }

@@ -11,121 +11,117 @@ namespace IcaNormal
     [BurstCompile]
     public static class NativeContainerUtils
     {
-        [BurstCompile]
-        public static void CreateAndGetMergedVertices(Mesh.MeshDataArray mda, out NativeList<float3> outMergedVertices, out NativeList<int> map, Allocator allocator)
-        {
-            var size = GetTotalVertexCountFomMDA(mda);
+        // [BurstCompile]
+        // public static void CreateAndGetMergedVertices(Mesh.MeshDataArray mda, out NativeList<float3> outMergedVertices, out NativeList<int> map, Allocator allocator)
+        // {
+        //     var size = GetTotalVertexCountFomMDA(mda);
+        //
+        //     outMergedVertices = new NativeList<float3>(size, allocator);
+        //     map = new NativeList<int>(size, allocator);
+        //     GetMergedVertices(mda, ref outMergedVertices, ref map);
+        // }
 
-            outMergedVertices = new NativeList<float3>(size, allocator);
-            map = new NativeList<int>(size, allocator);
-            GetMergedVertices(mda, ref outMergedVertices, ref map);
-        }
-
         [BurstCompile]
-        public static void GetMergedVertices(Mesh.MeshDataArray mda, ref NativeList<float3> outMergedVertices, ref NativeList<int> map)
+        public static void GetMergedVertices(Mesh.MeshDataArray mda, ref NativeArray<float3> outMergedVertices, ref NativeArray<int> map)
         {
-            var vertexList = new UnsafeList<NativeList<float3>>(1, Allocator.Temp);
+            var vertexList = new UnsafeList<NativeArray<float3>>(mda[0].vertexCount, Allocator.Temp);
             for (int i = 0; i < mda.Length; i++)
             {
-                var v = new NativeList<float3>(mda[i].vertexCount, Allocator.Temp);
-                mda[i].GetVertices(v.AsArray().Reinterpret<Vector3>());
+                var v = new NativeArray<float3>(mda[i].vertexCount, Allocator.Temp);
+                mda[i].GetVertices(v.Reinterpret<Vector3>());
                 vertexList.Add(v);
             }
 
-            NativeContainerUtils.GetUnrollNestedData(vertexList, ref map, ref outMergedVertices);
-        }
-
-        [BurstCompile]
-        public static void CreateAndGetMergedIndices(
-            Mesh.MeshDataArray mda,
-            out NativeList<float3> outMergedIndices,
-            out NativeList<int> outMergedIndicesMap,
-            Allocator allocator
-            )
-        {
-            GetIndicesUtil.GetAllIndicesCountOfGivenMeshes(mda, out int totalIndexCount);
-            outMergedIndices = new NativeList<float3>(totalIndexCount, allocator);
-            outMergedIndicesMap = new NativeList<int>(totalIndexCount + 1, allocator);
-            
-            GetMergedVertices(mda, ref outMergedIndices, ref outMergedIndicesMap);
+            NativeContainerUtils.UnrollArrayToArray(vertexList, ref map, ref outMergedVertices);
         }
 
 
+        //
+        // [BurstCompile]
+        // public static void UnrollNestedDataAndCreate<T>
+        // (
+        //     UnsafeList<NativeList<T>> nestedData,
+        //     out NativeList<int> outMapper,
+        //     out NativeList<T> outUnrolledData,
+        //     Allocator allocator
+        // ) where T : unmanaged
+        // {
+        //     GetUnrolledSizeOfNestedContainer(nestedData, out var unrolledSize);
+        //     outUnrolledData = new NativeList<T>(unrolledSize, allocator);
+        //     outMapper = new NativeList<int>(nestedData.Length + 1, allocator);
+        //
+        //     GetUnrollNestedDataToNativeList(nestedData, ref outMapper, ref outUnrolledData);
+        // }
+        //
+        //
+        // [BurstCompile]
+        // public static void CreateAndGetUnrolledNestedData<T>
+        // (
+        //     UnsafeList<NativeList<T>> nestedData,
+        //     out NativeArray<int> outMapper,
+        //     out NativeList<T> outUnrolledData,
+        //     Allocator allocator
+        // ) where T : unmanaged
+        // {
+        //     GetUnrolledSizeOfNestedContainer(nestedData, out var unrolledSize);
+        //
+        //     outUnrolledData = new NativeList<T>(unrolledSize, allocator);
+        //     outMapper = new NativeList<int>(nestedData.Length + 1, allocator);
+        //     
+        //     GetUnrollNestedDataToNativeList(nestedData, ref outMapper, ref outUnrolledData);
+        //
+        // }
+
         [BurstCompile]
-        public static void GetMergedIndices(
-            Mesh.MeshDataArray mda,
-            ref NativeList<int> mergedIndices,
-            ref NativeList<int> mergedIndicesMap
-            )
+        public static void GetUnrollNestedDataToNativeArray<T>(UnsafeList<NativeList<T>> nestedData, ref NativeArray<int> outMapper, ref NativeArray<T> outUnrolledData) where T : unmanaged
         {
-            var indexList = new UnsafeList<NativeList<int>>(1, Allocator.Temp);
-            for (int i = 0; i < mda.Length; i++)
-            {
-                mda[i].GetAllIndicesWithNewNativeContainer(out var indices, Allocator.Temp);
-                indexList.Add(indices);
-            }
-
-            GetUnrollNestedData(indexList, ref mergedIndicesMap, ref mergedIndices);
-        }
-
-
-        [BurstCompile]
-        public static void UnrollNestedDataAndCreate<T>
-        (
-            UnsafeList<NativeList<T>> nestedData,
-            out NativeList<int> outMapper,
-            out NativeList<T> outUnrolledData,
-            Allocator allocator
-        ) where T : unmanaged
-        {
-            GetUnrolledSizeOfNestedContainer(nestedData, out var unrolledSize);
-            outUnrolledData = new NativeList<T>(unrolledSize, allocator);
-            outMapper = new NativeList<int>(nestedData.Length + 1, allocator);
-
-            GetUnrollNestedData(nestedData, ref outMapper, ref outUnrolledData);
-        }
-
-
-        [BurstCompile]
-        public static void CreateAndGetUnrolledNestedData<T>
-        (
-            UnsafeList<NativeList<T>> nestedData,
-            out NativeList<int> outMapper,
-            out NativeList<T> outUnrolledData,
-            Allocator allocator
-        ) where T : unmanaged
-        {
-            GetUnrolledSizeOfNestedContainer(nestedData, out var unrolledSize);
-
-            outUnrolledData = new NativeList<T>(unrolledSize, allocator);
-            outMapper = new NativeList<int>(nestedData.Length + 1, allocator);
-            
-            GetUnrollNestedData(nestedData, ref outMapper, ref outUnrolledData);
-
+            var templist = new NativeList<T>(Allocator.Temp);
+            GetUnrollNestedDataToNativeList(nestedData, ref outMapper, ref templist);
+            outUnrolledData.CopyFrom(templist.AsArray());
         }
 
         [BurstCompile]
-        public static void GetUnrollNestedData<T>(UnsafeList<NativeList<T>> nestedData, ref NativeList<int> outMapper, ref NativeList<T> outUnrolledData) where T : unmanaged
+        public static void GetUnrollNestedDataToNativeList<T>(UnsafeList<NativeList<T>> nestedData, ref NativeArray<int> outMapper, ref NativeList<T> outUnrolledData) where T : unmanaged
         {
-            //GetUnrolledSizeOfNestedContainer(nestedData, out var unrolledSize);
-            //outUnrolledData = new NativeList<T>(unrolledSize, allocator);
-            //outMapper = new NativeArray<int>(nestedData.Length + 1, allocator);
-            
             var mapperIndex = 0;
-
             for (int i = 0; i < nestedData.Length; i++)
             {
                 outUnrolledData.AddRange(nestedData[i]);
                 outMapper[i] = mapperIndex;
                 mapperIndex += nestedData[i].Length;
             }
-
             outMapper[^1] = mapperIndex;
+        }
+        
+        [BurstCompile]
+        public static void UnrollArrayToArray<T>(UnsafeList<NativeArray<T>> nestedData, ref NativeArray<int> outMapper, ref NativeArray<T> outUnrolledData) where T : unmanaged
+        {
+            GetUnrolledSizeOfNestedContainer(nestedData,out var size);
+            var templist = new NativeList<T>(size,Allocator.Temp);
+            var mapperIndex = 0;
+            for (int i = 0; i < nestedData.Length; i++)
+            {
+                templist.AddRange(nestedData[i]);
+                outMapper[i] = mapperIndex;
+                mapperIndex += nestedData[i].Length;
+            }
+            outMapper[^1] = mapperIndex;
+            outUnrolledData.CopyFrom(templist.AsArray());
         }
 
 
         [BurstCompile]
         public static void GetUnrolledSizeOfNestedContainer<T>(UnsafeList<NativeList<T>> nestedContainer, out int size) where T : unmanaged
+        {
+            size = 0;
+            for (int i = 0; i < nestedContainer.Length; i++)
+            {
+                size += nestedContainer[i].Length;
+            }
+        }
+        
+        [BurstCompile]
+        public static void GetUnrolledSizeOfNestedContainer<T>(UnsafeList<NativeArray<T>> nestedContainer, out int size) where T : unmanaged
         {
             size = 0;
             for (int i = 0; i < nestedContainer.Length; i++)

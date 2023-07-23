@@ -48,7 +48,7 @@ public class BenchMarkScript : MonoBehaviour
         }
         else if (Input.GetKey(TangentOnly))
         {
-            CachedParallelRuntimeNormalSolver.TangentsOnlyTest();
+            //CachedParallelRuntimeNormalSolver.TangentsOnlyTest();
         }
         else if (Input.GetKey(BuiltInTangentOnly))
         {
