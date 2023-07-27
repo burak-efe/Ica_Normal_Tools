@@ -20,6 +20,10 @@
  *          don't get back to you just go ahead and use it anyway!
  */
 
+// Lengyel, Eric. Computing Tangent Space Basis Vectors for an Arbitrary Mesh.
+// Terathon Software 3D Graphics Library, 2001.
+// http://www.terathon.com/code/tangent.html
+
 using System;
 using Unity.Burst;
 using Unity.Collections;
@@ -52,18 +56,20 @@ namespace IcaNormal
             _z = (long)(Mathf.Round(position.z * Tolerance));
         }
 
-
         public override int GetHashCode()
         {
-            //return HashCode.Combine(_x, _y, _z); not usable in burst so instead we do this :
+            long rv = FNV32Init;
             unchecked
             {
-                int hash = 17;
-                hash = hash * 31 + _x.GetHashCode();
-                hash = hash * 31 + _y.GetHashCode();
-                hash = hash * 31 + _z.GetHashCode();
-                return hash;
+                rv ^= _x;
+                rv *= FNV32Prime;
+                rv ^= _y;
+                rv *= FNV32Prime;
+                rv ^= _z;
+                rv *= FNV32Prime;
             }
+
+            return rv.GetHashCode();
         }
 
         public bool Equals(VertexKey other)
@@ -100,16 +106,18 @@ namespace IcaNormal
         public NativeList<float4> Tangents;
 
 
+        // cognitive complexity value of this method is 390%.So I cant turn it into parallel job because my brain melted
         public void Execute()
         {
             var vertexCount = Data.vertexCount;
+            //0.017453292f == deg2rad
             float cosineThreshold = math.cos(Angle * 0.017453292f);
-            
+
             var vertices = new NativeArray<float3>(vertexCount, Allocator.Temp);
             Data.GetVertices(vertices.Reinterpret<Vector3>());
 
-            // Holds the normal of each triangle in each sub mesh.
             var triangles = new NativeArray<NativeArray<int>>(Data.subMeshCount, Allocator.Temp);
+            // Holds the normal of each triangle in each sub mesh.
             var triNormals = new NativeArray<NativeArray<float3>>(Data.subMeshCount, Allocator.Temp);
             var dictionary = new UnsafeHashMap<VertexKey, NativeList<VertexEntry>>(Data.vertexCount, Allocator.Temp);
 
@@ -151,6 +159,7 @@ namespace IcaNormal
                         entry = new NativeList<VertexEntry>(3, Allocator.Temp);
                         dictionary.Add(key, entry);
                     }
+
                     entry.Add(new VertexEntry(subMeshIndex, triIndex, i1));
 
                     if (!dictionary.TryGetValue(key = new VertexKey(vertices[i2]), out entry))
@@ -158,6 +167,7 @@ namespace IcaNormal
                         entry = new NativeList<VertexEntry>(3, Allocator.Temp);
                         dictionary.Add(key, entry);
                     }
+
                     entry.Add((new VertexEntry(subMeshIndex, triIndex, i2)));
 
                     if (!dictionary.TryGetValue(key = new VertexKey(vertices[i3]), out entry))
@@ -165,6 +175,7 @@ namespace IcaNormal
                         entry = new NativeList<VertexEntry>(3, Allocator.Temp);
                         dictionary.Add(key, entry);
                     }
+
                     entry.Add((new VertexEntry(subMeshIndex, triIndex, i3)));
                 }
             }
@@ -272,12 +283,14 @@ namespace IcaNormal
                     Vector3 nTemp = Normals[a];
                     Vector3 tTemp = tan1[a];
 
-                    //TODO: Use math library and float3 here, and remove temp values
+                    //TODOifYouHaveNoPurposeInLife Use math library and float3 here, and remove temp values.
+                    //Why new math does not have OrthoNormalize counterpart.And Vector3 one buried in c++ engine so cant recreate it :C
                     Vector3.OrthoNormalize(ref nTemp, ref tTemp);
 
                     float3 n = nTemp;
                     float3 t = tTemp;
 
+                    //writing it in a single line more important than readability
                     var w = (math.dot(math.cross(n, t), tan2[a]) < 0.0f) ? -1.0f : 1.0f;
                     Tangents[a] = new float4(t.x, t.y, t.z, w);
                 }

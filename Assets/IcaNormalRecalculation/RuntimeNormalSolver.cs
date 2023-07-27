@@ -1,108 +1,83 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Profiling;
-using UnityEngine.Serialization;
 
 namespace IcaNormal
 {
-    [Serializable]
-    public class MaterialList
-    {
-        public List<Material> Value;
-    }
-
-    [RequireComponent(typeof(Renderer))]
     public class RuntimeNormalSolver : MonoBehaviour
     {
-        public enum NormalRecalculateMethodEnum
-        {
-            SDBursted,
-            CachedParallel
-        }
-
         public enum NormalOutputEnum
         {
             WriteToMesh,
             WriteToMaterial
         }
 
-        public NormalRecalculateMethodEnum CalculateMethod = NormalRecalculateMethodEnum.SDBursted;
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
 
-        [Range(0, 180)]
         [Tooltip("Smoothing angle only usable with bursted method")]
-        public float SmoothingAngle = 120f;
-
         public bool RecalculateOnStart;
-        public bool RecalculateTangents;
-        public bool CalculateBlendShapes;
 
-        [FormerlySerializedAs("_dataCache")]
-        [SerializeField]
+        public bool RecalculateTangents;
+
         [Tooltip("Data cache asset required when using cached method. You can create this on project tab context menu/plugins /Mesh data cache.")]
-        private MeshDataCacheAsset _dataCacheAsset;
+        public MeshDataCacheAsset _dataCacheAsset;
 
         [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")]
         public GameObject ModelPrefab;
 
         public List<SkinnedMeshRenderer> TargetSkinnedMeshRenderers;
-        public List<GameObject> Prefabs;
-        private MeshDataCache _meshDataCaches;
+        private MeshDataCache _meshDataCache;
 
         private List<Mesh> _meshes;
-        //private List<MaterialList> _materials;
 
         //compute buffer for passing data into shaders
-        private List<ComputeBuffer> _normalsOutBuffer;
-        private List<ComputeBuffer> _tangentsOutBuffer;
-
-        // private Renderer _smr;
-        // private Mesh _mesh;
-        // private Mesh _tempMesh;
-        // private GameObject _tempObj;
-        // private SkinnedMeshRenderer _tempSmr;
-
-
+        private List<ComputeBuffer> _normalBuffers;
+        private List<ComputeBuffer> _tangentBuffers;
+        public List<GameObject> Prefabs;
+        private List<GameObject> TempObjects;
+        private List<SkinnedMeshRenderer> TempSMRs;
+        private List<Mesh> _tempMeshes;
         private bool _isComputeBuffersCreated;
 
-        private void Start()
+        private void Start() 
         {
-            _meshes = new List<Mesh>();
+            Init();
+        }
+
+        public void Init()
+        {
+            var meshCount = TargetSkinnedMeshRenderers.Count;
+
+            _meshes = new List<Mesh>(meshCount);
+            TempObjects = new List<GameObject>(meshCount);
+            TempSMRs = new List<SkinnedMeshRenderer>(meshCount);
+            _tempMeshes = new List<Mesh>(meshCount);
+
             foreach (var smr in TargetSkinnedMeshRenderers)
             {
                 _meshes.Add(smr.sharedMesh);
+                _tempMeshes.Add(new Mesh());
             }
 
-            _meshDataCaches = new MeshDataCache();
-            _meshDataCaches.InitFromMultipleMesh(_meshes);
-            //_meshData = new MeshDataCache();
-            //CacheComponents();
-            //InitNativeContainers();
+            _meshDataCache = new MeshDataCache();
+            _meshDataCache.InitFromMultipleMesh(_meshes);
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
                 foreach (var mesh in _meshes)
-                {
                     mesh.MarkDynamic();
-                }
-                //_mesh.MarkDynamic();
             }
             else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
             {
                 SetupForWriteToMaterial();
             }
 
-            // if (CalculateBlendShapes)
-            // {
-            //     _tempObj = Instantiate(ModelPrefab, transform);
-            //     _tempSmr = GetComponentInChildren<SkinnedMeshRenderer>();
-            //     _tempObj.SetActive(false);
-            // }
+            for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
+            {
+                var obj = Instantiate(Prefabs[meshIndex], transform);
+                obj.SetActive(false);
+                TempObjects.Add(obj);
+                TempSMRs.Add(obj.GetComponentInChildren<SkinnedMeshRenderer>());
+            }
 
             if (RecalculateOnStart)
                 RecalculateNormals();
@@ -110,84 +85,27 @@ namespace IcaNormal
 
         private void SetupForWriteToMaterial()
         {
-            _normalsOutBuffer = new List<ComputeBuffer>(1);
-            _tangentsOutBuffer = new List<ComputeBuffer>(1);
-            for (int i = 0; i < TargetSkinnedMeshRenderers.Count; i++)
+            var meshCount = TargetSkinnedMeshRenderers.Count;
+            _normalBuffers = new List<ComputeBuffer>(meshCount);
+            _tangentBuffers = new List<ComputeBuffer>(meshCount);
+            for (int i = 0; i < meshCount; i++)
             {
                 var smr = TargetSkinnedMeshRenderers[i];
+                var mats = smr.materials;
                 var nBuffer = new ComputeBuffer(_meshes[i].vertexCount, sizeof(float) * 3);
                 var tBuffer = new ComputeBuffer(_meshes[i].vertexCount, sizeof(float) * 4);
-                nBuffer.SetData(_meshDataCaches.GetNormalData());
-               tBuffer.SetData(_meshDataCaches.GetTangentData());
-                _normalsOutBuffer.Add(nBuffer);
-                _tangentsOutBuffer.Add(tBuffer);
-
-                var mats = smr.materials;
-
+                _tangentBuffers.Add(tBuffer);
+                _normalBuffers.Add(nBuffer);
                 for (int matIndex = 0; matIndex < mats.Length; matIndex++)
                 {
-                    mats[matIndex].SetBuffer("normalsOutBuffer", _normalsOutBuffer[i]);
-                    mats[matIndex].SetBuffer("tangentsOutBuffer", _tangentsOutBuffer[i]);
+                    mats[matIndex].SetBuffer("normalsOutBuffer", nBuffer);
+                    mats[matIndex].SetBuffer("tangentsOutBuffer", tBuffer);
                     mats[matIndex].SetFloat("_Initialized", 1);
                 }
-
-                _isComputeBuffersCreated = true;
             }
 
-
-            // _normalsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 3);
-            // _tangentsOutBuffer = new ComputeBuffer(_mesh.vertexCount, sizeof(float) * 4);
-            // _isComputeBuffersCreated = true;
-            //
-            // //duplicate all materials
-            // for (int i = 0; i < _smr.materials.Length; i++)
-            // {
-            //     _smr.materials[i] = new Material(_smr.materials[i]);
-            //     _smr.materials[i].SetBuffer("normalsOutBuffer", _normalsOutBuffer);
-            //     _smr.materials[i].SetBuffer("tangentsOutBuffer", _tangentsOutBuffer);
-            //     _smr.materials[i].SetFloat("_Initialized", 1);
-            // }
-            //
-            // _normalsOutBuffer.SetData(_meshDataCaches._normals.AsArray());
-            // _tangentsOutBuffer.SetData(_meshDataCaches._tangents.AsArray());
-        }
-
-        // private void CacheComponents()
-        // {
-        //     foreach (var smr in TargetSkinnedMeshRenderers)
-        //     {
-        //         _materials.Add(smr.sharedMaterial);
-        //     }
-        // }
-
-        private void InitNativeContainers()
-        {
-            // _tempMesh = new Mesh();
-            // _meshDataArray = Mesh.AcquireReadOnlyMeshData(_mesh);
-            // _mainMeshData = _meshDataArray[0];
-            // _vertices = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
-            // _normals = new NativeArray<float3>(_mesh.vertexCount, Allocator.Persistent);
-            // _tangents = new NativeArray<float4>(_mesh.vertexCount, Allocator.Persistent);
-            // _uvs = new NativeArray<float2>(_mesh.vertexCount, Allocator.Persistent);
-            // _mainMeshData.GetNormals(_normals.Reinterpret<Vector3>());
-            // _mainMeshData.GetTangents(_tangents.Reinterpret<Vector4>());
-            // _mainMeshData.GetUVs(0, _uvs.Reinterpret<Vector2>());
-            //
-            // if (CalculateMethod == NormalRecalculateMethodEnum.CachedParallel)
-            // {
-            //     if (_dataCacheAsset != null)
-            //     {
-            //         Profiler.BeginSample("GetCacheDataFromAsset");
-            //         _nativeAdjacencyList = new NativeArray<int>(_dataCacheAsset.SerializedAdjacencyList, Allocator.Persistent);
-            //         _nativeAdjacencyMap = new NativeArray<int2>(_dataCacheAsset.SerializedAdjacencyMapper, Allocator.Persistent);
-            //         _indices = new NativeArray<int>(_dataCacheAsset.SerializedIndices, Allocator.Persistent);
-            //         Profiler.EndSample();
-            //     }
-            //     else
-            //     {
-            //         CalculateCache();
-            //     }
-            // }
+            _meshDataCache.ApplyNormalsToBuffers(_normalBuffers);
+            _isComputeBuffersCreated = true;
         }
 
         private void OnDestroy()
@@ -195,197 +113,60 @@ namespace IcaNormal
             //Compute buffers need to be destroyed
             if (_isComputeBuffersCreated)
             {
-                foreach (var buffer in _normalsOutBuffer)
-                {
+                foreach (var buffer in _normalBuffers)
                     buffer.Dispose();
-                }
-
-                foreach (var buffer in _tangentsOutBuffer)
-                {
+                
+                foreach (var buffer in _tangentBuffers)
                     buffer.Dispose();
-                }
-                // _normalsOutBuffer.Release();
-                // _tangentsOutBuffer.Release();
             }
 
-            // foreach (var dataCache in _meshDataCaches)
-            // {
-            //  dataCache.Dispose();   
-            // }
-            _meshDataCaches.Dispose();
-
-            // _vertices.Dispose();
-            // _normals.Dispose();
-            // _tangents.Dispose();
-            // _meshDataArray.Dispose();
-            // _uvs.Dispose();
-            //
-            // if (CalculateMethod == NormalRecalculateMethodEnum.CachedParallel)
-            // {
-            //     _nativeAdjacencyList.Dispose();
-            //     _nativeAdjacencyMap.Dispose();
-            //     _indices.Dispose();
-            // }
+            _meshDataCache.Dispose();
         }
 
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
-            // if (CalculateMethod == NormalRecalculateMethodEnum.SDBursted)
-            //     RecalculateSDBursted();
-            //else if (CalculateMethod == NormalRecalculateMethodEnum.CachedParallel)
             RecalculateCachedParallel();
         }
 
-        // public void CalculateCache()
-        // {
-        //     Profiler.BeginSample("CalculateCacheData");
-        //
-        //     Profiler.BeginSample("GetIndices");
-        //     _mainMeshData.GetAllIndices(out _indices, Allocator.Persistent);
-        //     Profiler.EndSample();
-        //
-        //     Profiler.BeginSample("GetVertices");
-        //     var tempVertices = new NativeArray<float3>(_mainMeshData.vertexCount, Allocator.Temp);
-        //     _mainMeshData.GetVertices(tempVertices.Reinterpret<Vector3>());
-        //     Profiler.EndSample();
-        //
-        //     Profiler.BeginSample("GetVertexPosHashMap");
-        //     VertexPositionMapper.GetVertexPosHashMap(in tempVertices, out var tempPosGraph, Allocator.Temp);
-        //     Profiler.EndSample();
-        //
-        //     Profiler.BeginSample("GetAdjacency");
-        //     AdjacencyMapper.CalculateAdjacencyData(in tempVertices, in _indices, in tempPosGraph, out _nativeAdjacencyList, out _nativeAdjacencyMap, Allocator.Persistent);
-        //     Profiler.EndSample();
-        //
-        //     Profiler.EndSample();
-        // }
-
-        // private void RecalculateSDBursted()
-        // {
-        //     if (CalculateBlendShapes)
-        //     {
-        //         SmrUtils.CopyBlendShapes((SkinnedMeshRenderer)_smr, _tempSmr);
-        //         _tempSmr.BakeMesh(_tempMesh);
-        //         var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
-        //         SDBurstedMethod.CalculateNormalData(mda[0], SmoothingAngle, ref _meshDataCaches._normals, ref _meshDataCaches._tangents);
-        //         mda.Dispose();
-        //     }
-        //     else
-        //     {
-        //         SDBurstedMethod.CalculateNormalData(_meshDataCaches._mainMeshData, SmoothingAngle, ref _meshDataCaches._normals, ref _meshDataCaches._tangents);
-        //     }
-        //
-        //     SetNormals(_meshDataCaches._normals);
-        //     SetTangents(_meshDataCaches._tangents);
-        // }
-
         private void RecalculateCachedParallel()
         {
-            // UpdateNativeVertices();
-
-            CachedParallelMethod.CalculateNormalData(_meshDataCaches.VertexData, _meshDataCaches.IndexData, ref _meshDataCaches.NormalData, _meshDataCaches.AdjacencyList,
-                _meshDataCaches.AdjacencyMapper);
-
-            SetNormals(_meshDataCaches.GetTempSplittedNormalData());
-
+            UpdateVertices();
+            CachedParallelMethod.CalculateNormalData(_meshDataCache.VertexData, _meshDataCache.IndexData,
+                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper);
+            SetNormals();
             if (RecalculateTangents)
             {
-                CachedParallelMethod.CalculateTangentData
-                (
-                    _meshDataCaches.VertexData,
-                    _meshDataCaches.NormalData,
-                    _meshDataCaches.IndexData,
-                    _meshDataCaches.UVData,
-                    _meshDataCaches.AdjacencyList,
-                    _meshDataCaches.AdjacencyMapper,
-                    ref _meshDataCaches.TangentData
-                );
-                SetTangents(_meshDataCaches.GetTempSplittedTangentData());
+                CachedParallelMethod.CalculateTangentData(_meshDataCache.VertexData, _meshDataCache.NormalData, _meshDataCache.IndexData,
+                    _meshDataCache.UVData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, ref _meshDataCache.TangentData);
+                SetTangents();
             }
         }
-
-    
-
-        private void SetNormals(UnsafeList<NativeList<float3>> normals)
+        
+        private void SetNormals()
         {
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
-            {
-                Profiler.BeginSample("WriteToMesh");
-                for (int i = 0; i < normals.Length; i++)
-                {
-                    _meshes[i].SetNormals(normals[i].AsArray());
-                }
-
-                //_mesh.SetNormals(normals.AsArray());
-                Profiler.EndSample();
-            }
+                _meshDataCache.ApplyNormalsToMeshes(_meshes);
             else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
-            {
-                Profiler.BeginSample("WriteToMaterial");
-                //_normalsOutBuffer.SetData(normals.AsArray());
-                for (int i = 0; i < normals.Length; i++)
-                {
-                    _normalsOutBuffer[i].SetData(normals[i].AsArray());
-                }
-
-                Profiler.EndSample();
-            }
+                _meshDataCache.ApplyNormalsToBuffers(_normalBuffers);
         }
-
-        private void SetTangents(UnsafeList<NativeList<float4>> tangentsList)
+        
+        private void SetTangents()
         {
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
-            {
-                Profiler.BeginSample("WriteToMesh");
-                for (int i = 0; i < tangentsList.Length; i++)
-                {
-                    _meshes[i].SetTangents(tangentsList[i].AsArray());
-                }
-
-                Profiler.EndSample();
-            }
+                _meshDataCache.ApplyTangentsToMeshes(_meshes);
             else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
-            {
-                Profiler.BeginSample("WriteToMaterial");
-                for (int i = 0; i < tangentsList.Length; i++)
-                {
-                    _tangentsOutBuffer[i].SetData(tangentsList[i].AsArray());
-                }
-
-                Profiler.EndSample();
-            }
+                _meshDataCache.ApplyTangentsToBuffers(_tangentBuffers);
         }
 
-        // public void TangentsOnlyTest()
-        // {
-        //     // UpdateNativeVerticesFromMeshData(_mainMeshData);
-        //     CachedParallelMethod.CalculateTangentData(_meshDataCaches._vertices, _meshDataCaches._normals, _meshDataCaches._indices, _meshDataCaches._uvs, _meshDataCaches._AdjacencyList,
-        //         _meshDataCaches._AdjacencyMapper, ref _meshDataCaches._tangents);
-        //     SetTangents(_meshDataCaches._tangents);
-        // }
-
-        // private void UpdateNativeVertices()
-        // {
-        //     if (CalculateBlendShapes )
-        //     {
-        //         Profiler.BeginSample("GetSMRData");
-        //         SmrUtils.CopyBlendShapes((SkinnedMeshRenderer)_smr, _tempSmr);
-        //         _tempSmr.BakeMesh(_tempMesh);
-        //         var mda = Mesh.AcquireReadOnlyMeshData(_tempMesh);
-        //         UpdateNativeVerticesFromMeshData(mda[0]);
-        //         mda.Dispose();
-        //         Profiler.EndSample();
-        //     }
-        //     else
-        //     {
-        //         UpdateNativeVerticesFromMeshData(_mainMeshData);
-        //     }
-        // }
-
-        // private void UpdateNativeVerticesFromMeshData(Mesh.MeshData data)
-        // {
-        //     data.GetVertices(_vertices.Reinterpret<Vector3>());
-        // }
+        public void UpdateVertices()
+        {
+            for (int meshIndex = 0; meshIndex < TargetSkinnedMeshRenderers.Count; meshIndex++)
+                TempSMRs[meshIndex].BakeMesh(_tempMeshes[meshIndex]);
+            
+            var tempMDA = Mesh.AcquireReadOnlyMeshData(_tempMeshes);
+            _meshDataCache.UpdateOnlyVertexData(tempMDA);
+            tempMDA.Dispose();
+        }
     }
 }

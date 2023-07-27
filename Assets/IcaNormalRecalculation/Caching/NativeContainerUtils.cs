@@ -22,7 +22,7 @@ namespace IcaNormal
         // }
 
         [BurstCompile]
-        public static void GetMergedVertices(Mesh.MeshDataArray mda, ref NativeArray<float3> outMergedVertices, ref NativeArray<int> map)
+        public static void GetMergedVertices(in Mesh.MeshDataArray mda, ref NativeArray<float3> outMergedVertices, ref NativeArray<int> map)
         {
             var vertexList = new UnsafeList<NativeArray<float3>>(mda[0].vertexCount, Allocator.Temp);
             for (int i = 0; i < mda.Length; i++)
@@ -86,7 +86,7 @@ namespace IcaNormal
             var mapperIndex = 0;
             for (int i = 0; i < nestedData.Length; i++)
             {
-                outUnrolledData.AddRange(nestedData[i]);
+                outUnrolledData.AddRange(nestedData[i].AsArray());
                 outMapper[i] = mapperIndex;
                 mapperIndex += nestedData[i].Length;
             }
@@ -130,7 +130,7 @@ namespace IcaNormal
             }
         }
 
-        public static int GetTotalVertexCountFomMDA(Mesh.MeshDataArray mda)
+        public static int GetTotalVertexCountFomMDA(in Mesh.MeshDataArray mda)
         {
             var count = 0;
             for (int i = 0; i < mda.Length; i++)

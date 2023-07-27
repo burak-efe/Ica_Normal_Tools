@@ -44,7 +44,7 @@ namespace IcaNormal
 
 
             Profiler.BeginSample("GetPosGraph");
-            VertexPositionMapper.GetVertexPosHashMap( vertices, out var posMap, Allocator.Temp);
+            VertexPositionMapper.GetVertexPosHashMap( vertices.AsArray(), out var posMap, Allocator.Temp);
             Profiler.EndSample();
 
             Profiler.BeginSample("GetDuplicatesGraph");
@@ -59,7 +59,7 @@ namespace IcaNormal
 
             Profiler.BeginSample("Adjacency");
             Profiler.BeginSample("Calculate");
-            AdjacencyMapper.CalculateAdjacencyData( vertices,  indices,  posMap, out var  adjacencyList, out var adjacencyMapper, Allocator.Temp);
+            AdjacencyMapper.CalculateAdjacencyData( vertices.AsArray(),  indices,  posMap, out var  adjacencyList, out var adjacencyMapper, Allocator.Temp);
             Profiler.EndSample();
 
             SerializedAdjacencyList = new int[adjacencyList.Length];
