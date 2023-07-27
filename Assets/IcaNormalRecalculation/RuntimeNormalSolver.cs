@@ -15,27 +15,19 @@ namespace IcaNormal
 
         [Tooltip("Smoothing angle only usable with bursted method")]
         public bool RecalculateOnStart;
-
         public bool RecalculateTangents;
-
         [Tooltip("Data cache asset required when using cached method. You can create this on project tab context menu/plugins /Mesh data cache.")]
         public MeshDataCacheAsset _dataCacheAsset;
-
-        [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")]
-        public GameObject ModelPrefab;
-
         public List<SkinnedMeshRenderer> TargetSkinnedMeshRenderers;
         private MeshDataCache _meshDataCache;
-
         private List<Mesh> _meshes;
-
-        //compute buffer for passing data into shaders
-        private List<ComputeBuffer> _normalBuffers;
-        private List<ComputeBuffer> _tangentBuffers;
+        [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")]
         public List<GameObject> Prefabs;
         private List<GameObject> TempObjects;
         private List<SkinnedMeshRenderer> TempSMRs;
         private List<Mesh> _tempMeshes;
+        private List<ComputeBuffer> _normalBuffers;
+        private List<ComputeBuffer> _tangentBuffers;
         private bool _isComputeBuffersCreated;
 
         private void Start() 
@@ -162,7 +154,14 @@ namespace IcaNormal
         public void UpdateVertices()
         {
             for (int meshIndex = 0; meshIndex < TargetSkinnedMeshRenderers.Count; meshIndex++)
+            {
+                var smr = TargetSkinnedMeshRenderers[meshIndex];
+                for (int bsIndex = 0; bsIndex < smr.sharedMesh.blendShapeCount ; bsIndex++)
+                {
+                    TempSMRs[meshIndex].SetBlendShapeWeight(bsIndex,smr.GetBlendShapeWeight(bsIndex));
+                }
                 TempSMRs[meshIndex].BakeMesh(_tempMeshes[meshIndex]);
+            }
             
             var tempMDA = Mesh.AcquireReadOnlyMeshData(_tempMeshes);
             _meshDataCache.UpdateOnlyVertexData(tempMDA);

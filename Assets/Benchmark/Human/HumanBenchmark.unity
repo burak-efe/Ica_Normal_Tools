@@ -241,14 +241,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CalculateMethod: 1
   NormalOutputTarget: 1
-  SmoothingAngle: 120
   RecalculateOnStart: 1
   RecalculateTangents: 0
-  CalculateBlendShapes: 0
   _dataCacheAsset: {fileID: 0}
-  ModelPrefab: {fileID: 0}
   TargetSkinnedMeshRenderers:
   - {fileID: 586909881}
   Prefabs: []
@@ -779,18 +775,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CalculateMethod: 1
-  NormalOutputTarget: 1
-  SmoothingAngle: 120
+  NormalOutputTarget: 0
   RecalculateOnStart: 1
   RecalculateTangents: 0
-  CalculateBlendShapes: 0
   _dataCacheAsset: {fileID: 0}
-  ModelPrefab: {fileID: 0}
   TargetSkinnedMeshRenderers:
-  - {fileID: 1389065781}
   - {fileID: 1389065780}
-  Prefabs: []
+  - {fileID: 1389065781}
+  Prefabs:
+  - {fileID: 6332626100395691181, guid: 02490cb733ab41c42a0b575697128dbe, type: 3}
+  - {fileID: -1655945600063227054, guid: 02490cb733ab41c42a0b575697128dbe, type: 3}
 --- !u!137 &1389065780 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 9139150310493927345, guid: 02490cb733ab41c42a0b575697128dbe, type: 3}
