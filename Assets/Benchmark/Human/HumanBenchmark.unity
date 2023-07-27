@@ -776,7 +776,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NormalOutputTarget: 0
-  RecalculateOnStart: 1
+  RecalculateOnStart: 0
   RecalculateTangents: 0
   _dataCacheAsset: {fileID: 0}
   TargetSkinnedMeshRenderers:
@@ -810,7 +810,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1875738153
 Transform:
   m_ObjectHideFlags: 0
@@ -837,7 +837,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2000590237}
-  - component: {fileID: 2000590236}
+  - component: {fileID: 2000590238}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -845,30 +845,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2000590236
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2000590235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3bace336106f6418f3b2f28a63f7be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  UnityBuiltIn: 282
-  TB_NormalSolver: 283
-  SDBursted: 284
-  CachedLite: 285
-  CachedParallel: 286
-  TangentOnly: 287
-  BuiltInTangentOnly: 288
-  BuiltInTargetMesh: {fileID: -6750983737991033809, guid: f571c6c88e476574986ad0537cbbfbc1, type: 3}
-  TB_TargetMesh: {fileID: -6750983737991033809, guid: f571c6c88e476574986ad0537cbbfbc1, type: 3}
-  SDBurstedRuntimeNormalSolver: {fileID: 0}
-  CachedLiteRuntimeNormalSolver: {fileID: 0}
-  CachedParallelRuntimeNormalSolver: {fileID: 586909880}
 --- !u!4 &2000590237
 Transform:
   m_ObjectHideFlags: 0
@@ -884,3 +860,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2000590238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000590235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bf843e44c9b2f948809482a8722b4cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  KeyCode1: 257
+  Init: 258
+  Solver1: {fileID: 1389065779}

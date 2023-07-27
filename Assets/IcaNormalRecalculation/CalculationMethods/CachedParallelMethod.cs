@@ -21,13 +21,18 @@ namespace IcaNormal
         {
             VertexPositionMapper.GetVertexPosHashMap(vertices, out var posMap, Allocator.TempJob);
             //DuplicateVerticesMapper.GetDuplicateVerticesMap(posMap, out var duplicateMap, Allocator.TempJob);
-            AdjacencyMapper.CalculateAdjacencyData(vertices,indices,posMap,out var adjacencyList,out var adjacencyMapper,Allocator.TempJob);
-            CalculateNormalData(vertices,indices,ref outNormals,adjacencyList,adjacencyMapper);
+            AdjacencyMapper.CalculateAdjacencyData(vertices, indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
+            
+            var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            CalculateNormalData(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper,triNormals ,out var handle);
 
+            handle.Complete();
             foreach (var kvPair in posMap)
             {
                 kvPair.Value.Dispose();
             }
+
+            triNormals.Dispose();
             posMap.Dispose();
             adjacencyList.Dispose();
             adjacencyMapper.Dispose();
@@ -40,20 +45,18 @@ namespace IcaNormal
             in NativeList<int> indices,
             ref NativeArray<float3> outNormals,
             in NativeList<int> adjacencyList,
-            in NativeArray<int2> adjacencyMap
+            in NativeArray<int2> adjacencyMap,
+            in NativeArray<float3> triNormals,
+            out JobHandle handle
         )
         {
+            var triangleCount = indices.Length / 3;
+
             var pAllocate = new ProfilerMarker("Allocate");
             pAllocate.Begin();
-            var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
-            //var vertices = new NativeArray<float3>(meshData.vertexCount, Allocator.TempJob);
-            //var verticesAsVector = vertices.Reinterpret<Vector3>();
+            //var triNormals = new NativeArray<float3>(triangleCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             pAllocate.End();
 
-            // var pGetVertices = new ProfilerMarker("pGetVertices");
-            // pGetVertices.Begin();
-            // meshData.GetVertices(verticesAsVector);
-            // pGetVertices.End();
 
             var pSchedule = new ProfilerMarker("pSchedule");
             pSchedule.Begin();
@@ -73,20 +76,26 @@ namespace IcaNormal
                 Normals = outNormals
             };
 
-            var tJobHandle = triNormalJob.ScheduleParallel
-                (indices.Length / 3, indices.Length / 3 / 64, default);
+            var tJobHandle = triNormalJob.ScheduleParallel(
+                triangleCount,
+                (int)math.ceil(triangleCount / 128f),
+                default);
 
-            var vJobHandle = vertexNormalJob.ScheduleParallel
-                (vertices.Length, vertices.Length / 64, tJobHandle);
+            handle = vertexNormalJob.ScheduleParallel(
+                vertices.Length,
+                (int)math.ceil(vertices.Length / 128f),
+                tJobHandle);
 
             pSchedule.End();
 
-            vJobHandle.Complete();
+            var pComplete = new ProfilerMarker("pComplete");
+            pComplete.Begin();
+            //handle.Complete();
+            pComplete.End();
 
             var pDispose = new ProfilerMarker("Dispose");
             pDispose.Begin();
-            triNormals.Dispose();
-            //vertices.Dispose();
+            //triNormals.Dispose();
             pDispose.End();
         }
 
@@ -138,7 +147,6 @@ namespace IcaNormal
         [BurstCompile]
         public static void CalculateTangentData
         (
-
             in NativeArray<float3> vertices,
             in NativeArray<float3> normals,
             in NativeList<int> indices,
@@ -150,8 +158,7 @@ namespace IcaNormal
         {
             var p = new ProfilerMarker("pCachedParallelTangent");
             p.Begin();
-            //var vertices = new NativeArray<float3>(meshData.vertexCount, Allocator.TempJob);
-            //meshData.GetVertices(vertices.Reinterpret<Vector3>());
+
             var tan1 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
             var tan2 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
 

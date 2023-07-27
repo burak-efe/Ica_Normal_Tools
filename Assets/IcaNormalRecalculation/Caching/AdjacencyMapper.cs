@@ -11,14 +11,13 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
-  //  [BurstCompile]
+    //  [BurstCompile]
     public static class AdjacencyMapper
     {
         /// <summary>
         /// Calculate adjacency data of every vertex
         /// </summary>
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //[BurstCompile]
+        [BurstCompile]
         public static void CalculateAdjacencyData
         (
             in NativeArray<float3> vertices,
@@ -39,7 +38,7 @@ namespace IcaNormal
             for (int i = 0; i < vertices.Length; i++)
             {
                 pTempSubAllocate.Begin();
-                tempAdjData.Add(new NativeList<int>(6, Allocator.Temp));
+                tempAdjData.Add(new NativeList<int>(3, Allocator.Temp));
                 pTempSubAllocate.End();
             }
 
@@ -74,7 +73,7 @@ namespace IcaNormal
             pOut.Begin();
 
             outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
-            outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator);
+            outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator, NativeArrayOptions.UninitializedMemory);
             pOut.End();
 
             var p2 = new ProfilerMarker("Unroll");
