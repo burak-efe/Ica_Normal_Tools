@@ -11,13 +11,13 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
-  //  [BurstCompile]
+   [BurstCompile]
     public static unsafe class AdjacencyMapper
     {
         /// <summary>
         /// Calculate adjacency data to triangle of every vertex
         /// </summary>
-        // [BurstCompile]
+         [BurstCompile]
         public static void CalculateAdjacencyData
         (
             in NativeArray<float3> vertices,
@@ -28,24 +28,23 @@ namespace IcaNormal
             Allocator allocator
         )
         {
-            var pTempContainerAllocate = new ProfilerMarker("pTempContainerAllocate");
-            var pTempSubAllocate = new ProfilerMarker("pTempSubContainerAllocate");
-            var pCalculateAdjacencyData = new ProfilerMarker("pCalculateAdjacencyData");
-            var pAllocateOutContainers = new ProfilerMarker("pAllocateOutContainers");
-            var pUnroll = new ProfilerMarker("pUnroll");
+            var pAdjTempContainerAllocate = new ProfilerMarker("pAdjTempContainerAllocate");
+            var pTempSubAllocate = new ProfilerMarker("pAdjTempSubContainerAllocate");
+            var pCalculateAdjacencyData = new ProfilerMarker("pAdjCalculateAdjacencyData");
+            var pAllocateOutContainers = new ProfilerMarker("pAdjAllocateOutContainers");
+            var pUnroll = new ProfilerMarker("pAdjUnroll");
 
-            pTempContainerAllocate.Begin();
-            var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
-            //var tempAdjData = new UnsafeList<UnsafeList<int>>(vertices.Length, Allocator.Temp);
-            pTempContainerAllocate.End();
+            pAdjTempContainerAllocate.Begin();
+            //var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
+            var tempAdjData = new UnsafeList<UnsafeList<int>>(vertices.Length, Allocator.Temp);
+            pAdjTempContainerAllocate.End();
 
             pTempSubAllocate.Begin();
             for (int i = 0; i < vertices.Length; i++)
             {
-                tempAdjData.Add(new NativeList<int>(4, Allocator.Temp));
-                //tempAdjData.Add(new UnsafeList<int>(4, Allocator.Temp));
+                //tempAdjData.Add(new NativeList<int>(4, Allocator.Temp));
+                tempAdjData.Add(new UnsafeList<int>(4, Allocator.Temp));
             }
-
             pTempSubAllocate.End();
 
             pCalculateAdjacencyData.Begin();
@@ -59,12 +58,20 @@ namespace IcaNormal
                 {
                     var subVertexOfTriangle = indices[indicesIndex + v];
 
-                    foreach (int vertexIndex in vertexPosHashMap[vertices[subVertexOfTriangle]])
+                    var listOfVerticesOnThatPosition = vertexPosHashMap[vertices[subVertexOfTriangle]];
+                    for (int i = 0; i < listOfVerticesOnThatPosition.Length; i++)
                     {
-                        //if (!tempAdjData[vertexIndex].Contains(triIndex))
-                        tempAdjData[vertexIndex].Add(triIndex);
+                        tempAdjData.ElementAt(listOfVerticesOnThatPosition.ElementAt(i)).Add(triIndex);
+
                         unrolledListLength++;
                     }
+                    // foreach (int vertexIndex in vertexPosHashMap[vertices[subVertexOfTriangle]])
+                    // {
+                    //     //if (!tempAdjData[vertexIndex].Contains(triIndex))
+                    //     tempAdjData.ElementAt(vertexIndex).Add(triIndex);
+                    //
+                    //     unrolledListLength++;
+                    // }
                 }
             }
 
@@ -72,7 +79,7 @@ namespace IcaNormal
 
             pAllocateOutContainers.Begin();
             outAdjacencyList = new NativeList<int>(unrolledListLength , allocator);
-            //outAdjacencyList = new UnsafeList<int>(unrolledListLength, allocator);
+
             outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator, NativeArrayOptions.UninitializedMemory);
             pAllocateOutContainers.End();
 
@@ -80,13 +87,13 @@ namespace IcaNormal
             int currentStartIndex = 0;
             for (int i = 0; i < vertices.Length; i++)
             {
-                int size = tempAdjData[i].Length;
-                outAdjacencyList.AddRangeNoResize(tempAdjData[i]);
-                //outAdjacencyList.AddRange(tempAdjData[i].Ptr,tempAdjData[i].m_length);
+                int size = tempAdjData.ElementAt(i).Length;
+                outAdjacencyList.AddRangeNoResize(tempAdjData[i].Ptr,tempAdjData[i].Length);
+
                 outAdjacencyMapper[i] = new int2(currentStartIndex, size);
                 currentStartIndex += size;
             }
-
+            
             pUnroll.End();
         }
 

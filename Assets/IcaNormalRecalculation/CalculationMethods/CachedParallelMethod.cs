@@ -20,7 +20,6 @@ namespace IcaNormal
         )
         {
             VertexPositionMapper.GetVertexPosHashMap(vertices, out var posMap, Allocator.TempJob);
-            //DuplicateVerticesMapper.GetDuplicateVerticesMap(posMap, out var duplicateMap, Allocator.TempJob);
             AdjacencyMapper.CalculateAdjacencyData(vertices, indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
             
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
@@ -87,15 +86,10 @@ namespace IcaNormal
                 tJobHandle);
 
             pSchedule.End();
-
-            var pComplete = new ProfilerMarker("pComplete");
-            pComplete.Begin();
-            //handle.Complete();
-            pComplete.End();
-
+            
             var pDispose = new ProfilerMarker("Dispose");
             pDispose.Begin();
-            //triNormals.Dispose();
+
             pDispose.End();
         }
 

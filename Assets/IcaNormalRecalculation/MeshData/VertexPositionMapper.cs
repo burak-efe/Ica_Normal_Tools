@@ -5,6 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Profiling;
+using UnityEngine;
 
 namespace IcaNormal
 {
@@ -21,11 +22,11 @@ namespace IcaNormal
         [BurstCompile]
         public static void GetVertexPosHashMap(in NativeArray<float3> vertices, out UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair, Allocator allocator)
         {
-            var pAllocateOut = new ProfilerMarker("pAllocateOut");
-            var pTryGetValueAndAddNewPair = new ProfilerMarker("pTryGetValueAndAddNewPair");
-            var pAddNewPair = new ProfilerMarker("pAddNewPair");
-            var pAddToList = new ProfilerMarker("pAddToList");
-            
+            var pAllocateOut = new ProfilerMarker("pPosMapAllocateOut");
+            var pTryGetValueAndAddNewPair = new ProfilerMarker("pPosMapTryGetValueAndAddNewPair");
+            var pAddNewPair = new ProfilerMarker("pPosMapAddNewPair");
+            var pAddToList = new ProfilerMarker("pPosMapAddToList");
+
             pAllocateOut.Begin();
             posVertexIndicesPair = new UnsafeHashMap<float3, NativeList<int>>(vertices.Length, allocator);
             pAllocateOut.End();
@@ -33,20 +34,26 @@ namespace IcaNormal
             for (int vertexIndex = 0; vertexIndex < vertices.Length; vertexIndex++)
             {
                 pTryGetValueAndAddNewPair.Begin();
+
                 if (!posVertexIndicesPair.TryGetValue(vertices[vertexIndex], out var vertexIndexList))
                 {
                     pAddNewPair.Begin();
-                    vertexIndexList = new NativeList<int>(allocator);
+                    vertexIndexList = new NativeList<int>(1, allocator);
+                    vertexIndexList.Add(vertexIndex);
+                    
                     posVertexIndicesPair.Add(vertices[vertexIndex], vertexIndexList);
                     pAddNewPair.End();
                 }
+                else
+                {
+                    vertexIndexList.Add(vertexIndex);
+                }
                 pTryGetValueAndAddNewPair.End();
-
+                
                 pAddToList.Begin();
-                vertexIndexList.Add(vertexIndex);
+
                 pAddToList.End();
             }
-
 
         }
     }
