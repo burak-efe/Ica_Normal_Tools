@@ -11,11 +11,11 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
-    //  [BurstCompile]
+    [BurstCompile]
     public static class AdjacencyMapper
     {
         /// <summary>
-        /// Calculate adjacency data of every vertex
+        /// Calculate adjacency data to triangle of every vertex
         /// </summary>
         [BurstCompile]
         public static void CalculateAdjacencyData
@@ -28,25 +28,32 @@ namespace IcaNormal
             Allocator allocator
         )
         {
-            var pTempAllocate = new ProfilerMarker("TempAllocate");
+            var pMeshAdjacency = new ProfilerMarker("pMeshAdjacency");
+            var pTempAllocate = new ProfilerMarker("pTempContainerAllocate");
+            var pTempSubAllocate = new ProfilerMarker("pTempSubContainerAllocate");
+            var pCalculateAdjacencyData = new ProfilerMarker("pCalculateAdjacencyData");
+            var pAllocateOutContainers = new ProfilerMarker("pAllocateOutContainers");
+            var pUnroll = new ProfilerMarker("pUnroll");
+            
+            pMeshAdjacency.Begin();
+
             pTempAllocate.Begin();
 
             var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
 
-            var pTempSubAllocate = new ProfilerMarker("pTempSubAllocate");
 
+            pTempSubAllocate.Begin();
             for (int i = 0; i < vertices.Length; i++)
             {
-                pTempSubAllocate.Begin();
                 tempAdjData.Add(new NativeList<int>(3, Allocator.Temp));
-                pTempSubAllocate.End();
             }
+
+            pTempSubAllocate.End();
 
             pTempAllocate.End();
 
 
-            var p1 = new ProfilerMarker("Map");
-            p1.Begin();
+            pCalculateAdjacencyData.Begin();
 
             var unrolledListLength = 0;
             //for every triangle
@@ -67,31 +74,30 @@ namespace IcaNormal
                 }
             }
 
-            p1.End();
+            pCalculateAdjacencyData.End();
 
-            var pOut = new ProfilerMarker("AllocateOut");
-            pOut.Begin();
+            pAllocateOutContainers.Begin();
 
             outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
             outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator, NativeArrayOptions.UninitializedMemory);
-            pOut.End();
+            pAllocateOutContainers.End();
 
-            var p2 = new ProfilerMarker("Unroll");
-            p2.Begin();
 
-            //var tempList = new NativeList<int>(unrolledListLength, Allocator.Temp);
+
+            pUnroll.Begin();
+
             int currentStartIndex = 0;
             for (int i = 0; i < vertices.Length; i++)
             {
                 int size = tempAdjData[i].Length;
-                //tempList.AddRange(tempAdjData[i].AsArray());
                 outAdjacencyList.AddRange(tempAdjData[i].AsArray());
                 outAdjacencyMapper[i] = new int2(currentStartIndex, size);
                 currentStartIndex += size;
             }
 
-            //outAdjacencyList.CopyFrom(tempList.AsArray());
-            p2.End();
+            pUnroll.End();
+
+            pMeshAdjacency.End();
         }
     }
 }

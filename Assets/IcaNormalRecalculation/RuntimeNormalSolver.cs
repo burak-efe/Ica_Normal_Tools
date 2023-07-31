@@ -31,30 +31,22 @@ namespace IcaNormal
         public List<GameObject> Prefabs;
 
         private List<GameObject> TempObjects;
-        private List<SkinnedMeshRenderer> TempSMRs;
         private List<Mesh> _tempMeshes;
+        private List<SkinnedMeshRenderer> TempSMRs;
+        private List<List<Material>> _materials;
+        
         private List<ComputeBuffer> _normalBuffers;
         private List<ComputeBuffer> _tangentBuffers;
         private bool _isComputeBuffersCreated;
-        private JobHandle _normalHandle;
-        private bool _isNormalHandleScheduled;
+
+        //private JobHandle _normalHandle;
+        //private bool _isNormalHandleScheduled;
+
         private bool _isInitialized;
-        private List<List<Material>> _materials;
-
-
         private void Start()
         {
             Init();
         }
-
-        // private void LateUpdate()
-        // {
-        //     if (_isNormalHandleScheduled)
-        //     {
-        //         _normalHandle.Complete();
-        //         _isNormalHandleScheduled = false;
-        //     }
-        // }
 
         public void Init()
         {
@@ -97,9 +89,9 @@ namespace IcaNormal
                 TempSMRs.Add(obj.GetComponentInChildren<SkinnedMeshRenderer>());
             }
 
+            _isInitialized = true;
             if (RecalculateOnStart)
                 RecalculateNormals();
-            _isInitialized = true;
         }
 
         private void SetupForWriteToMaterial()
@@ -133,6 +125,8 @@ namespace IcaNormal
 
         private void OnDestroy()
         {
+            _meshDataCache.Dispose();
+            
             //Compute buffers need to be destroyed
             if (_isComputeBuffersCreated)
             {
@@ -153,22 +147,21 @@ namespace IcaNormal
                 Destroy(tempObject);
             }
 
-            if (_materials != null)
-            {
-                foreach (var matList in _materials)
-                {
-                    if (matList != null)
-                    {
-                        foreach (var material in matList)
-                        {
-                            Destroy(material);
-                        }
-                        
-                    }
-                }
-            }
+            // if (_materials != null)
+            // {
+            //     foreach (var matList in _materials)
+            //     {
+            //         if (matList != null)
+            //         {
+            //             foreach (var material in matList)
+            //             {
+            //                 Destroy(material);
+            //             }
+            //             
+            //         }
+            //     }
+            // }
 
-            _meshDataCache.Dispose();
         }
 
         [ContextMenu("RecalculateNormals")]
@@ -181,9 +174,8 @@ namespace IcaNormal
         {
             UpdateVertices();
             CachedParallelMethod.CalculateNormalData(_meshDataCache.VertexData, _meshDataCache.IndexData,
-                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.TriNormalData,out _normalHandle);
-            //_isNormalHandleScheduled = true;
-            _normalHandle.Complete();
+                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.TriNormalData,out var handle);
+            handle.Complete();
 
             SetNormals();
             if (RecalculateTangents)
@@ -213,7 +205,7 @@ namespace IcaNormal
         public void UpdateVertices()
         {
             Profiler.BeginSample("UpdateVertices");
-            Profiler.BeginSample("TransferBlendShapeValues");
+            Profiler.BeginSample("TransferBlendShapeValuesAndBake");
             for (int meshIndex = 0; meshIndex < TargetSkinnedMeshRenderers.Count; meshIndex++)
             {
                 var smr = TargetSkinnedMeshRenderers[meshIndex];
@@ -221,10 +213,11 @@ namespace IcaNormal
                 {
                     TempSMRs[meshIndex].SetBlendShapeWeight(bsIndex, smr.GetBlendShapeWeight(bsIndex));
                 }
-
+                
+                Profiler.BeginSample("BakeMesh");
                 TempSMRs[meshIndex].BakeMesh(_tempMeshes[meshIndex]);
+                Profiler.EndSample();
             }
-
             Profiler.EndSample();
 
             var tempMDA = Mesh.AcquireReadOnlyMeshData(_tempMeshes);
