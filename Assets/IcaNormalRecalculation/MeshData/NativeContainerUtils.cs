@@ -9,19 +9,8 @@ using UnityEngine;
 namespace IcaNormal
 {
     [BurstCompile]
-    public static class NativeContainerUtils
+    public unsafe static class NativeContainerUtils
     {
-        // [BurstCompile]
-        // public static void CreateAndGetMergedVertices(Mesh.MeshDataArray mda, out NativeList<float3> outMergedVertices, out NativeList<int> map, Allocator allocator)
-        // {
-        //     var size = GetTotalVertexCountFomMDA(mda);
-        //
-        //     outMergedVertices = new NativeList<float3>(size, allocator);
-        //     map = new NativeList<int>(size, allocator);
-        //     GetMergedVertices(mda, ref outMergedVertices, ref map);
-        // }
-
-
         [BurstCompile]
         public static void UnrollListOfListToArray<T>(UnsafeList<NativeList<T>> nestedData, ref NativeArray<T> outUnrolledData, ref NativeArray<int> outMapper) where T : unmanaged
         {
@@ -79,6 +68,13 @@ namespace IcaNormal
                 size += nestedContainer[i].Length;
             }
         }
+        
+        [BurstCompile]
+        public static void AddRangeUnsafeList<T>(this ref NativeList<T> list, in UnsafeList<T> unsafeList) where T : unmanaged
+        {
+            list.AddRange(unsafeList.Ptr,unsafeList.Length);
+   
+        }
 
         public static List<DuplicateVerticesList> GetManagedDuplicateVerticesMap(UnsafeList<NativeArray<int>> from)
         {
@@ -88,7 +84,6 @@ namespace IcaNormal
                 var managed = new DuplicateVerticesList { Value = fromArray.ToArray() };
                 list.Add(managed);
             }
-
             return list;
         }
     }

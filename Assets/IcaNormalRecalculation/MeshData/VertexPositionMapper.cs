@@ -21,13 +21,11 @@ namespace IcaNormal
         [BurstCompile]
         public static void GetVertexPosHashMap(in NativeArray<float3> vertices, out UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair, Allocator allocator)
         {
-            var pVertexPosMap = new ProfilerMarker("pVertexPosMap");
             var pAllocateOut = new ProfilerMarker("pAllocateOut");
             var pTryGetValueAndAddNewPair = new ProfilerMarker("pTryGetValueAndAddNewPair");
             var pAddNewPair = new ProfilerMarker("pAddNewPair");
             var pAddToList = new ProfilerMarker("pAddToList");
             
-            pVertexPosMap.Begin();
             pAllocateOut.Begin();
             posVertexIndicesPair = new UnsafeHashMap<float3, NativeList<int>>(vertices.Length, allocator);
             pAllocateOut.End();
@@ -35,7 +33,6 @@ namespace IcaNormal
             for (int vertexIndex = 0; vertexIndex < vertices.Length; vertexIndex++)
             {
                 pTryGetValueAndAddNewPair.Begin();
-
                 if (!posVertexIndicesPair.TryGetValue(vertices[vertexIndex], out var vertexIndexList))
                 {
                     pAddNewPair.Begin();
@@ -43,17 +40,14 @@ namespace IcaNormal
                     posVertexIndicesPair.Add(vertices[vertexIndex], vertexIndexList);
                     pAddNewPair.End();
                 }
-
                 pTryGetValueAndAddNewPair.End();
 
                 pAddToList.Begin();
-
                 vertexIndexList.Add(vertexIndex);
-
                 pAddToList.End();
             }
 
-            pVertexPosMap.End();
+
         }
     }
 }
