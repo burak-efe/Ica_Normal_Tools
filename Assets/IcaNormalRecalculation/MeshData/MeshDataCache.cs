@@ -18,41 +18,46 @@ namespace IcaNormal
         public NativeArray<float3> NormalData;
         public NativeArray<float4> TangentData;
         public NativeArray<float2> UVData;
+        public NativeArray<float3> TriNormalData;
+        public NativeArray<float3> Tan1Data;
+        public NativeArray<float3> Tan2Data;
         public NativeList<int> AdjacencyList;
         public NativeArray<int2> AdjacencyMapper;
         private Mesh.MeshDataArray _mda;
         private bool _initialized;
-        private NativeArray<int> _seperatorData;
-        private NativeArray<int> _indicesseperatorData;
-        public NativeArray<float3> TriNormalData;
+        private NativeArray<int> _vertexSeparatorData;
+        private NativeArray<int> _indexSeparatorData;
 
         public void InitFromMultipleMesh(List<Mesh> meshes)
         {
             Dispose();
             _mda = Mesh.AcquireReadOnlyMeshData(meshes);
 
-            _seperatorData = new NativeArray<int>(_mda.Length + 1, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            _indicesseperatorData = new NativeArray<int>(_mda.Length + 1, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            _vertexSeparatorData = new NativeArray<int>(_mda.Length + 1, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            _indexSeparatorData = new NativeArray<int>(_mda.Length + 1, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
 
             MergedMeshDataUtils.GetTotalVertexCountFomMDA(_mda, out TotalVertexCount);
 
             VertexData = new NativeArray<float3>(TotalVertexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            MergedMeshDataUtils.GetMergedVertices(_mda, ref VertexData, ref _seperatorData);
+            MergedMeshDataUtils.GetMergedVertices(_mda, ref VertexData, ref _vertexSeparatorData);
 
             NormalData = new NativeArray<float3>(TotalVertexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            MergedMeshDataUtils.GetMergedNormals(_mda, ref NormalData, ref _seperatorData);
+            MergedMeshDataUtils.GetMergedNormals(_mda, ref NormalData, ref _vertexSeparatorData);
 
             TangentData = new NativeArray<float4>(TotalVertexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            MergedMeshDataUtils.GetMergedTangents(_mda, ref TangentData, ref _seperatorData);
+            MergedMeshDataUtils.GetMergedTangents(_mda, ref TangentData, ref _vertexSeparatorData);
 
             UVData = new NativeArray<float2>(TotalVertexCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            MergedMeshDataUtils.GetMergedUVs(_mda, ref UVData, ref _seperatorData);
+            MergedMeshDataUtils.GetMergedUVs(_mda, ref UVData, ref _vertexSeparatorData);
 
             MergedMeshDataUtils.GetAllIndicesCountOfMultipleMeshes(_mda, out TotalIndexCount);
             IndexData = new NativeList<int>(TotalIndexCount, Allocator.Persistent);
-            MergedMeshDataUtils.GetMergedIndices(_mda, ref IndexData, ref _indicesseperatorData);
+            MergedMeshDataUtils.GetMergedIndices(_mda, ref IndexData, ref _indexSeparatorData);
 
             TriNormalData = new NativeArray<float3>(TotalIndexCount / 3, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            
+            Tan1Data = new NativeArray<float3>(TotalIndexCount / 3, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            Tan2Data = new NativeArray<float3>(TotalIndexCount / 3, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
 
             VertexPositionMapper.GetVertexPosHashMap(VertexData, out var tempPosGraph, Allocator.Temp);
             IcaNormal.AdjacencyMapper.CalculateAdjacencyData(VertexData, IndexData, tempPosGraph, out AdjacencyList, out AdjacencyMapper, Allocator.Persistent);
@@ -63,7 +68,7 @@ namespace IcaNormal
         public void UpdateOnlyVertexData(in Mesh.MeshDataArray mda)
         {
             Profiler.BeginSample("UpdateOnlyVertexData");
-            MergedMeshDataUtils.GetMergedVertices(mda, ref VertexData, ref _seperatorData);
+            MergedMeshDataUtils.GetMergedVertices(mda, ref VertexData, ref _vertexSeparatorData);
             Profiler.EndSample();
         }
 
@@ -72,8 +77,8 @@ namespace IcaNormal
             var n = new UnsafeList<NativeList<float3>>(_mda.Length, Allocator.Temp);
             for (int meshIndex = 0; meshIndex < _mda.Length; meshIndex++)
             {
-                var meshNormal = new NativeList<float3>(_seperatorData[meshIndex + 1] - _seperatorData[meshIndex], Allocator.Temp);
-                meshNormal.CopyFrom(NormalData.GetSubArray(_seperatorData[meshIndex], _seperatorData[meshIndex + 1] - _seperatorData[meshIndex]));
+                var meshNormal = new NativeList<float3>(_vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex], Allocator.Temp);
+                meshNormal.CopyFrom(NormalData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex]));
                 n.Add(meshNormal);
             }
 
@@ -86,7 +91,7 @@ namespace IcaNormal
             for (int meshIndex = 0; meshIndex < _mda.Length; meshIndex++)
             {
                 var mt = new NativeList<float4>(Allocator.Temp);
-                mt.CopyFrom(TangentData.GetSubArray(_seperatorData[meshIndex], _seperatorData[meshIndex + 1] - _seperatorData[meshIndex]));
+                mt.CopyFrom(TangentData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex]));
                 t.Add(mt);
             }
 
@@ -99,7 +104,7 @@ namespace IcaNormal
             for (int meshIndex = 0; meshIndex < buffers.Count; meshIndex++)
             {
                 buffers[meshIndex].SetData(
-                    NormalData.GetSubArray(_seperatorData[meshIndex], _seperatorData[meshIndex + 1] - _seperatorData[meshIndex])
+                    NormalData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex])
                 );
             }
 
@@ -111,7 +116,7 @@ namespace IcaNormal
             for (int meshIndex = 0; meshIndex < buffers.Count; meshIndex++)
             {
                 buffers[meshIndex].SetData(
-                    TangentData.GetSubArray(_seperatorData[meshIndex], _seperatorData[meshIndex + 1] - _seperatorData[meshIndex])
+                    TangentData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex])
                 );
             }
         }
@@ -121,7 +126,7 @@ namespace IcaNormal
             for (int meshIndex = 0; meshIndex < meshes.Count; meshIndex++)
             {
                 meshes[meshIndex].SetNormals(
-                    NormalData.GetSubArray(_seperatorData[meshIndex], _seperatorData[meshIndex + 1] - _seperatorData[meshIndex])
+                    NormalData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex])
                 );
             }
         }
@@ -131,7 +136,7 @@ namespace IcaNormal
             for (int meshIndex = 0; meshIndex < meshes.Count; meshIndex++)
             {
                 meshes[meshIndex].SetTangents(
-                    TangentData.GetSubArray(_seperatorData[meshIndex], _seperatorData[meshIndex + 1] - _seperatorData[meshIndex])
+                    TangentData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex])
                 );
             }
         }
@@ -198,9 +203,11 @@ namespace IcaNormal
             UVData.Dispose();
             AdjacencyList.Dispose();
             AdjacencyMapper.Dispose();
-            _seperatorData.Dispose();
-            _indicesseperatorData.Dispose();
+            _vertexSeparatorData.Dispose();
+            _indexSeparatorData.Dispose();
             TriNormalData.Dispose();
+            Tan1Data.Dispose();
+            Tan2Data.Dispose();
         }
 
 // ?? is this working?

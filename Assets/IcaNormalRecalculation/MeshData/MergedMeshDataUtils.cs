@@ -10,7 +10,7 @@ namespace IcaNormal
     public static class MergedMeshDataUtils
     {
         [BurstCompile]
-        public static void GetMergedVertices(in Mesh.MeshDataArray mda, ref NativeArray<float3> outMergedVertices, ref NativeArray<int> map)
+        public static void GetMergedVertices([NoAlias]in Mesh.MeshDataArray mda,[NoAlias] ref NativeArray<float3> outMergedVertices,[NoAlias] ref NativeArray<int> map)
         {
             var vertexList = new UnsafeList<NativeArray<float3>>(mda.Length, Allocator.Temp);
             for (int i = 0; i < mda.Length; i++)
@@ -23,7 +23,7 @@ namespace IcaNormal
             NativeContainerUtils.UnrollListOfArrayToArray(vertexList, ref map, ref outMergedVertices);
         }
 
-        public static void GetTotalVertexCountFomMDA(in Mesh.MeshDataArray mda, out int count)
+        public static void GetTotalVertexCountFomMDA([NoAlias]in Mesh.MeshDataArray mda,[NoAlias] out int count)
         {
             count = 0;
             for (int i = 0; i < mda.Length; i++)
@@ -33,7 +33,7 @@ namespace IcaNormal
         }
 
         [BurstCompile]
-        public static void GetMergedUVs(in Mesh.MeshDataArray mda, ref NativeArray<float2> outMergedUVs, ref NativeArray<int> map)
+        public static void GetMergedUVs([NoAlias]in Mesh.MeshDataArray mda,[NoAlias] ref NativeArray<float2> outMergedUVs,[NoAlias] ref NativeArray<int> map)
         {
             var nestedData = new UnsafeList<NativeArray<float2>>(mda.Length, Allocator.Temp);
             for (int i = 0; i < mda.Length; i++)
@@ -48,7 +48,7 @@ namespace IcaNormal
         
         
         [BurstCompile]
-        public static void GetMergedNormals(in Mesh.MeshDataArray mda, ref NativeArray<float3> outMergedNormals, ref NativeArray<int> map)
+        public static void GetMergedNormals([NoAlias]in Mesh.MeshDataArray mda,[NoAlias] ref NativeArray<float3> outMergedNormals,[NoAlias] ref NativeArray<int> map)
         {
             var nestedData = new UnsafeList<NativeArray<float3>>(mda.Length, Allocator.Temp);
             for (int i = 0; i < mda.Length; i++)
@@ -61,7 +61,7 @@ namespace IcaNormal
             NativeContainerUtils.UnrollListOfArrayToArray(nestedData, ref map, ref outMergedNormals);
         }
         [BurstCompile]
-        public static void GetMergedTangents(in Mesh.MeshDataArray mda, ref NativeArray<float4> outMergedNormals, ref NativeArray<int> map)
+        public static void GetMergedTangents([NoAlias]in Mesh.MeshDataArray mda,[NoAlias] ref NativeArray<float4> outMergedNormals,[NoAlias] ref NativeArray<int> map)
         {
             var nestedData = new UnsafeList<NativeArray<float4>>(mda.Length, Allocator.Temp);
             for (int i = 0; i < mda.Length; i++)
@@ -86,7 +86,7 @@ namespace IcaNormal
         }
 
         [BurstCompile]
-        public static void GetMergedIndices(in Mesh.MeshDataArray mda, ref NativeList<int> mergedIndices, ref NativeArray<int> mergedIndicesMap)
+        public static void GetMergedIndices([NoAlias] in Mesh.MeshDataArray mda,[NoAlias] ref NativeList<int> mergedIndices,[NoAlias] ref NativeArray<int> mergedIndicesMap)
         {
             var indexList = new UnsafeList<NativeList<int>>(1, Allocator.Temp);
             var prevMeshesTotalVertexCount = 0;
@@ -106,7 +106,7 @@ namespace IcaNormal
         }
 
         [BurstCompile]
-        public static void GetAllIndicesCountOfMultipleMeshes(in Mesh.MeshDataArray data, out int count)
+        public static void GetAllIndicesCountOfMultipleMeshes([NoAlias] in Mesh.MeshDataArray data, [NoAlias]out int count)
         {
             count = 0;
             for (int i = 0; i < data.Length; i++)

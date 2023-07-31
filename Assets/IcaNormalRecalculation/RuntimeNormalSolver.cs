@@ -34,7 +34,7 @@ namespace IcaNormal
         private List<Mesh> _tempMeshes;
         private List<SkinnedMeshRenderer> TempSMRs;
         private List<List<Material>> _materials;
-        
+
         private List<ComputeBuffer> _normalBuffers;
         private List<ComputeBuffer> _tangentBuffers;
         private bool _isComputeBuffersCreated;
@@ -43,6 +43,7 @@ namespace IcaNormal
         //private bool _isNormalHandleScheduled;
 
         private bool _isInitialized;
+
         private void Start()
         {
             Init();
@@ -54,6 +55,7 @@ namespace IcaNormal
             {
                 OnDestroy();
             }
+
             var meshCount = TargetSkinnedMeshRenderers.Count;
 
             _meshes = new List<Mesh>(meshCount);
@@ -126,7 +128,7 @@ namespace IcaNormal
         private void OnDestroy()
         {
             _meshDataCache.Dispose();
-            
+
             //Compute buffers need to be destroyed
             if (_isComputeBuffersCreated)
             {
@@ -161,7 +163,6 @@ namespace IcaNormal
             //         }
             //     }
             // }
-
         }
 
         [ContextMenu("RecalculateNormals")]
@@ -173,16 +174,32 @@ namespace IcaNormal
         private void RecalculateCachedParallel()
         {
             UpdateVertices();
-            CachedParallelMethod.CalculateNormalData(_meshDataCache.VertexData, _meshDataCache.IndexData,
-                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.TriNormalData,out var handle);
-            handle.Complete();
-
-            SetNormals();
+            CachedParallelMethod.ScheduleAndGetNormalJobHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
+                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.TriNormalData, out var normalHandle);
+            
             if (RecalculateTangents)
             {
-                CachedParallelMethod.CalculateTangentData(_meshDataCache.VertexData, _meshDataCache.NormalData, _meshDataCache.IndexData,
-                    _meshDataCache.UVData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, ref _meshDataCache.TangentData);
+                CachedParallelMethod.ScheduleAndGetTangentJobHandle(
+                    _meshDataCache.VertexData,
+                    _meshDataCache.NormalData,
+                    _meshDataCache.IndexData,
+                    _meshDataCache.UVData,
+                    _meshDataCache.AdjacencyList,
+                    _meshDataCache.AdjacencyMapper,
+                    _meshDataCache.Tan1Data,
+                    _meshDataCache.Tan2Data,
+                    ref _meshDataCache.TangentData,
+                    ref normalHandle,
+                    out var tangentHandle);
+                tangentHandle.Complete();
+                SetNormals();
                 SetTangents();
+                
+            }
+            else
+            {
+                normalHandle.Complete();
+                SetNormals();
             }
         }
 
@@ -213,11 +230,12 @@ namespace IcaNormal
                 {
                     TempSMRs[meshIndex].SetBlendShapeWeight(bsIndex, smr.GetBlendShapeWeight(bsIndex));
                 }
-                
+
                 Profiler.BeginSample("BakeMesh");
                 TempSMRs[meshIndex].BakeMesh(_tempMeshes[meshIndex]);
                 Profiler.EndSample();
             }
+
             Profiler.EndSample();
 
             var tempMDA = Mesh.AcquireReadOnlyMeshData(_tempMeshes);

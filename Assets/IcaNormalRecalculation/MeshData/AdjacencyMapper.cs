@@ -1,31 +1,26 @@
-﻿using System.Runtime.CompilerServices;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Profiling;
-using UnityEngine;
-using UnityEngine.Profiling;
-
 
 namespace IcaNormal
 {
    [BurstCompile]
-    public static unsafe class AdjacencyMapper
+    public static class AdjacencyMapper
     {
         /// <summary>
         /// Calculate adjacency data to triangle of every vertex
         /// </summary>
-         [BurstCompile]
+        [BurstCompile]
         public static void CalculateAdjacencyData
         (
-            in NativeArray<float3> vertices,
-            in NativeList<int> indices,
-            in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
-            out NativeList<int> outAdjacencyList,
-            out NativeArray<int2> outAdjacencyMapper,
-            Allocator allocator
+           [NoAlias] in NativeArray<float3> vertices,
+           [NoAlias] in NativeList<int> indices,
+           [NoAlias] in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
+           [NoAlias] out NativeList<int> outAdjacencyList,
+           [NoAlias] out NativeArray<int2> outAdjacencyMapper,
+           [NoAlias] Allocator allocator
         )
         {
             var pAdjTempContainerAllocate = new ProfilerMarker("pAdjTempContainerAllocate");
@@ -35,14 +30,13 @@ namespace IcaNormal
             var pUnroll = new ProfilerMarker("pAdjUnroll");
 
             pAdjTempContainerAllocate.Begin();
-            //var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
+
             var tempAdjData = new UnsafeList<UnsafeList<int>>(vertices.Length, Allocator.Temp);
             pAdjTempContainerAllocate.End();
 
             pTempSubAllocate.Begin();
             for (int i = 0; i < vertices.Length; i++)
             {
-                //tempAdjData.Add(new NativeList<int>(4, Allocator.Temp));
                 tempAdjData.Add(new UnsafeList<int>(4, Allocator.Temp));
             }
             pTempSubAllocate.End();
@@ -62,38 +56,30 @@ namespace IcaNormal
                     for (int i = 0; i < listOfVerticesOnThatPosition.Length; i++)
                     {
                         tempAdjData.ElementAt(listOfVerticesOnThatPosition.ElementAt(i)).Add(triIndex);
-
                         unrolledListLength++;
                     }
-                    // foreach (int vertexIndex in vertexPosHashMap[vertices[subVertexOfTriangle]])
-                    // {
-                    //     //if (!tempAdjData[vertexIndex].Contains(triIndex))
-                    //     tempAdjData.ElementAt(vertexIndex).Add(triIndex);
-                    //
-                    //     unrolledListLength++;
-                    // }
                 }
             }
-
             pCalculateAdjacencyData.End();
 
             pAllocateOutContainers.Begin();
             outAdjacencyList = new NativeList<int>(unrolledListLength , allocator);
-
             outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator, NativeArrayOptions.UninitializedMemory);
             pAllocateOutContainers.End();
 
             pUnroll.Begin();
-            int currentStartIndex = 0;
-            for (int i = 0; i < vertices.Length; i++)
+            unsafe
             {
-                int size = tempAdjData.ElementAt(i).Length;
-                outAdjacencyList.AddRangeNoResize(tempAdjData[i].Ptr,tempAdjData[i].Length);
-
-                outAdjacencyMapper[i] = new int2(currentStartIndex, size);
-                currentStartIndex += size;
+                int currentStartIndex = 0;
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    int size = tempAdjData.ElementAt(i).Length;
+                    outAdjacencyList.AddRangeNoResize(tempAdjData[i].Ptr, tempAdjData[i].Length);
+                    outAdjacencyMapper[i] = new int2(currentStartIndex, size);
+                    currentStartIndex += size;
+                }
+                
             }
-            
             pUnroll.End();
         }
 

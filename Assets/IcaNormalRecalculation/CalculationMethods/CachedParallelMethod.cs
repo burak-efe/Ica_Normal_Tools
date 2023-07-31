@@ -11,7 +11,7 @@ namespace IcaNormal
     [BurstCompile]
     public static class CachedParallelMethod
     {
-        //[BurstCompile]
+        [BurstCompile]
         public static void CalculateNormalDataUncached
         (
             in NativeArray<float3> vertices,
@@ -23,7 +23,7 @@ namespace IcaNormal
             AdjacencyMapper.CalculateAdjacencyData(vertices, indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
             
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            CalculateNormalData(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper,triNormals ,out var handle);
+            ScheduleAndGetNormalJobHandle(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper,triNormals ,out var handle);
 
             handle.Complete();
             foreach (var kvPair in posMap)
@@ -38,7 +38,7 @@ namespace IcaNormal
         }
 
         [BurstCompile]
-        public static void CalculateNormalData
+        public static void ScheduleAndGetNormalJobHandle
         (
             in NativeArray<float3> vertices,
             in NativeList<int> indices,
@@ -139,7 +139,7 @@ namespace IcaNormal
 
 
         [BurstCompile]
-        public static void CalculateTangentData
+        public static void ScheduleAndGetTangentJobHandle
         (
             in NativeArray<float3> vertices,
             in NativeArray<float3> normals,
@@ -147,14 +147,18 @@ namespace IcaNormal
             in NativeArray<float2> uv,
             in NativeList<int> adjacencyList,
             in NativeArray<int2> adjacencyMap,
-            ref NativeArray<float4> outTangents
+            in NativeArray<float3> tan1,
+            in NativeArray<float3> tan2,
+            ref NativeArray<float4> outTangents,
+            ref JobHandle normalHandle,
+            out JobHandle tangentHandle
         )
         {
-            var p = new ProfilerMarker("pCachedParallelTangent");
-            p.Begin();
+            var pCachedParallelTangent = new ProfilerMarker("pCachedParallelTangent");
+            pCachedParallelTangent.Begin();
 
-            var tan1 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
-            var tan2 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
+           // var tan1 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
+           // var tan2 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
 
             var triTangentJob = new TriTangentJob
             {
@@ -174,19 +178,16 @@ namespace IcaNormal
                 Tan2 = tan2,
                 Tangents = outTangents
             };
-
-
+            
             var triHandle = triTangentJob.ScheduleParallel
-                (indices.Length / 3, indices.Length / 3 / 64, default);
+                (indices.Length / 3, indices.Length / 3 / 64, normalHandle);
 
-            var vertHandle = vertexTangentJob.ScheduleParallel
+            tangentHandle = vertexTangentJob.ScheduleParallel
                 (vertices.Length, vertices.Length / 64, triHandle);
-
-            vertHandle.Complete();
-            //vertices.Dispose();
-            tan1.Dispose();
-            tan2.Dispose();
-            p.End();
+            
+          //  tan1.Dispose();
+          //  tan2.Dispose();
+            pCachedParallelTangent.End();
         }
 
 

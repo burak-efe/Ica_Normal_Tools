@@ -9,10 +9,10 @@ using UnityEngine;
 namespace IcaNormal
 {
     [BurstCompile]
-    public unsafe static class NativeContainerUtils
+    public static unsafe class NativeContainerUtils
     {
         [BurstCompile]
-        public static void UnrollListOfListToArray<T>(UnsafeList<NativeList<T>> nestedData, ref NativeArray<T> outUnrolledData, ref NativeArray<int> outMapper) where T : unmanaged
+        public static void UnrollListOfListToArray<T>([NoAlias]UnsafeList<NativeList<T>> nestedData,[NoAlias] ref NativeArray<T> outUnrolledData,[NoAlias] ref NativeArray<int> outMapper) where T : unmanaged
         {
             var templist = new NativeList<T>(Allocator.Temp);
             UnrollListOfListToList(nestedData,  ref templist,ref outMapper);
@@ -20,7 +20,7 @@ namespace IcaNormal
         }
 
         [BurstCompile]
-        public static void UnrollListOfListToList<T>(UnsafeList<NativeList<T>> nestedData, ref NativeList<T> outUnrolledData, ref NativeArray<int> outMapper) where T : unmanaged
+        public static void UnrollListOfListToList<T>([NoAlias]UnsafeList<NativeList<T>> nestedData,[NoAlias] ref NativeList<T> outUnrolledData,[NoAlias] ref NativeArray<int> outMapper) where T : unmanaged
         {
             var mapperIndex = 0;
             for (int i = 0; i < nestedData.Length; i++)
@@ -33,7 +33,7 @@ namespace IcaNormal
         }
         
         [BurstCompile]
-        public static void UnrollListOfArrayToArray<T>(UnsafeList<NativeArray<T>> nestedData, ref NativeArray<int> outMapper, ref NativeArray<T> outUnrolledData) where T : unmanaged
+        public static void UnrollListOfArrayToArray<T>([NoAlias]UnsafeList<NativeArray<T>> nestedData,[NoAlias] ref NativeArray<int> outMapper,[NoAlias] ref NativeArray<T> outUnrolledData) where T : unmanaged
         {
             GetUnrolledSizeOfNestedContainer(nestedData,out var size);
             var templist = new NativeList<T>(size,Allocator.Temp);
@@ -50,7 +50,7 @@ namespace IcaNormal
 
 
         [BurstCompile]
-        public static void GetUnrolledSizeOfNestedContainer<T>(UnsafeList<NativeList<T>> nestedContainer, out int size) where T : unmanaged
+        public static void GetUnrolledSizeOfNestedContainer<T>([NoAlias]UnsafeList<NativeList<T>> nestedContainer, [NoAlias]out int size) where T : unmanaged
         {
             size = 0;
             for (int i = 0; i < nestedContainer.Length; i++)
@@ -60,7 +60,7 @@ namespace IcaNormal
         }
         
         [BurstCompile]
-        public static void GetUnrolledSizeOfNestedContainer<T>(UnsafeList<NativeArray<T>> nestedContainer, out int size) where T : unmanaged
+        public static void GetUnrolledSizeOfNestedContainer<T>([NoAlias]UnsafeList<NativeArray<T>> nestedContainer,[NoAlias]out int size) where T : unmanaged
         {
             size = 0;
             for (int i = 0; i < nestedContainer.Length; i++)
@@ -70,7 +70,7 @@ namespace IcaNormal
         }
         
         [BurstCompile]
-        public static void AddRangeUnsafeList<T>(this ref NativeList<T> list, in UnsafeList<T> unsafeList) where T : unmanaged
+        public static void AddRangeUnsafeList<T>([NoAlias]this ref NativeList<T> list,[NoAlias] in UnsafeList<T> unsafeList) where T : unmanaged
         {
             list.AddRange(unsafeList.Ptr,unsafeList.Length);
    
