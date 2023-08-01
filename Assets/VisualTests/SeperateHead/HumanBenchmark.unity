@@ -551,9 +551,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NormalOutputTarget: 1
+  NormalOutputTarget: 0
   RecalculateOnStart: 1
-  RecalculateTangents: 0
+  RecalculateTangents: 1
   _dataCacheAsset: {fileID: 0}
   TargetSkinnedMeshRenderers:
   - {fileID: 1389065780}

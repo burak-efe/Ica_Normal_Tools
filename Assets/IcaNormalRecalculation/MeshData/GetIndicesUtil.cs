@@ -1,9 +1,6 @@
 ﻿using Unity.Burst;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
@@ -32,7 +29,7 @@ namespace IcaNormal
         }
 
         [BurstCompile]
-        public static void GetAllIndicesCountOfMesh(in Mesh.MeshData data, out int count)
+        public static void GetCountOfAllIndicesOfMesh(in Mesh.MeshData data, out int count)
         {
             var submeshCount = data.subMeshCount;
             count = 0;

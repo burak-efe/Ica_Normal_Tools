@@ -111,7 +111,7 @@ namespace IcaNormal
             count = 0;
             for (int i = 0; i < data.Length; i++)
             {
-                GetIndicesUtil.GetAllIndicesCountOfMesh(data[i], out var meshIndexCount);
+                GetIndicesUtil.GetCountOfAllIndicesOfMesh(data[i], out var meshIndexCount);
                 count += meshIndexCount;
             }
         }

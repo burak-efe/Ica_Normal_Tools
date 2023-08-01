@@ -4,7 +4,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
@@ -53,7 +52,6 @@ namespace IcaNormal
 
             var pAllocate = new ProfilerMarker("Allocate");
             pAllocate.Begin();
-            //var triNormals = new NativeArray<float3>(triangleCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             pAllocate.End();
 
 
@@ -156,10 +154,7 @@ namespace IcaNormal
         {
             var pCachedParallelTangent = new ProfilerMarker("pCachedParallelTangent");
             pCachedParallelTangent.Begin();
-
-           // var tan1 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
-           // var tan2 = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob);
-
+            
             var triTangentJob = new TriTangentJob
             {
                 Indices = indices.AsArray(),
@@ -184,9 +179,7 @@ namespace IcaNormal
 
             tangentHandle = vertexTangentJob.ScheduleParallel
                 (vertices.Length, vertices.Length / 64, triHandle);
-            
-          //  tan1.Dispose();
-          //  tan2.Dispose();
+
             pCachedParallelTangent.End();
         }
 

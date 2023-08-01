@@ -14,9 +14,9 @@ namespace IcaNormal
         [BurstCompile]
         public static void UnrollListOfListToArray<T>([NoAlias]UnsafeList<NativeList<T>> nestedData,[NoAlias] ref NativeArray<T> outUnrolledData,[NoAlias] ref NativeArray<int> outMapper) where T : unmanaged
         {
-            var templist = new NativeList<T>(Allocator.Temp);
-            UnrollListOfListToList(nestedData,  ref templist,ref outMapper);
-            outUnrolledData.CopyFrom(templist.AsArray());
+            var tempList = new NativeList<T>(Allocator.Temp);
+            UnrollListOfListToList(nestedData,  ref tempList,ref outMapper);
+            outUnrolledData.CopyFrom(tempList.AsArray());
         }
 
         [BurstCompile]

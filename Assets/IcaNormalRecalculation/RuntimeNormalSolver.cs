@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -39,8 +38,6 @@ namespace IcaNormal
         private List<ComputeBuffer> _tangentBuffers;
         private bool _isComputeBuffersCreated;
 
-        //private JobHandle _normalHandle;
-        //private bool _isNormalHandleScheduled;
 
         private bool _isInitialized;
 
@@ -71,7 +68,7 @@ namespace IcaNormal
             }
 
             _meshDataCache = new MeshDataCache();
-            _meshDataCache.InitFromMultipleMesh(_meshes);
+            _meshDataCache.InitFromMultipleMesh(_meshes, RecalculateTangents);
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -108,7 +105,6 @@ namespace IcaNormal
                 var mats = new List<Material>(1);
                 smr.GetMaterials(mats);
                 _materials.Add(mats);
-                //var mats = smr.materials;
                 var nBuffer = new ComputeBuffer(_meshes[i].vertexCount, sizeof(float) * 3);
                 var tBuffer = new ComputeBuffer(_meshes[i].vertexCount, sizeof(float) * 4);
                 _tangentBuffers.Add(tBuffer);
@@ -149,20 +145,6 @@ namespace IcaNormal
                 Destroy(tempObject);
             }
 
-            // if (_materials != null)
-            // {
-            //     foreach (var matList in _materials)
-            //     {
-            //         if (matList != null)
-            //         {
-            //             foreach (var material in matList)
-            //             {
-            //                 Destroy(material);
-            //             }
-            //             
-            //         }
-            //     }
-            // }
         }
 
         [ContextMenu("RecalculateNormals")]
@@ -194,7 +176,6 @@ namespace IcaNormal
                 tangentHandle.Complete();
                 SetNormals();
                 SetTangents();
-                
             }
             else
             {

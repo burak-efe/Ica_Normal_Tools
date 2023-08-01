@@ -16,12 +16,11 @@ namespace IcaNormal
     {
         public Mesh TargetMesh;
         //[SerializeField, HideInInspector] public List<DuplicateVerticesList> SerializedDuplicatesData;
-        [FormerlySerializedAs("IndicesCount")] [SerializeField, HideInInspector] public int[] SerializedIndices;
+        [SerializeField, HideInInspector] public int[] SerializedIndices;
         [SerializeField, HideInInspector] public int[] SerializedAdjacencyList;
         [SerializeField, HideInInspector] public int2[] SerializedAdjacencyMapper;
-#if UNITY_EDITOR
         public string LastCacheDate = "Never";
-#endif
+
 
 
         [ContextMenu("CacheData")]
