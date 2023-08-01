@@ -553,7 +553,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NormalOutputTarget: 1
   RecalculateOnStart: 1
-  RecalculateTangents: 1
+  RecalculateTangents: 0
   _dataCacheAsset: {fileID: 0}
   TargetSkinnedMeshRenderers:
   - {fileID: 1389065780}
