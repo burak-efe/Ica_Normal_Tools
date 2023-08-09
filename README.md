@@ -1,6 +1,6 @@
 # Warning!!
 this package still in alpha
-# Ica Normal Recalculation
+# Ica Normal Tools
 A Normal and Tangent recalculaton library for Unity
 
 ## What problem does it solve?
