@@ -11,6 +11,10 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
+    
+    /// <summary>
+    /// EXPERIMENTAL DO NOT USE!!!
+    /// </summary>
     [BurstCompile]
     public static class CachedLiteMethod
     {

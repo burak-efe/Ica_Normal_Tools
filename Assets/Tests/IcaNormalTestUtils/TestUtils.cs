@@ -12,8 +12,8 @@ namespace Tests
         {
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
-            data.GetVerticesWithNewContainer(out var vertices, Allocator.Temp);
-            data.GetNormalsWithNewContainer(out var normals, Allocator.Temp);
+            data.GetVerticesData(out var vertices, Allocator.Temp);
+            data.GetNormalsData(out var normals, Allocator.Temp);
             mda.Dispose();
 
             VertexPositionMapper.GetVertexPosHashMap(vertices, out var vertexPosMap, Allocator.Temp);
@@ -41,7 +41,7 @@ namespace Tests
         {
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
-            data.GetNormalsWithNewContainer(out var normals, Allocator.Temp);
+            data.GetNormalsData(out var normals, Allocator.Temp);
             mda.Dispose();
             var countOfNonUnit = 0;
 

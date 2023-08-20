@@ -98,17 +98,17 @@ namespace IcaNormal
             return n;
         }
 
-        public UnsafeList<NativeList<float4>> GetTempSplittedTangentData()
+        public UnsafeList<NativeList<float4>> GetTempSplitTangentData()
         {
-            var t = new UnsafeList<NativeList<float4>>(_mda.Length, Allocator.Temp);
+            var splitTangentData = new UnsafeList<NativeList<float4>>(_mda.Length, Allocator.Temp);
             for (int meshIndex = 0; meshIndex < _mda.Length; meshIndex++)
             {
-                var mt = new NativeList<float4>(Allocator.Temp);
-                mt.CopyFrom(TangentData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex]));
-                t.Add(mt);
+                var tempTangent = new NativeList<float4>(Allocator.Temp);
+                tempTangent.CopyFrom(TangentData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex]));
+                splitTangentData.Add(tempTangent);
             }
 
-            return t;
+            return splitTangentData;
         }
 
         public void ApplyNormalsToBuffers(List<ComputeBuffer> buffers)
@@ -124,7 +124,7 @@ namespace IcaNormal
             Profiler.EndSample();
         }
 
-        public void ApplyTangentsToBuffers(List<ComputeBuffer> buffers)
+        public void ApplyTangentsToMaterialBuffers(List<ComputeBuffer> buffers)
         {
             for (int meshIndex = 0; meshIndex < buffers.Count; meshIndex++)
             {
@@ -154,6 +154,7 @@ namespace IcaNormal
             }
         }
 
+        // if there is a persistent allocate, there should be dispose #deepProgrammingQuotes #nativeLifeHacks
         public void Dispose()
         {
             if (_initialized == false)
@@ -168,6 +169,7 @@ namespace IcaNormal
             _vertexSeparatorData.Dispose();
             _indexSeparatorData.Dispose();
             TriNormalData.Dispose();
+            
             if (_cachedForTangents)
             {
                 _cachedForTangents = false;
@@ -178,7 +180,7 @@ namespace IcaNormal
             }
         }
 
-// ?? is this working?
+        // try something this to remove requirement of read/ write enabled
         public static Mesh MakeReadableMeshCopy(Mesh nonReadableMesh)
         {
             Mesh meshCopy = new Mesh();

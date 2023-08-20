@@ -4,6 +4,10 @@ using UnityEngine.Profiling;
 
 namespace IcaNormal
 {
+    
+    /// <summary>
+    /// The main Component of the package
+    /// </summary>
     public class RuntimeNormalSolver : MonoBehaviour
     {
         public enum NormalOutputEnum
@@ -13,11 +17,9 @@ namespace IcaNormal
         }
 
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
-
-        [Tooltip("Smoothing angle only usable with bursted method")]
+        
         public bool RecalculateOnStart;
-
-        public bool RecalculateTangents;
+        public bool AlsoRecalculateTangents;
 
         [Tooltip("Data cache asset required when using cached method. You can create this on project tab context menu/plugins /Mesh data cache.")]
         public MeshDataCacheAsset _dataCacheAsset;
@@ -68,7 +70,7 @@ namespace IcaNormal
             }
 
             _meshDataCache = new MeshDataCache();
-            _meshDataCache.InitFromMultipleMesh(_meshes, RecalculateTangents);
+            _meshDataCache.InitFromMultipleMesh(_meshes, AlsoRecalculateTangents);
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -159,7 +161,7 @@ namespace IcaNormal
             CachedParallelMethod.RecalculateNormalsAndGetHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
                 ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.TriNormalData, out var normalHandle);
             
-            if (RecalculateTangents)
+            if (AlsoRecalculateTangents)
             {
                 CachedParallelMethod.ScheduleAndGetTangentJobHandle(
                     _meshDataCache.VertexData,
@@ -197,9 +199,12 @@ namespace IcaNormal
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
                 _meshDataCache.ApplyTangentsToMeshes(_meshes);
             else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
-                _meshDataCache.ApplyTangentsToBuffers(_tangentBuffers);
+                _meshDataCache.ApplyTangentsToMaterialBuffers(_tangentBuffers);
         }
 
+        /// <summary>
+        /// Vertex Data need to updated after blend shape changes.
+        /// </summary>
         public void UpdateVertices()
         {
             Profiler.BeginSample("UpdateVertices");

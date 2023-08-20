@@ -38,7 +38,7 @@ namespace IcaNormal
             Profiler.EndSample();
 
             Profiler.BeginSample("GetIndices");
-            data.GetAllIndicesOfMeshWithNewNativeList(out var indices, Allocator.Temp);
+            data.GetAllIndicesData(out var indices, Allocator.Temp);
             Profiler.EndSample();
             
             Profiler.BeginSample("GetPosGraph");

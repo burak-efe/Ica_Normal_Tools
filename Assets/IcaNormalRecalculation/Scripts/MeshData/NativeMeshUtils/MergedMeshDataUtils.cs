@@ -92,7 +92,7 @@ namespace IcaNormal
             var prevMeshesTotalVertexCount = 0;
             for (int i = 0; i < mda.Length; i++)
             {
-                mda[i].GetAllIndicesOfMeshWithNewNativeList(out var indices, Allocator.Temp);
+                mda[i].GetAllIndicesData(out var indices, Allocator.Temp);
                 for (int j = 0; j < indices.Length; j++)
                 {
                     indices[j] += prevMeshesTotalVertexCount;
@@ -111,7 +111,7 @@ namespace IcaNormal
             count = 0;
             for (int i = 0; i < data.Length; i++)
             {
-                NativeIndicesUtil.GetCountOfAllIndicesOfMesh(data[i], out var meshIndexCount);
+                NativeIndicesUtil.GetCountOfAllIndices(data[i], out var meshIndexCount);
                 count += meshIndexCount;
             }
         }

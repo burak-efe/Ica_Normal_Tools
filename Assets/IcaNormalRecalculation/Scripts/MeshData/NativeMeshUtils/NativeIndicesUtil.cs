@@ -15,20 +15,15 @@ namespace IcaNormal
         /// <param name="outIndices"></param>
         /// <param name="allocator"></param>
         [BurstCompile]
-        public static void GetAllIndicesOfMeshWithNewNativeList(this in Mesh.MeshData data, out NativeList<int> outIndices, Allocator allocator)
+        public static void GetAllIndicesData(this in Mesh.MeshData data, out NativeList<int> outIndices, Allocator allocator)
         {
-            var submeshCount = data.subMeshCount;
-            var indexCount = 0;
-
-            for (int i = 0; i < submeshCount; i++)
-            {
-                indexCount += data.GetSubMesh(i).indexCount;
-            }
-
+            GetCountOfAllIndices(data,out var indexCount);
+            
             outIndices = new NativeList<int>(indexCount, allocator);
-            for (int subMeshIndex = 0; subMeshIndex < submeshCount; subMeshIndex++)
+            
+            for (int subMeshIndex = 0; subMeshIndex < data.subMeshCount; subMeshIndex++)
             {
-                var tempSubmeshIndices = new NativeArray<int>(data.GetSubMesh(subMeshIndex).indexCount, Allocator.Temp);
+                var tempSubmeshIndices = new NativeArray<int>(data.GetSubMesh(subMeshIndex).indexCount, Allocator.Temp,NativeArrayOptions.UninitializedMemory);
                 data.GetIndices(tempSubmeshIndices, subMeshIndex);
 
                 outIndices.AddRange(tempSubmeshIndices);
@@ -39,16 +34,16 @@ namespace IcaNormal
         /// counts and return given mesh's all indices.
         /// </summary>
         /// <param name="data"></param>
-        /// <param name="count"></param>
+        /// <param name="indexCount"></param>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void GetCountOfAllIndicesOfMesh(in Mesh.MeshData data, out int count)
+        public static void GetCountOfAllIndices(in Mesh.MeshData data, out int indexCount)
         {
             var submeshCount = data.subMeshCount;
-            count = 0;
+            indexCount = 0;
             for (int i = 0; i < submeshCount; i++)
             {
-                count += data.GetSubMesh(i).indexCount;
+                indexCount += data.GetSubMesh(i).indexCount;
             }
         }
     }
