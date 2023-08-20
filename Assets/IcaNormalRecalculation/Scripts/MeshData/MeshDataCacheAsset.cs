@@ -10,18 +10,19 @@ using UnityEngine.Serialization;
 
 namespace IcaNormal
 {
+    /// <summary>
+    /// A mesh data cache asset to eliminate data calculation time on start
+    /// </summary>
     [PreferBinarySerialization]
     [CreateAssetMenu(menuName = "Plugins/IcaNormalRecalculation/MeshDataCache", fileName = "IcaMeshDataCache")]
     public class MeshDataCacheAsset : ScriptableObject
     {
         public Mesh TargetMesh;
-        //[SerializeField, HideInInspector] public List<DuplicateVerticesList> SerializedDuplicatesData;
         [SerializeField, HideInInspector] public int[] SerializedIndices;
         [SerializeField, HideInInspector] public int[] SerializedAdjacencyList;
         [SerializeField, HideInInspector] public int2[] SerializedAdjacencyMapper;
         public string LastCacheDate = "Never";
-
-
+        
 
         [ContextMenu("CacheData")]
         public void CacheData()
@@ -38,10 +39,8 @@ namespace IcaNormal
 
             Profiler.BeginSample("GetIndices");
             data.GetAllIndicesOfMeshWithNewNativeList(out var indices, Allocator.Temp);
-            //Indices = indices.Length;
             Profiler.EndSample();
-
-
+            
             Profiler.BeginSample("GetPosGraph");
             VertexPositionMapper.GetVertexPosHashMap( vertices.AsArray(), out var posMap, Allocator.Temp);
             Profiler.EndSample();

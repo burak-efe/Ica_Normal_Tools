@@ -9,25 +9,35 @@ using UnityEngine.Rendering;
 
 namespace IcaNormal
 {
+    /// <summary>
+    /// A big data container that hold mesh data (or merged data of list of meshes) for needed to normal and tangent calculation
+    /// </summary>
     public class MeshDataCache : IDisposable
     {
         public int TotalVertexCount;
+
         public int TotalIndexCount;
+
+        //these are need for normal and tangent
+        //these are need for normal 
         public NativeArray<float3> VertexData;
         public NativeList<int> IndexData;
         public NativeArray<float3> NormalData;
-        public NativeArray<float4> TangentData;
-        public NativeArray<float2> UVData;
-        public NativeArray<float3> TriNormalData;
-        public NativeArray<float3> Tan1Data;
-        public NativeArray<float3> Tan2Data;
         public NativeList<int> AdjacencyList;
         public NativeArray<int2> AdjacencyMapper;
+        private NativeArray<int> _vertexSeparatorData;
+        private NativeArray<int> _indexSeparatorData;
+
+        //these are need for tangent
+        public NativeArray<float4> TangentData;
+        public NativeArray<float3> Tan1Data;
+        public NativeArray<float3> Tan2Data;
+        public NativeArray<float2> UVData;
+        public NativeArray<float3> TriNormalData;
+
         private Mesh.MeshDataArray _mda;
         private bool _initialized;
         private bool _cachedForTangents;
-        private NativeArray<int> _vertexSeparatorData;
-        private NativeArray<int> _indexSeparatorData;
 
         public void InitFromMultipleMesh(List<Mesh> meshes, bool cacheForTangents)
         {

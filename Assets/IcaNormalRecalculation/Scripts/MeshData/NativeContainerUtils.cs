@@ -8,8 +8,11 @@ using UnityEngine;
 
 namespace IcaNormal
 {
+    /// <summary>
+    /// Some of methods to create one dimensional container from multi-Dimensional container.
+    /// </summary>
     [BurstCompile]
-    public static unsafe class NativeContainerUtils
+    public static class NativeContainerUtils
     {
         [BurstCompile]
         public static void UnrollListOfListToArray<T>([NoAlias]UnsafeList<NativeList<T>> nestedData,[NoAlias] ref NativeArray<T> outUnrolledData,[NoAlias] ref NativeArray<int> outMapper) where T : unmanaged
@@ -36,16 +39,16 @@ namespace IcaNormal
         public static void UnrollListOfArrayToArray<T>([NoAlias]UnsafeList<NativeArray<T>> nestedData,[NoAlias] ref NativeArray<int> outMapper,[NoAlias] ref NativeArray<T> outUnrolledData) where T : unmanaged
         {
             GetUnrolledSizeOfNestedContainer(nestedData,out var size);
-            var templist = new NativeList<T>(size,Allocator.Temp);
+            var tempList = new NativeList<T>(size,Allocator.Temp);
             var mapperIndex = 0;
             for (int i = 0; i < nestedData.Length; i++)
             {
-                templist.AddRange(nestedData[i]);
+                tempList.AddRange(nestedData[i]);
                 outMapper[i] = mapperIndex;
                 mapperIndex += nestedData[i].Length;
             }
             outMapper[^1] = mapperIndex;
-            outUnrolledData.CopyFrom(templist.AsArray());
+            outUnrolledData.CopyFrom(tempList.AsArray());
         }
 
 
@@ -69,22 +72,12 @@ namespace IcaNormal
             }
         }
         
-        [BurstCompile]
-        public static void AddRangeUnsafeList<T>([NoAlias]this ref NativeList<T> list,[NoAlias] in UnsafeList<T> unsafeList) where T : unmanaged
-        {
-            list.AddRange(unsafeList.Ptr,unsafeList.Length);
-   
-        }
-
-        public static List<DuplicateVerticesList> GetManagedDuplicateVerticesMap(UnsafeList<NativeArray<int>> from)
-        {
-            var list = new List<DuplicateVerticesList>(from.Length);
-            foreach (var fromArray in from)
-            {
-                var managed = new DuplicateVerticesList { Value = fromArray.ToArray() };
-                list.Add(managed);
-            }
-            return list;
-        }
+        // do we really need unsafe?
+        // [BurstCompile]
+        // public static void AddRangeUnsafeList<T>([NoAlias]this ref NativeList<T> list,[NoAlias] in UnsafeList<T> unsafeList) where T : unmanaged
+        // {
+        //     list.AddRange(unsafeList.Ptr,unsafeList.Length);
+        //
+        // }
     }
 }

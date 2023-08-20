@@ -1,12 +1,19 @@
-﻿using Unity.Burst;
+﻿using System.Runtime.CompilerServices;
+using Unity.Burst;
 using Unity.Collections;
 using UnityEngine;
 
 namespace IcaNormal
 {
     [BurstCompile]
-    public static class GetIndicesUtil
+    public static class NativeIndicesUtil
     {
+        /// <summary>
+        /// Creates a new native list with specified allocator then fill it with indices of given mesh's all submesh-es. similar to Mesh.triangles method.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="outIndices"></param>
+        /// <param name="allocator"></param>
         [BurstCompile]
         public static void GetAllIndicesOfMeshWithNewNativeList(this in Mesh.MeshData data, out NativeList<int> outIndices, Allocator allocator)
         {
@@ -27,8 +34,14 @@ namespace IcaNormal
                 outIndices.AddRange(tempSubmeshIndices);
             }
         }
+        
+        /// <summary>
+        /// counts and return given mesh's all indices.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="count"></param>
 
-        [BurstCompile]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void GetCountOfAllIndicesOfMesh(in Mesh.MeshData data, out int count)
         {
             var submeshCount = data.subMeshCount;

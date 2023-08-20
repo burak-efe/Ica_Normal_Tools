@@ -8,6 +8,10 @@ namespace IcaNormal
     {
     }
 
+    /// <summary>
+    /// EXPERIMENTAL DO NOT USE!!! Very basic one dimensional native container that can used for representing multi dimensional container.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public struct UnrolledArray<T> where T : unmanaged
     {
         public NativeArray<T> Data;
