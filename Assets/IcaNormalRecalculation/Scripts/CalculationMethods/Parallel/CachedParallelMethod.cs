@@ -20,9 +20,9 @@ namespace IcaNormal
         {
             VertexPositionMapper.GetVertexPosHashMap(vertices, out var posMap, Allocator.TempJob);
             AdjacencyMapper.CalculateAdjacencyData(vertices, indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
-            
+
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            ScheduleAndGetNormalJobHandle(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper,triNormals ,out var handle);
+            RecalculateNormalsAndGetHandle(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper, triNormals, out var handle);
 
             handle.Complete();
             foreach (var kvPair in posMap)
@@ -36,8 +36,18 @@ namespace IcaNormal
             adjacencyMapper.Dispose();
         }
 
+        /// <summary>
+        /// Scheduling the normal recalculating and returns to job handle. Do not forget to Complete job handle!!!
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="indices"></param>
+        /// <param name="outNormals"></param>
+        /// <param name="adjacencyList"></param>
+        /// <param name="adjacencyMap"></param>
+        /// <param name="triNormals"></param>
+        /// <param name="handle"></param>
         [BurstCompile]
-        public static void ScheduleAndGetNormalJobHandle
+        public static void RecalculateNormalsAndGetHandle
         (
             in NativeArray<float3> vertices,
             in NativeList<int> indices,
@@ -48,14 +58,11 @@ namespace IcaNormal
             out JobHandle handle
         )
         {
+            var pSchedule = new ProfilerMarker("pSchedule");
+            
             var triangleCount = indices.Length / 3;
 
-            var pAllocate = new ProfilerMarker("Allocate");
-            pAllocate.Begin();
-            pAllocate.End();
-
-
-            var pSchedule = new ProfilerMarker("pSchedule");
+            
             pSchedule.Begin();
 
             var triNormalJob = new NormalJobs.TriNormalJob
@@ -73,28 +80,30 @@ namespace IcaNormal
                 Normals = outNormals
             };
 
-            var tJobHandle = triNormalJob.ScheduleParallel(
-                triangleCount,
-                (int)math.ceil(triangleCount / 128f),
-                default);
+            var tJobHandle = triNormalJob.ScheduleParallel(triangleCount, NativeUtils.GetBatchCountThatMakesSense(triangleCount), default);
 
-            handle = vertexNormalJob.ScheduleParallel(
-                vertices.Length,
-                (int)math.ceil(vertices.Length / 128f),
-                tJobHandle);
+            handle = vertexNormalJob.ScheduleParallel(vertices.Length, NativeUtils.GetBatchCountThatMakesSense(vertices.Length), tJobHandle);
 
             pSchedule.End();
             
-            var pDispose = new ProfilerMarker("Dispose");
-            pDispose.Begin();
-
-            pDispose.End();
         }
 
 
-      
-
-
+        /// <summary>
+        /// Scheduling the tangent recalculating and returns to job handle. Do not forget to Complete job handle!!!
+        /// If not dependent on normal handle pass default.
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="normals"></param>
+        /// <param name="indices"></param>
+        /// <param name="uv"></param>
+        /// <param name="adjacencyList"></param>
+        /// <param name="adjacencyMap"></param>
+        /// <param name="tan1"></param>
+        /// <param name="tan2"></param>
+        /// <param name="outTangents"></param>
+        /// <param name="normalHandle"></param>
+        /// <param name="tangentHandle"></param>
         [BurstCompile]
         public static void ScheduleAndGetTangentJobHandle
         (
@@ -113,7 +122,7 @@ namespace IcaNormal
         {
             var pCachedParallelTangent = new ProfilerMarker("pCachedParallelTangent");
             pCachedParallelTangent.Begin();
-            
+
             var triTangentJob = new TangentJobs.TriTangentJob
             {
                 Indices = indices.AsArray(),
@@ -132,16 +141,14 @@ namespace IcaNormal
                 Tan2 = tan2,
                 Tangents = outTangents
             };
-            
+
             var triHandle = triTangentJob.ScheduleParallel
-                (indices.Length / 3, indices.Length / 3 / 64, normalHandle);
+                (indices.Length / 3, NativeUtils.GetBatchCountThatMakesSense(indices.Length / 3), normalHandle);
 
             tangentHandle = vertexTangentJob.ScheduleParallel
-                (vertices.Length, vertices.Length / 64, triHandle);
+                (vertices.Length,  NativeUtils.GetBatchCountThatMakesSense(vertices.Length), triHandle);
 
             pCachedParallelTangent.End();
         }
-
-
     }
 }

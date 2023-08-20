@@ -156,7 +156,7 @@ namespace IcaNormal
         private void RecalculateCachedParallel()
         {
             UpdateVertices();
-            CachedParallelMethod.ScheduleAndGetNormalJobHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
+            CachedParallelMethod.RecalculateNormalsAndGetHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
                 ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.TriNormalData, out var normalHandle);
             
             if (RecalculateTangents)
