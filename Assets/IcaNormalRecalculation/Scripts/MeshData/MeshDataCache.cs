@@ -85,12 +85,12 @@ namespace IcaNormal
             Profiler.EndSample();
         }
 
-        public UnsafeList<NativeList<float3>> GetTempSplittedNormalData()
+        public UnsafeList<NativeList<float3>> GetSplitNormalData(Allocator allocator)
         {
-            var n = new UnsafeList<NativeList<float3>>(_mda.Length, Allocator.Temp);
+            var n = new UnsafeList<NativeList<float3>>(_mda.Length, allocator);
             for (int meshIndex = 0; meshIndex < _mda.Length; meshIndex++)
             {
-                var meshNormal = new NativeList<float3>(_vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex], Allocator.Temp);
+                var meshNormal = new NativeList<float3>(_vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex], allocator);
                 meshNormal.CopyFrom(NormalData.GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex]));
                 n.Add(meshNormal);
             }

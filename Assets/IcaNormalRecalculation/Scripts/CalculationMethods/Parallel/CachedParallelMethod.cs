@@ -4,6 +4,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace IcaNormal
 {
@@ -13,9 +14,10 @@ namespace IcaNormal
         /// <summary>
         /// For procedural mesh.
         /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="outNormals"></param>
-        /// <param name="allocator"></param>
+        /// <param name="mesh">mesh as data source</param>
+        /// <param name="outNormals">output normals will be allocated with given allocator.
+        /// Its your responsibility to how to apply normals.</param>
+        /// <param name="allocator">TempJob or Persistent. Cannot be temp allocator since will be passed a job.</param>
         public static void CalculateNormalDataUncached
         (
             Mesh mesh,
@@ -23,6 +25,8 @@ namespace IcaNormal
             Allocator allocator
         )
         {
+            Assert.IsFalse(allocator == Allocator.Temp,"Out normals allocator cannot be Temp!!!");
+            
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
             data.GetVerticesData(out var vertices, Allocator.Temp);
@@ -31,7 +35,6 @@ namespace IcaNormal
 
             VertexPositionMapper.GetVertexPosHashMap(vertices, out var posMap, Allocator.TempJob);
             AdjacencyMapper.CalculateAdjacencyData(vertices, indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
-
             outNormals = new NativeArray<float3>(data.vertexCount, allocator);
 
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
@@ -72,10 +75,10 @@ namespace IcaNormal
             out JobHandle handle
         )
         {
+            Assert.IsTrue(vertices.Length == outNormals.Length);
             var pSchedule = new ProfilerMarker("pSchedule");
 
             var triangleCount = indices.Length / 3;
-
 
             pSchedule.Begin();
 
