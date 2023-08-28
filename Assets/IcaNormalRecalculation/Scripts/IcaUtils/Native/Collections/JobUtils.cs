@@ -1,9 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
-using Unity.Mathematics;
 
-namespace IcaNormal
+namespace Ica.Utils
 {
-    public static class NativeUtils
+    public static class JobUtils
     {
         /// <summary>
         /// Returns a batch count that makes sense to author.
