@@ -5,6 +5,7 @@ using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Ica.Utils;
 
 namespace IcaNormal
 {
@@ -29,7 +30,7 @@ namespace IcaNormal
             
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
-            data.GetVerticesData(out var vertices, Allocator.Temp);
+            data.GetVerticesData( out var vertices, Allocator.Temp);
             data.GetAllIndicesData(out var indices, Allocator.Temp);
             
 
@@ -97,9 +98,9 @@ namespace IcaNormal
                 Normals = outNormals
             };
 
-            var tJobHandle = triNormalJob.ScheduleParallel(triangleCount, NativeUtils.GetBatchCountThatMakesSense(triangleCount), default);
+            var tJobHandle = triNormalJob.ScheduleParallel(triangleCount, JobUtils.GetBatchCountThatMakesSense(triangleCount), default);
 
-            handle = vertexNormalJob.ScheduleParallel(vertices.Length, NativeUtils.GetBatchCountThatMakesSense(vertices.Length), tJobHandle);
+            handle = vertexNormalJob.ScheduleParallel(vertices.Length, JobUtils.GetBatchCountThatMakesSense(vertices.Length), tJobHandle);
 
             pSchedule.End();
         }
@@ -159,10 +160,10 @@ namespace IcaNormal
             };
 
             var triHandle = triTangentJob.ScheduleParallel
-                (indices.Length / 3, NativeUtils.GetBatchCountThatMakesSense(indices.Length / 3), normalHandle);
+                (indices.Length / 3, JobUtils.GetBatchCountThatMakesSense(indices.Length / 3), normalHandle);
 
             tangentHandle = vertexTangentJob.ScheduleParallel
-                (vertices.Length, NativeUtils.GetBatchCountThatMakesSense(vertices.Length), triHandle);
+                (vertices.Length, JobUtils.GetBatchCountThatMakesSense(vertices.Length), triHandle);
 
             pCachedParallelTangent.End();
         }

@@ -23,15 +23,15 @@ namespace Ica.Utils
             NativeContainerUtils.UnrollArraysToArray(vertexList, ref outMergedVertices, ref startIndexMapper);
         }
 
-        public static int GetTotalVertexCountFomMDA([NoAlias] in Mesh.MeshDataArray mda)
+        [BurstCompile]
+        public static void GetTotalVertexCountFomMDA([NoAlias] in Mesh.MeshDataArray mda, out int count)
         {
-            var count = 0;
+            count = 0;
             for (int i = 0; i < mda.Length; i++)
             {
                 count += mda[i].vertexCount;
             }
 
-            return count;
         }
 
         [BurstCompile]

@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using Ica.Utils;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Profiling;
