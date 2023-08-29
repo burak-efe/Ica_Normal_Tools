@@ -31,15 +31,15 @@ namespace Ica.Normal.Tests.PlayMode
             Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(vertices, normals));
         }
 
-        // [Test]
-        // public void Is_All_Normals_are_Normalized()
-        // {
-        //     var obj = Ica.Utils.Editor.AssetUtils.FindAndInstantiateAsset("SphereFromTwoHalfGeometryPrefab");
-        //     var solver = obj.GetComponent<RuntimeNormalSolver>();
-        //     solver.Init();
-        //     solver.RecalculateNormals();
-        //     var mesh = obj.GetComponent<SkinnedMeshRenderer>().sharedMesh;
-        //     Assert.IsTrue(TestUtils.IsEveryNormalAreUnitVectors(mesh, 0.000001f));
-        // }
+         [Test]
+         public void Is_All_Normals_are_Normalized()
+         {
+             var obj = Ica.Utils.Editor.AssetUtils.FindAndInstantiateAsset("SphereFromTwoHalfGeometryPrefab");
+             var solver = obj.GetComponent<RuntimeNormalSolver>();
+             solver.Init();
+             solver.RecalculateNormals();
+             var mesh = obj.GetComponent<SkinnedMeshRenderer>().sharedMesh;
+             Assert.IsTrue(TestUtils.IsEveryNormalAreUnitVectors(mesh, 0.000001f));
+         }
     }
 }
