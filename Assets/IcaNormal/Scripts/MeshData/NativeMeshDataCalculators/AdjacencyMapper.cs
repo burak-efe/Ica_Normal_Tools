@@ -12,7 +12,7 @@ namespace Ica.Normal
         /// <summary>
         /// Calculate adjacency data to triangle of every vertex
         /// </summary>
-        //[BurstCompile]
+        [BurstCompile]
         public static void CalculateAdjacencyData
         (
             [NoAlias] in NativeArray<float3> vertices,

@@ -25,11 +25,13 @@ namespace Ica.Normal
             [NoAlias] out UnsafeHashMap<float3, NativeList<int>> posVertexIndicesPair,
             [NoAlias] Allocator allocator)
         {
+            var pGetVertexPosHashMap = new ProfilerMarker("pGetVertexPosHashMap");
             //var pAllocateOut = new ProfilerMarker("pPosMapAllocateOut");
             //var pTryGetValueAndAddNewPair = new ProfilerMarker("pPosMapTryGetValueAndAddNewPair");
             //var pAddNewPair = new ProfilerMarker("pPosMapAddNewPair");
             //var pAddToList = new ProfilerMarker("pPosMapAddToList");
-
+            pGetVertexPosHashMap.Begin();
+            
 
             posVertexIndicesPair = new UnsafeHashMap<float3, NativeList<int>>(vertices.Length, allocator);
 
@@ -46,6 +48,8 @@ namespace Ica.Normal
                     posVertexIndicesPair.Add(vertices[vertexIndex], vertexIndexList);
                 }
             }
+            
+            pGetVertexPosHashMap.End();
         }
     }
 }
