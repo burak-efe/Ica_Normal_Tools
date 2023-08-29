@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     /// <summary>
     /// A mesh data cache asset to eliminate data calculation time on start
@@ -35,7 +35,9 @@ namespace IcaNormal
             Profiler.EndSample();
 
             Profiler.BeginSample("GetIndices");
-            data.GetAllIndicesData(out var indices, Allocator.Temp);
+            data.GetCountOfAllIndices(out int indexCount);
+            var indices = new NativeList<int>(indexCount, Allocator.Temp);
+            data.GetAllIndicesDataAsList(ref indices);
             Profiler.EndSample();
             
             Profiler.BeginSample("GetPosGraph");
@@ -54,14 +56,14 @@ namespace IcaNormal
 
             Profiler.BeginSample("Adjacency");
             Profiler.BeginSample("Calculate");
-            AdjacencyMapper.CalculateAdjacencyData( vertices.AsArray(),  indices,  posMap, out var  adjacencyList, out var adjacencyMapper, Allocator.Temp);
+            AdjacencyMapper.CalculateAdjacencyData( vertices,  indices,  posMap, out var  adjacencyList, out var adjacencyMapper, Allocator.Temp);
             Profiler.EndSample();
 
             SerializedAdjacencyList = new int[adjacencyList.Length];
             SerializedAdjacencyMapper = new int2[adjacencyMapper.Length];
             SerializedIndices = new int[indices.Length];
             adjacencyList.AsArray().CopyTo(SerializedAdjacencyList);
-            adjacencyMapper.CopyTo(SerializedAdjacencyMapper);
+            adjacencyMapper.AsArray().CopyTo(SerializedAdjacencyMapper);
             indices.AsArray().CopyTo(SerializedIndices);
             Profiler.EndSample();
 

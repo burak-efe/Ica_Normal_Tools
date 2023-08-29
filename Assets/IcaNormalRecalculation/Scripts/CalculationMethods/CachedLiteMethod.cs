@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     
     /// <summary>

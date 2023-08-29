@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using IcaNormal;
+using Ica.Normal;
 
 using UnityEngine;
 

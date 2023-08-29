@@ -4,23 +4,23 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using Unity.Profiling;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
-   [BurstCompile]
+    [BurstCompile]
     public static class AdjacencyMapper
     {
         /// <summary>
         /// Calculate adjacency data to triangle of every vertex
         /// </summary>
-        [BurstCompile]
+        //[BurstCompile]
         public static void CalculateAdjacencyData
         (
-           [NoAlias] in NativeArray<float3> vertices,
-           [NoAlias] in NativeList<int> indices,
-           [NoAlias] in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
-           [NoAlias] out NativeList<int> outAdjacencyList,
-           [NoAlias] out NativeArray<int2> outAdjacencyMapper,
-           [NoAlias] Allocator allocator
+            [NoAlias] in NativeArray<float3> vertices,
+            [NoAlias] in NativeArray<int> indices,
+            [NoAlias] in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
+            [NoAlias] out NativeList<int> outAdjacencyList,
+            [NoAlias] out NativeList<int2> outAdjacencyMapper,
+            [NoAlias] Allocator allocator
         )
         {
             var pAdjTempContainerAllocate = new ProfilerMarker("pAdjTempContainerAllocate");
@@ -39,6 +39,7 @@ namespace IcaNormal
             {
                 tempAdjData.Add(new UnsafeList<int>(4, Allocator.Temp));
             }
+
             pTempSubAllocate.End();
 
             pCalculateAdjacencyData.Begin();
@@ -51,8 +52,8 @@ namespace IcaNormal
                 for (int v = 0; v < 3; v++)
                 {
                     var subVertexOfTriangle = indices[indicesIndex + v];
-
-                    var listOfVerticesOnThatPosition = vertexPosHashMap[vertices[subVertexOfTriangle]];
+                    var pos = vertices[subVertexOfTriangle];
+                    var listOfVerticesOnThatPosition = vertexPosHashMap[pos];
                     for (int i = 0; i < listOfVerticesOnThatPosition.Length; i++)
                     {
                         tempAdjData.ElementAt(listOfVerticesOnThatPosition.ElementAt(i)).Add(triIndex);
@@ -60,11 +61,12 @@ namespace IcaNormal
                     }
                 }
             }
+
             pCalculateAdjacencyData.End();
 
             pAllocateOutContainers.Begin();
-            outAdjacencyList = new NativeList<int>(unrolledListLength , allocator);
-            outAdjacencyMapper = new NativeArray<int2>(vertices.Length, allocator, NativeArrayOptions.UninitializedMemory);
+            outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
+            outAdjacencyMapper = new NativeList<int2>(vertices.Length, allocator);
             pAllocateOutContainers.End();
 
             pUnroll.Begin();
@@ -75,13 +77,12 @@ namespace IcaNormal
                 {
                     int size = tempAdjData.ElementAt(i).Length;
                     outAdjacencyList.AddRangeNoResize(tempAdjData[i].Ptr, tempAdjData[i].Length);
-                    outAdjacencyMapper[i] = new int2(currentStartIndex, size);
+                    outAdjacencyMapper.Add(new int2(currentStartIndex, size));
                     currentStartIndex += size;
                 }
-                
             }
+
             pUnroll.End();
         }
-
     }
 }

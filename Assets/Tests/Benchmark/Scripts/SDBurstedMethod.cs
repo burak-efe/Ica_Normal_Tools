@@ -3,7 +3,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     public static class SDBurstedMethod
     {

@@ -1,13 +1,18 @@
 {
-    "name": "PlayModeTests",
-    "rootNamespace": "",
+    "name": "Ica.Normal.Tests",
+    "rootNamespace": "Ica.Normal.Tests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "IcaNormal",
-        "IcaNormalTestUtils"
+        "Ica.Normal",
+        "Ica.Utils.Native",
+        "Unity.Collections",
+        "Unity.Mathematics",
+        "Unity.Burst"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,

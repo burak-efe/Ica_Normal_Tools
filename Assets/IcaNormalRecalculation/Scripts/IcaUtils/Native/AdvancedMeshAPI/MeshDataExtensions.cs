@@ -9,17 +9,33 @@ namespace Ica.Utils
     public static class MeshDataExtensions
     {
         [BurstCompile]
-        public static void GetVerticesData( this in Mesh.MeshData data, out NativeArray<float3> outVertices,  Allocator allocator)
+        public static void AllocAndGetVerticesDataAsArray( this in Mesh.MeshData data, out NativeArray<float3> outVertices,  Allocator allocator)
         {
             outVertices = new NativeArray<float3>(data.vertexCount, allocator,NativeArrayOptions.UninitializedMemory);
             data.GetVertices(outVertices.Reinterpret<Vector3>());
 
         }
+        
         [BurstCompile]
-        public static void GetNormalsData( this ref Mesh.MeshData data, out NativeArray<float3> outNormals, Allocator allocator)
+        public static void AllocAndGetNormalsDataAsArray( this ref Mesh.MeshData data, out NativeArray<float3> outNormals, Allocator allocator)
         {
             outNormals = new NativeArray<float3>(data.vertexCount, allocator,NativeArrayOptions.UninitializedMemory);
             data.GetNormals(outNormals.Reinterpret<Vector3>());
+        }
+        
+        [BurstCompile]
+        public static void GetVerticesDataAsList( this in Mesh.MeshData data, ref NativeList<float3> outVertices)
+        {
+            outVertices.Resize(data.vertexCount,NativeArrayOptions.UninitializedMemory);
+            data.GetVertices(outVertices.AsArray().Reinterpret<Vector3>());
+        }
+        
+        [BurstCompile]
+        public static void GetNormalsDataAsList( this ref Mesh.MeshData data, ref NativeList<float3> outNormals)
+        {
+
+            outNormals.Resize(data.vertexCount,NativeArrayOptions.UninitializedMemory);
+            data.GetNormals(outNormals.AsArray().Reinterpret<Vector3>());
         }
         
         /// <summary>
@@ -29,11 +45,11 @@ namespace Ica.Utils
         /// <param name="outIndices"></param>
         /// <param name="allocator"></param>
         [BurstCompile]
-        public static void GetAllIndicesData(this in Mesh.MeshData data, out NativeList<int> outIndices, Allocator allocator)
+        public static void GetAllIndicesDataAsList(this in Mesh.MeshData data, ref NativeList<int> outIndices)
         {
-            GetCountOfAllIndices(data,out var indexCount);
-            
-            outIndices = new NativeList<int>(indexCount, allocator);
+            //GetCountOfAllIndices(data,out var indexCount);
+            outIndices.Clear();
+            //outIndices.Resize(indexCount,NativeArrayOptions.UninitializedMemory);
             
             for (int subMeshIndex = 0; subMeshIndex < data.subMeshCount; subMeshIndex++)
             {

@@ -1,6 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine.Assertions;
 
 namespace Ica.Utils
 {
@@ -30,6 +31,7 @@ namespace Ica.Utils
         public static void UnrollArraysToList<T>([NoAlias] in UnsafeList<NativeArray<T>> nestedData, [NoAlias] ref NativeList<T> outUnrolledData, [NoAlias] ref NativeList<int> startIndices)
             where T : unmanaged
         {
+            outUnrolledData.Clear();
             startIndices.Clear();
             var startIndex = 0;
 
@@ -46,6 +48,7 @@ namespace Ica.Utils
         public static void UnrollArraysToArray<T>([NoAlias] in UnsafeList<NativeArray<T>> nestedData, [NoAlias] ref NativeArray<T> outUnrolledData, [NoAlias] ref NativeList<int> startIndices)
             where T : unmanaged
         {
+
             startIndices.Clear();
             var startIndex = 0;
 

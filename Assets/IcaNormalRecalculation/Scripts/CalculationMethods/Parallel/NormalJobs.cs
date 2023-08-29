@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     [BurstCompile]
     public static class NormalJobs

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Ica.Utils;
 using UnityEngine;
-using IcaNormal;
+using Ica.Normal;
 using Unity.Collections;
 using Unity.Mathematics;
 
@@ -12,8 +13,8 @@ namespace Tests
         {
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
-            data.GetVerticesData(out var vertices, Allocator.Temp);
-            data.GetNormalsData(out var normals, Allocator.Temp);
+            data.AllocAndGetVerticesDataAsArray(out var vertices, Allocator.Temp);
+            data.AllocAndGetNormalsDataAsArray(out var normals, Allocator.Temp);
             mda.Dispose();
 
             VertexPositionMapper.GetVertexPosHashMap(vertices, out var vertexPosMap, Allocator.Temp);
@@ -41,7 +42,7 @@ namespace Tests
         {
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
-            data.GetNormalsData(out var normals, Allocator.Temp);
+            data.AllocAndGetNormalsDataAsArray(out var normals, Allocator.Temp);
             mda.Dispose();
             var countOfNonUnit = 0;
 
@@ -56,7 +57,6 @@ namespace Tests
                     //return false;
                 }
             }
-
 
             if (countOfNonUnit > 0)
             {

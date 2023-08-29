@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     [Serializable]
     public struct DuplicateVerticesList

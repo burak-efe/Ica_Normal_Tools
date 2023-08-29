@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 using UnityEngine;
-using IcaNormal;
+using Ica.Normal;
 using UnityEngine.Serialization;
 
 [DefaultExecutionOrder(-9999)]

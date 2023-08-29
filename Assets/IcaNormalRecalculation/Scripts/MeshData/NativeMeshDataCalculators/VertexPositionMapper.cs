@@ -7,7 +7,7 @@ using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     [BurstCompile]
     public static class VertexPositionMapper

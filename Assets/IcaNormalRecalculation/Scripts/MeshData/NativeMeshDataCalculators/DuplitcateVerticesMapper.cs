@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     [BurstCompile]
     public static class DuplicateVerticesMapper

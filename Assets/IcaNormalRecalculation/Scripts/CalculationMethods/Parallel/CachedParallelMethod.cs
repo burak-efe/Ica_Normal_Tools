@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using Ica.Utils;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     [BurstCompile]
     public static class CachedParallelMethod
@@ -22,26 +22,28 @@ namespace IcaNormal
         public static void CalculateNormalDataUncached
         (
             Mesh mesh,
-            out NativeArray<float3> outNormals,
+            out NativeList<float3> outNormals,
             Allocator allocator
         )
         {
-            Assert.IsFalse(allocator == Allocator.Temp,"Out normals allocator cannot be Temp!!!");
-            
+            Assert.IsFalse(allocator == Allocator.Temp, "Out normals allocator cannot be Temp!!!");
+
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
-            data.GetVerticesData( out var vertices, Allocator.Temp);
-            data.GetAllIndicesData(out var indices, Allocator.Temp);
-            
+            var vertices = new NativeList<float3>(data.vertexCount, Allocator.Temp);
+            var indices = new NativeList<int>(data.vertexCount, Allocator.Temp);
+            data.GetVerticesDataAsList(ref vertices);
+            data.GetAllIndicesDataAsList(ref indices);
 
-            VertexPositionMapper.GetVertexPosHashMap(vertices, out var posMap, Allocator.TempJob);
-            AdjacencyMapper.CalculateAdjacencyData(vertices, indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
-            outNormals = new NativeArray<float3>(data.vertexCount, allocator);
+            VertexPositionMapper.GetVertexPosHashMap(vertices.AsArray(), out var posMap, Allocator.TempJob);
+            AdjacencyMapper.CalculateAdjacencyData(vertices.AsArray(), indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
+            outNormals = new NativeList<float3>(data.vertexCount, allocator);
 
-            var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            var triNormals = new NativeList<float3>(indices.Length / 3, Allocator.TempJob);
+            triNormals.Resize(indices.Length / 3, NativeArrayOptions.UninitializedMemory);
             RecalculateNormalsAndGetHandle(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper, triNormals, out var handle);
             handle.Complete();
-            
+
             foreach (var kvPair in posMap)
             {
                 kvPair.Value.Dispose();
@@ -67,12 +69,12 @@ namespace IcaNormal
         [BurstCompile]
         public static void RecalculateNormalsAndGetHandle
         (
-            in NativeArray<float3> vertices,
+            in NativeList<float3> vertices,
             in NativeList<int> indices,
-            ref NativeArray<float3> outNormals,
+            ref NativeList<float3> outNormals,
             in NativeList<int> adjacencyList,
-            in NativeArray<int2> adjacencyMap,
-            in NativeArray<float3> triNormals,
+            in NativeList<int2> adjacencyMap,
+            in NativeList<float3> triNormals,
             out JobHandle handle
         )
         {
@@ -86,16 +88,16 @@ namespace IcaNormal
             var triNormalJob = new NormalJobs.TriNormalJob
             {
                 Indices = indices.AsArray(),
-                TriNormals = triNormals,
-                Vertices = vertices
+                TriNormals = triNormals.AsArray(),
+                Vertices = vertices.AsArray()
             };
 
             var vertexNormalJob = new NormalJobs.VertexNormalJob
             {
                 AdjacencyList = adjacencyList.AsArray(),
-                AdjacencyMapper = adjacencyMap,
-                TriNormals = triNormals,
-                Normals = outNormals
+                AdjacencyMapper = adjacencyMap.AsArray(),
+                TriNormals = triNormals.AsArray(),
+                Normals = outNormals.AsArray()
             };
 
             var tJobHandle = triNormalJob.ScheduleParallel(triangleCount, JobUtils.GetBatchCountThatMakesSense(triangleCount), default);
@@ -124,15 +126,15 @@ namespace IcaNormal
         [BurstCompile]
         public static void ScheduleAndGetTangentJobHandle
         (
-            in NativeArray<float3> vertices,
-            in NativeArray<float3> normals,
+            in NativeList<float3> vertices,
+            in NativeList<float3> normals,
             in NativeList<int> indices,
-            in NativeArray<float2> uv,
+            in NativeList<float2> uv,
             in NativeList<int> adjacencyList,
-            in NativeArray<int2> adjacencyMap,
-            in NativeArray<float3> tan1,
-            in NativeArray<float3> tan2,
-            ref NativeArray<float4> outTangents,
+            in NativeList<int2> adjacencyMap,
+            in NativeList<float3> tan1,
+            in NativeList<float3> tan2,
+            ref NativeList<float4> outTangents,
             ref JobHandle normalHandle,
             out JobHandle tangentHandle
         )

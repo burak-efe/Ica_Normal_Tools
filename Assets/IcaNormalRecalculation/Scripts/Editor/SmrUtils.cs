@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace IcaNormal
+namespace Ica.Normal
 {
     public static class SmrUtils
     {
