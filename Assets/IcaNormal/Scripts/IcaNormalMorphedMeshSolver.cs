@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 
 namespace Ica.Normal
 {
@@ -8,7 +9,7 @@ namespace Ica.Normal
     /// <summary>
     /// The main Component of the package
     /// </summary>
-    public class RuntimeNormalSolver : MonoBehaviour
+    public class IcaNormalMorphedMeshSolver : MonoBehaviour
     {
         public enum NormalOutputEnum
         {
@@ -21,8 +22,8 @@ namespace Ica.Normal
         public bool RecalculateOnStart;
         public bool AlsoRecalculateTangents;
 
-        [Tooltip("Data cache asset required when using cached method. You can create this on project tab context menu/plugins /Mesh data cache.")]
-        public MeshDataCacheAsset _dataCacheAsset;
+        [FormerlySerializedAs("_dataCacheAsset")] [Tooltip("Cache asset will faster initialization")]
+        public MeshDataCacheAsset DataCacheAsset;
 
         public List<SkinnedMeshRenderer> TargetSkinnedMeshRenderers;
         private MeshDataCache _meshDataCache;

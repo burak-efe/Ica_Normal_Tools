@@ -19,6 +19,7 @@ namespace Ica.Normal
         /// <param name="outNormals">output normals will be allocated with given allocator.
         /// Its your responsibility to how to apply normals.</param>
         /// <param name="allocator">TempJob or Persistent. Cannot be temp allocator since will be passed a job.</param>
+
         public static void CalculateNormalDataUncached
         (
             Mesh mesh,
@@ -26,7 +27,7 @@ namespace Ica.Normal
             Allocator allocator
         )
         {
-            Assert.IsFalse(allocator == Allocator.Temp, "Out normals allocator cannot be Temp!!!");
+            Assert.IsFalse(allocator == Allocator.Temp);
 
             var mda = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = mda[0];
@@ -36,7 +37,7 @@ namespace Ica.Normal
             data.GetAllIndicesDataAsList(ref indices);
 
             VertexPositionMapper.GetVertexPosHashMap(vertices.AsArray(), out var posMap, Allocator.TempJob);
-            AdjacencyMapper.CalculateAdjacencyData(vertices.AsArray(), indices, posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
+            AdjacencyMapper.CalculateAdjacencyData(vertices.AsArray(), indices.AsArray(), posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
             outNormals = new NativeList<float3>(data.vertexCount, allocator);
 
             var triNormals = new NativeList<float3>(indices.Length / 3, Allocator.TempJob);
@@ -66,7 +67,7 @@ namespace Ica.Normal
         /// <param name="adjacencyMap"></param>
         /// <param name="triNormals"></param>
         /// <param name="handle"></param>
-        // [BurstCompile]
+        [BurstCompile]
         public static void RecalculateNormalsAndGetHandle
         (
             in NativeList<float3> vertices,
@@ -146,20 +147,20 @@ namespace Ica.Normal
             var triTangentJob = new TangentJobs.TriTangentJob
             {
                 Indices = indices.AsArray(),
-                Vertices = vertices,
-                UV = uv,
-                Tan1 = tan1,
-                Tan2 = tan2
+                Vertices = vertices.AsArray(),
+                UV = uv.AsArray(),
+                Tan1 = tan1.AsArray(),
+                Tan2 = tan2.AsArray()
             };
 
             var vertexTangentJob = new TangentJobs.VertexTangentJob
             {
                 AdjacencyList = adjacencyList.AsArray(),
-                AdjacencyMapper = adjacencyMap,
-                Normals = normals,
-                Tan1 = tan1,
-                Tan2 = tan2,
-                Tangents = outTangents
+                AdjacencyMapper = adjacencyMap.AsArray(),
+                Normals = normals.AsArray(),
+                Tan1 = tan1.AsArray(),
+                Tan2 = tan2.AsArray(),
+                Tangents = outTangents.AsArray()
             };
 
             var triHandle = triTangentJob.ScheduleParallel

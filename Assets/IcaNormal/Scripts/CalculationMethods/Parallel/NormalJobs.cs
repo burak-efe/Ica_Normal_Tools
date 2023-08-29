@@ -8,7 +8,7 @@ namespace Ica.Normal
     [BurstCompile]
     public static class NormalJobs
     {
-        //[BurstCompile]
+        [BurstCompile]
         public struct TriNormalJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> Indices;
@@ -28,7 +28,7 @@ namespace Ica.Normal
         }
 
 
-        //[BurstCompile]
+        [BurstCompile]
         public struct VertexNormalJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;

@@ -16,7 +16,7 @@ namespace Ica.Normal.Tests.PlayMode
         public void Check_Split_Geometry_Sphere()
         {
             var obj = Ica.Utils.Editor.AssetUtils.FindAndInstantiateAsset("SphereFromTwoHalfGeometryPrefab");
-            var solver = obj.GetComponent<RuntimeNormalSolver>();
+            var solver = obj.GetComponent<IcaNormalMorphedMeshSolver>();
             solver.Init();
             solver.RecalculateNormals();
             var mesh = obj.GetComponent<SkinnedMeshRenderer>().sharedMesh;
@@ -35,7 +35,7 @@ namespace Ica.Normal.Tests.PlayMode
          public void Is_All_Normals_are_Normalized()
          {
              var obj = Ica.Utils.Editor.AssetUtils.FindAndInstantiateAsset("SphereFromTwoHalfGeometryPrefab");
-             var solver = obj.GetComponent<RuntimeNormalSolver>();
+             var solver = obj.GetComponent<IcaNormalMorphedMeshSolver>();
              solver.Init();
              solver.RecalculateNormals();
              var mesh = obj.GetComponent<SkinnedMeshRenderer>().sharedMesh;
