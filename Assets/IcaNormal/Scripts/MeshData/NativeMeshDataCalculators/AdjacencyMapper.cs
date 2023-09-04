@@ -70,21 +70,10 @@ namespace Ica.Normal
             outStartIndices = new NativeList<int>(vertices.Length+1, allocator);
             pAllocateOutContainers.End();
 
-            pUnroll.Begin();
             
+            pUnroll.Begin();
             NativeContainerUtils.UnrollListsToList(tempAdjData,ref outAdjacencyList,ref outStartIndices);
-            // unsafe
-            // {
-            //     int currentStartIndex = 0;
-            //     for (int i = 0; i < vertices.Length; i++)
-            //     {
-            //         int size = tempAdjData.ElementAt(i).Length;
-            //         outAdjacencyList.AddRangeNoResize(tempAdjData[i].Ptr, tempAdjData[i].Length);
-            //         outAdjacencyMapper.Add(new int2(currentStartIndex, size));
-            //         currentStartIndex += size;
-            //     }
-            // }
-
+            
             pUnroll.End();
         }
     }

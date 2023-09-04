@@ -26,10 +26,6 @@ namespace Ica.Normal
             [NoAlias] Allocator allocator)
         {
             var pGetVertexPosHashMap = new ProfilerMarker("pGetVertexPosHashMap");
-            //var pAllocateOut = new ProfilerMarker("pPosMapAllocateOut");
-            //var pTryGetValueAndAddNewPair = new ProfilerMarker("pPosMapTryGetValueAndAddNewPair");
-            //var pAddNewPair = new ProfilerMarker("pPosMapAddNewPair");
-            //var pAddToList = new ProfilerMarker("pPosMapAddToList");
             pGetVertexPosHashMap.Begin();
             
 
