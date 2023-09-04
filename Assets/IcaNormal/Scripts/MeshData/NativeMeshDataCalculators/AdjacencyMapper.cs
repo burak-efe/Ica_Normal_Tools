@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using Ica.Utils;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -19,7 +20,7 @@ namespace Ica.Normal
             [NoAlias] in NativeArray<int> indices,
             [NoAlias] in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
             [NoAlias] out NativeList<int> outAdjacencyList,
-            [NoAlias] out NativeList<int2> outAdjacencyMapper,
+            [NoAlias] out NativeList<int> outStartIndices,
             [NoAlias] Allocator allocator
         )
         {
@@ -31,13 +32,13 @@ namespace Ica.Normal
 
             pAdjTempContainerAllocate.Begin();
 
-            var tempAdjData = new UnsafeList<UnsafeList<int>>(vertices.Length, Allocator.Temp);
+            var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
             pAdjTempContainerAllocate.End();
 
             pTempSubAllocate.Begin();
             for (int i = 0; i < vertices.Length; i++)
             {
-                tempAdjData.Add(new UnsafeList<int>(4, Allocator.Temp));
+                tempAdjData.Add(new NativeList<int>(4, Allocator.Temp));
             }
 
             pTempSubAllocate.End();
@@ -66,21 +67,23 @@ namespace Ica.Normal
 
             pAllocateOutContainers.Begin();
             outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
-            outAdjacencyMapper = new NativeList<int2>(vertices.Length, allocator);
+            outStartIndices = new NativeList<int>(vertices.Length+1, allocator);
             pAllocateOutContainers.End();
 
             pUnroll.Begin();
-            unsafe
-            {
-                int currentStartIndex = 0;
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    int size = tempAdjData.ElementAt(i).Length;
-                    outAdjacencyList.AddRangeNoResize(tempAdjData[i].Ptr, tempAdjData[i].Length);
-                    outAdjacencyMapper.Add(new int2(currentStartIndex, size));
-                    currentStartIndex += size;
-                }
-            }
+            
+            NativeContainerUtils.UnrollListsToList(tempAdjData,ref outAdjacencyList,ref outStartIndices);
+            // unsafe
+            // {
+            //     int currentStartIndex = 0;
+            //     for (int i = 0; i < vertices.Length; i++)
+            //     {
+            //         int size = tempAdjData.ElementAt(i).Length;
+            //         outAdjacencyList.AddRangeNoResize(tempAdjData[i].Ptr, tempAdjData[i].Length);
+            //         outAdjacencyMapper.Add(new int2(currentStartIndex, size));
+            //         currentStartIndex += size;
+            //     }
+            // }
 
             pUnroll.End();
         }

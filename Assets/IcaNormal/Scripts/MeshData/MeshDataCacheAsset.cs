@@ -17,7 +17,7 @@ namespace Ica.Normal
         public Mesh TargetMesh;
         [SerializeField, HideInInspector] public int[] SerializedIndices;
         [SerializeField, HideInInspector] public int[] SerializedAdjacencyList;
-        [SerializeField, HideInInspector] public int2[] SerializedAdjacencyMapper;
+        [SerializeField, HideInInspector] public int[] SerializedAdjacencyMapper;
         public string LastCacheDate = "Never";
         
 
@@ -60,7 +60,7 @@ namespace Ica.Normal
             Profiler.EndSample();
 
             SerializedAdjacencyList = new int[adjacencyList.Length];
-            SerializedAdjacencyMapper = new int2[adjacencyMapper.Length];
+            SerializedAdjacencyMapper = new int[adjacencyMapper.Length];
             SerializedIndices = new int[indices.Length];
             adjacencyList.AsArray().CopyTo(SerializedAdjacencyList);
             adjacencyMapper.AsArray().CopyTo(SerializedAdjacencyMapper);

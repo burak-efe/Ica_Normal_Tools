@@ -24,7 +24,7 @@ namespace Ica.Normal
         public NativeList<int> IndexData;
         public NativeList<float3> NormalData;
         public NativeList<int> AdjacencyList;
-        public NativeList<int2> AdjacencyMapper;
+        public NativeList<int> AdjacencyMapper;
         private NativeList<int> _vertexSeparatorData;
         private NativeList<int> _indexSeparatorData;
 

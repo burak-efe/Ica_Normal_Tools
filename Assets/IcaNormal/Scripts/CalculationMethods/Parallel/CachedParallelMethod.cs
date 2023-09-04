@@ -64,7 +64,7 @@ namespace Ica.Normal
         /// <param name="indices"></param>
         /// <param name="outNormals"></param>
         /// <param name="adjacencyList"></param>
-        /// <param name="adjacencyMap"></param>
+        /// <param name="adjacencyStartIndicesMap"></param>
         /// <param name="triNormals"></param>
         /// <param name="handle"></param>
         [BurstCompile]
@@ -74,7 +74,7 @@ namespace Ica.Normal
             in NativeList<int> indices,
             ref NativeList<float3> outNormals,
             in NativeList<int> adjacencyList,
-            in NativeList<int2> adjacencyMap,
+            in NativeList<int> adjacencyStartIndicesMap,
             in NativeList<float3> triNormals,
             out JobHandle handle
         )
@@ -97,7 +97,7 @@ namespace Ica.Normal
             var vertexNormalJob = new NormalJobs.VertexNormalJob
             {
                 AdjacencyList = adjacencyList.AsArray(),
-                AdjacencyMapper = adjacencyMap.AsArray(),
+                AdjacencyMapper = adjacencyStartIndicesMap.AsArray(),
                 TriNormals = triNormals.AsArray(),
                 Normals = outNormals.AsArray()
             };
@@ -133,7 +133,7 @@ namespace Ica.Normal
             in NativeList<int> indices,
             in NativeList<float2> uv,
             in NativeList<int> adjacencyList,
-            in NativeList<int2> adjacencyMap,
+            in NativeList<int> adjacencyMap,
             in NativeList<float3> tan1,
             in NativeList<float3> tan2,
             ref NativeList<float4> outTangents,

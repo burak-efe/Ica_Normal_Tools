@@ -32,18 +32,19 @@ namespace Ica.Normal
         public struct VertexNormalJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;
-            [ReadOnly] public NativeArray<int2> AdjacencyMapper;
+            [ReadOnly] public NativeArray<int> AdjacencyMapper;
             [ReadOnly] public NativeArray<float3> TriNormals;
             [WriteOnly] public NativeArray<float3> Normals;
 
             public void Execute(int vertexIndex)
             {
-                int2 adjacencyOffsetCount = AdjacencyMapper[vertexIndex];
-                float3 dotProdSum = 0;
+                int subArrayStart = AdjacencyMapper[vertexIndex];
+                int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
+                float3 dotProdSum = new float3(0);
 
-                for (int i = 0; i < adjacencyOffsetCount.y; ++i)
+                for (int i = 0; i < subArrayCount; ++i)
                 {
-                    int triID = AdjacencyList[adjacencyOffsetCount.x + i];
+                    int triID = AdjacencyList[subArrayStart + i];
                     dotProdSum += TriNormals[triID];
                 }
 
