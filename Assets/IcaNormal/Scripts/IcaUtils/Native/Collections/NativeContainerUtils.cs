@@ -1,6 +1,8 @@
-﻿using Unity.Burst;
+﻿using System;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace Ica.Utils
@@ -15,6 +17,9 @@ namespace Ica.Utils
         public static void UnrollListsToList<T>([NoAlias] in UnsafeList<NativeList<T>> nestedData, [NoAlias] ref NativeList<T> outUnrolledData, [NoAlias] ref NativeList<int> startIndices)
             where T : unmanaged
         {
+            GetTotalSizeOfNestedContainer(nestedData, out var size);
+            outUnrolledData.SetCapacity(size);
+            startIndices.SetCapacity(nestedData.Length + 1);
             outUnrolledData.Clear();
             startIndices.Clear();
             var startIndex = 0;
@@ -24,6 +29,7 @@ namespace Ica.Utils
                 outUnrolledData.AddRange(nestedData[i].AsArray());
                 startIndex += nestedData[i].Length;
             }
+
             startIndices.Add(startIndex);
         }
 
@@ -41,6 +47,7 @@ namespace Ica.Utils
                 outUnrolledData.AddRange(nestedData[i]);
                 startIndex += nestedData[i].Length;
             }
+
             startIndices.Add(startIndex);
         }
 
@@ -48,7 +55,6 @@ namespace Ica.Utils
         public static void UnrollArraysToArray<T>([NoAlias] in UnsafeList<NativeArray<T>> nestedData, [NoAlias] ref NativeArray<T> outUnrolledData, [NoAlias] ref NativeList<int> startIndices)
             where T : unmanaged
         {
-
             startIndices.Clear();
             var startIndex = 0;
 
@@ -59,6 +65,7 @@ namespace Ica.Utils
                 NativeArray<T>.Copy(nestedData[i], 0, outUnrolledData, startIndex, size);
                 startIndex += size;
             }
+
             startIndices.Add(startIndex);
         }
 

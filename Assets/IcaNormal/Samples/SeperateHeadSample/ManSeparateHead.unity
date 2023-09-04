@@ -551,10 +551,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607c1d0f5d60332409908c41185aa790, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NormalOutputTarget: 0
+  NormalOutputTarget: 1
   RecalculateOnStart: 1
-  RecalculateTangents: 1
-  _dataCacheAsset: {fileID: 0}
+  AlsoRecalculateTangents: 0
+  DataCacheAsset: {fileID: 0}
   TargetSkinnedMeshRenderers:
   - {fileID: 1389065780}
   - {fileID: 1389065781}
@@ -615,6 +615,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bf843e44c9b2f948809482a8722b4cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  KeyCode1: 257
-  Init: 258
-  Solver1: {fileID: 1389065779}

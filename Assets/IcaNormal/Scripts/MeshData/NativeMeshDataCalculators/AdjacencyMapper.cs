@@ -20,61 +20,47 @@ namespace Ica.Normal
             [NoAlias] in NativeArray<int> indices,
             [NoAlias] in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
             [NoAlias] out NativeList<int> outAdjacencyList,
-            [NoAlias] out NativeList<int> outStartIndices,
+            [NoAlias] out NativeList<int> outStartIndicesMap,
+            //[NoAlias] out NativeList<int> outRealConnectedCount,
             [NoAlias] Allocator allocator
         )
         {
-            var pAdjTempContainerAllocate = new ProfilerMarker("pAdjTempContainerAllocate");
-            var pTempSubAllocate = new ProfilerMarker("pAdjTempSubContainerAllocate");
-            var pCalculateAdjacencyData = new ProfilerMarker("pAdjCalculateAdjacencyData");
-            var pAllocateOutContainers = new ProfilerMarker("pAdjAllocateOutContainers");
-            var pUnroll = new ProfilerMarker("pAdjUnroll");
-
-            pAdjTempContainerAllocate.Begin();
-
             var tempAdjData = new UnsafeList<NativeList<int>>(vertices.Length, Allocator.Temp);
-            pAdjTempContainerAllocate.End();
 
-            pTempSubAllocate.Begin();
             for (int i = 0; i < vertices.Length; i++)
             {
-                tempAdjData.Add(new NativeList<int>(4, Allocator.Temp));
+                tempAdjData.Add(new NativeList<int>(8, Allocator.Temp));
             }
 
-            pTempSubAllocate.End();
+            //outRealConnectedCount = new NativeList<int>(vertices.Length, allocator);
+            //outRealConnectedCount.Resize(vertices.Length,NativeArrayOptions.ClearMemory);
 
-            pCalculateAdjacencyData.Begin();
             var unrolledListLength = 0;
             //for every triangle
             for (int indicesIndex = 0; indicesIndex < indices.Length; indicesIndex += 3)
             {
-                var triIndex = indicesIndex / 3;
+                int triIndex = indicesIndex / 3;
                 //for three connected vertex of triangle
                 for (int v = 0; v < 3; v++)
                 {
-                    var subVertexOfTriangle = indices[indicesIndex + v];
-                    var pos = vertices[subVertexOfTriangle];
-                    var listOfVerticesOnThatPosition = vertexPosHashMap[pos];
+                    int indexofSubVertexOfTriangle = indices[indicesIndex + v];
+                    float3 pos = vertices[indexofSubVertexOfTriangle];
+                    NativeList<int> listOfVerticesOnThatPosition = vertexPosHashMap[pos];
+
+                    // for every vertices on that position, add current triangle index
                     for (int i = 0; i < listOfVerticesOnThatPosition.Length; i++)
                     {
-                        tempAdjData.ElementAt(listOfVerticesOnThatPosition.ElementAt(i)).Add(triIndex);
+                        var vertexIndex = listOfVerticesOnThatPosition.ElementAt(i);
+                        tempAdjData.ElementAt(vertexIndex).Add(triIndex);
                         unrolledListLength++;
                     }
                 }
             }
 
-            pCalculateAdjacencyData.End();
-
-            pAllocateOutContainers.Begin();
             outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
-            outStartIndices = new NativeList<int>(vertices.Length+1, allocator);
-            pAllocateOutContainers.End();
+            outStartIndicesMap = new NativeList<int>(vertices.Length + 1, allocator);
 
-            
-            pUnroll.Begin();
-            NativeContainerUtils.UnrollListsToList(tempAdjData,ref outAdjacencyList,ref outStartIndices);
-            
-            pUnroll.End();
+            NativeContainerUtils.UnrollListsToList(tempAdjData, ref outAdjacencyList, ref outStartIndicesMap);
         }
     }
 }

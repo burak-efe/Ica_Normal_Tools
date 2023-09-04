@@ -59,7 +59,7 @@ namespace Ica.Normal
         public struct VertexTangentJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;
-            [ReadOnly] public NativeArray<int> AdjacencyMapper;
+            [ReadOnly] public NativeArray<int> AdjacencyStartIndices;
             [ReadOnly] public NativeArray<float3> Normals;
             [ReadOnly] public NativeArray<float3> Tan1;
             [ReadOnly] public NativeArray<float3> Tan2;
@@ -67,8 +67,8 @@ namespace Ica.Normal
 
             public void Execute(int vertexIndex)
             {
-                int subArrayStart = AdjacencyMapper[vertexIndex];
-                int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
+                int subArrayStart = AdjacencyStartIndices[vertexIndex];
+                int subArrayCount = AdjacencyStartIndices[vertexIndex + 1] - AdjacencyStartIndices[vertexIndex];
                 float3 t1Sum = new float3();
                 float3 t2Sum = new float3();
 

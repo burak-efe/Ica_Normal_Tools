@@ -156,7 +156,7 @@ namespace Ica.Normal
             var vertexTangentJob = new TangentJobs.VertexTangentJob
             {
                 AdjacencyList = adjacencyList.AsArray(),
-                AdjacencyMapper = adjacencyMap.AsArray(),
+                AdjacencyStartIndices = adjacencyMap.AsArray(),
                 Normals = normals.AsArray(),
                 Tan1 = tan1.AsArray(),
                 Tan2 = tan2.AsArray(),
