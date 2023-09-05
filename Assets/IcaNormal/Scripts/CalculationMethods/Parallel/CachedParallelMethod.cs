@@ -19,12 +19,12 @@ namespace Ica.Normal
         /// <param name="outNormals">output normals will be allocated with given allocator.
         /// Its your responsibility to how to apply normals.</param>
         /// <param name="allocator">TempJob or Persistent. Cannot be temp allocator since will be passed a job.</param>
-
         public static void CalculateNormalDataUncached
         (
             Mesh mesh,
             out NativeList<float3> outNormals,
-            Allocator allocator
+            Allocator allocator,
+            float angle = 180f
         )
         {
             Assert.IsFalse(allocator == Allocator.Temp);
@@ -37,13 +37,17 @@ namespace Ica.Normal
             data.GetAllIndicesDataAsList(ref indices);
 
             VertexPositionMapper.GetVertexPosHashMap(vertices.AsArray(), out var posMap, Allocator.TempJob);
-            AdjacencyMapper.CalculateAdjacencyData(vertices.AsArray(), indices.AsArray(), posMap, out var adjacencyList, out var adjacencyMapper, Allocator.TempJob);
+            AdjacencyMapper.CalculateAdjacencyData(vertices.AsArray(), indices.AsArray(), posMap, out var adjacencyList, out var adjacencyMapper, out var connectedCountMap, Allocator.TempJob);
             outNormals = new NativeList<float3>(data.vertexCount, allocator);
+            outNormals.ResizeUninitialized(data.vertexCount);
 
             var triNormals = new NativeList<float3>(indices.Length / 3, Allocator.TempJob);
             triNormals.Resize(indices.Length / 3, NativeArrayOptions.UninitializedMemory);
-            RecalculateNormalsAndGetHandle(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper, triNormals, out var handle);
+            RecalculateNormalsAndGetHandle(vertices, indices, ref outNormals, adjacencyList, adjacencyMapper, connectedCountMap, triNormals, out var handle, angle);
             handle.Complete();
+
+            // foreach (int i in connectedCountMap)
+            //     Debug.Log(i);
 
             foreach (var kvPair in posMap)
             {
@@ -55,6 +59,7 @@ namespace Ica.Normal
             posMap.Dispose();
             adjacencyList.Dispose();
             adjacencyMapper.Dispose();
+            connectedCountMap.Dispose();
         }
 
         /// <summary>
@@ -75,10 +80,13 @@ namespace Ica.Normal
             ref NativeList<float3> outNormals,
             in NativeList<int> adjacencyList,
             in NativeList<int> adjacencyStartIndicesMap,
+            in NativeList<int> connectedCountMap,
             in NativeList<float3> triNormals,
-            out JobHandle handle
+            out JobHandle handle,
+            float angle = 180f
         )
         {
+            angle = math.clamp(angle, 0, 180);
             Assert.IsTrue(vertices.Length == outNormals.Length);
             Assert.IsTrue(triNormals.Length == indices.Length / 3);
             var pSchedule = new ProfilerMarker("pSchedule");
@@ -94,17 +102,33 @@ namespace Ica.Normal
                 Vertices = vertices.AsArray()
             };
 
-            var vertexNormalJob = new NormalJobs.VertexNormalJob
+            var triNormalJobHandle = triNormalJob.ScheduleParallel(triangleCount, JobUtils.GetBatchCountThatMakesSense(triangleCount), default);
+
+            if (angle == 180f)
             {
-                AdjacencyList = adjacencyList.AsArray(),
-                AdjacencyMapper = adjacencyStartIndicesMap.AsArray(),
-                TriNormals = triNormals.AsArray(),
-                Normals = outNormals.AsArray()
-            };
+                var vertexNormalJob = new NormalJobs.SmoothVertexNormalJob()
+                {
+                    AdjacencyList = adjacencyList.AsArray(),
+                    AdjacencyMapper = adjacencyStartIndicesMap.AsArray(),
+                    TriNormals = triNormals.AsArray(),
+                    Normals = outNormals.AsArray(),
+                };
+                handle = vertexNormalJob.ScheduleParallel(vertices.Length, JobUtils.GetBatchCountThatMakesSense(vertices.Length), triNormalJobHandle);
+            }
+            else
+            {
+                var vertexNormalJob = new NormalJobs.AngleBasedVertexNormalJob
+                {
+                    AdjacencyList = adjacencyList.AsArray(),
+                    AdjacencyMapper = adjacencyStartIndicesMap.AsArray(),
+                    TriNormals = triNormals.AsArray(),
+                    Normals = outNormals.AsArray(),
+                    ConnectedMapper = connectedCountMap.AsArray(),
+                    CosineThreshold = math.cos(angle * Mathf.Deg2Rad)
+                };
+                handle = vertexNormalJob.ScheduleParallel(vertices.Length, JobUtils.GetBatchCountThatMakesSense(vertices.Length), triNormalJobHandle);
+            }
 
-            var tJobHandle = triNormalJob.ScheduleParallel(triangleCount, JobUtils.GetBatchCountThatMakesSense(triangleCount), default);
-
-            handle = vertexNormalJob.ScheduleParallel(vertices.Length, JobUtils.GetBatchCountThatMakesSense(vertices.Length), tJobHandle);
 
             pSchedule.End();
         }

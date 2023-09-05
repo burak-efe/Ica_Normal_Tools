@@ -5,7 +5,6 @@ using UnityEngine.Serialization;
 
 namespace Ica.Normal
 {
-    
     /// <summary>
     /// The main Component of the package
     /// </summary>
@@ -18,7 +17,7 @@ namespace Ica.Normal
         }
 
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
-        
+        public float Angle = 180f;
         public bool RecalculateOnStart;
         public bool AlsoRecalculateTangents;
 
@@ -26,7 +25,7 @@ namespace Ica.Normal
         public MeshDataCacheAsset DataCacheAsset;
 
         public List<SkinnedMeshRenderer> TargetSkinnedMeshRenderers;
-        private MeshDataCache _meshDataCache;
+        internal MeshDataCache _meshDataCache;
         private List<Mesh> _meshes;
 
         [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")]
@@ -147,7 +146,6 @@ namespace Ica.Normal
             {
                 Destroy(tempObject);
             }
-
         }
 
         [ContextMenu("RecalculateNormals")]
@@ -160,8 +158,9 @@ namespace Ica.Normal
         {
             UpdateVertices();
             CachedParallelMethod.RecalculateNormalsAndGetHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
-                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.TriNormalData, out var normalHandle);
-            
+                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.ConnectedCountMapper, _meshDataCache.TriNormalData, out var normalHandle,
+                Angle);
+
             if (AlsoRecalculateTangents)
             {
                 CachedParallelMethod.ScheduleAndGetTangentJobHandle(

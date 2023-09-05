@@ -19,7 +19,7 @@ namespace Ica.Normal
         [SerializeField, HideInInspector] public int[] SerializedAdjacencyList;
         [SerializeField, HideInInspector] public int[] SerializedAdjacencyMapper;
         public string LastCacheDate = "Never";
-        
+
 
         [ContextMenu("CacheData")]
         public void CacheData()
@@ -28,7 +28,7 @@ namespace Ica.Normal
             var mda = Mesh.AcquireReadOnlyMeshData(TargetMesh);
             var data = mda[0];
             Profiler.EndSample();
-            
+
             Profiler.BeginSample("GetVertices");
             var vertices = new NativeList<float3>(data.vertexCount, Allocator.Temp);
             data.GetVertices(vertices.AsArray().Reinterpret<Vector3>());
@@ -39,9 +39,9 @@ namespace Ica.Normal
             var indices = new NativeList<int>(indexCount, Allocator.Temp);
             data.GetAllIndicesDataAsList(ref indices);
             Profiler.EndSample();
-            
+
             Profiler.BeginSample("GetPosGraph");
-            VertexPositionMapper.GetVertexPosHashMap( vertices.AsArray(), out var posMap, Allocator.Temp);
+            VertexPositionMapper.GetVertexPosHashMap(vertices.AsArray(), out var posMap, Allocator.Temp);
             Profiler.EndSample();
 
             Profiler.BeginSample("GetDuplicatesGraph");
@@ -56,7 +56,7 @@ namespace Ica.Normal
 
             Profiler.BeginSample("Adjacency");
             Profiler.BeginSample("Calculate");
-            AdjacencyMapper.CalculateAdjacencyData( vertices.AsArray(),  indices.AsArray(),  posMap, out var  adjacencyList, out var adjacencyMapper, Allocator.Temp);
+            AdjacencyMapper.CalculateAdjacencyData(vertices.AsArray(), indices.AsArray(), posMap, out var adjacencyList, out var adjacencyMapper, out var connectedMap, Allocator.Temp);
             Profiler.EndSample();
 
             SerializedAdjacencyList = new int[adjacencyList.Length];

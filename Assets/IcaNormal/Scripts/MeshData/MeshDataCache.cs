@@ -25,6 +25,7 @@ namespace Ica.Normal
         public NativeList<float3> NormalData;
         public NativeList<int> AdjacencyList;
         public NativeList<int> AdjacencyMapper;
+        public NativeList<int> ConnectedCountMapper;
         private NativeList<int> _vertexSeparatorData;
         private NativeList<int> _indexSeparatorData;
 
@@ -63,10 +64,11 @@ namespace Ica.Normal
             _mda.GetMergedNormals(ref NormalData, ref _vertexSeparatorData);
 
             TriNormalData = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
-            TriNormalData.Resize(TotalIndexCount/3,NativeArrayOptions.UninitializedMemory);
+            TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
 
             VertexPositionMapper.GetVertexPosHashMap(VertexData.AsArray(), out var tempPosGraph, Allocator.Temp);
-            Normal.AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph, out AdjacencyList, out AdjacencyMapper, Allocator.Persistent);
+            Normal.AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph, out AdjacencyList, out AdjacencyMapper, out ConnectedCountMapper,
+                Allocator.Persistent);
 
             if (cacheForTangents)
             {

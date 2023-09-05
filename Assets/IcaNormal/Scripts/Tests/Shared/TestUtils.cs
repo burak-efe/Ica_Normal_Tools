@@ -11,12 +11,7 @@ namespace Ica.Tests.Shared
     {
         public static bool IsNormalsAreSameForSamePosition(NativeList<float3> vertices, NativeList<float3> normals)
         {
-            //var mda = Mesh.AcquireReadOnlyMeshData(mesh);
-            //var data = mda[0];
-            //data.AllocAndGetVerticesDataAsArray(out var vertices, Allocator.Temp);
-            //data.AllocAndGetNormalsDataAsArray(out var normals, Allocator.Temp);
-           // mda.Dispose();
-
+            int incorrectCount = 0;
             VertexPositionMapper.GetVertexPosHashMap(vertices.AsArray(), out var vertexPosMap, Allocator.Temp);
             foreach (var pair in vertexPosMap)
             {
@@ -27,14 +22,22 @@ namespace Ica.Tests.Shared
                     {
                         if (!normals[vertexIndex].Equals(normalToCompare))
                         {
-                            Debug.LogError("normals are not same " + normals[vertexIndex] + " and " + normalToCompare);
-                            return false;
+                            incorrectCount++;
+                            var dif = normals[vertexIndex] - normalToCompare;
+                            var totalDif = math.abs(dif.x) + math.abs(dif.y) + math.abs(dif.z);
+                            Debug.Log("total diff is " + totalDif.ToString("N10") );
                         }
+
                     }
                 }
             }
 
-            //Debug.Log("All Normals are some for vertices on same positions");
+            if (incorrectCount > 0)
+            {
+                Debug.LogError($"normals are not same for {incorrectCount} vertices, which is {incorrectCount * 100 / vertices.Length} percent  of the all vertices");
+                return false;
+            }
+
             return true;
         }
 
@@ -60,7 +63,7 @@ namespace Ica.Tests.Shared
 
             if (countOfNonUnit > 0)
             {
-                Debug.LogError(countOfNonUnit + " normals are not unit vector with precision of "+ precision +", which is " + (countOfNonUnit * 100) / mesh.vertexCount + " Percent of mesh!");
+                Debug.LogError(countOfNonUnit + " normals are not unit vector with precision of " + precision + ", which is " + (countOfNonUnit * 100) / mesh.vertexCount + " Percent of mesh!");
                 return false;
             }
             else

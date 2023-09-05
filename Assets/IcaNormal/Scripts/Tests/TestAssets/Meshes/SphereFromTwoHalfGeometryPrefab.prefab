@@ -115,9 +115,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NormalOutputTarget: 0
-  RecalculateOnStart: 1
-  RecalculateTangents: 0
-  _dataCacheAsset: {fileID: 0}
+  Angle: 180
+  RecalculateOnStart: 0
+  AlsoRecalculateTangents: 0
+  DataCacheAsset: {fileID: 0}
   TargetSkinnedMeshRenderers:
   - {fileID: 1268799343434770335}
   Prefabs:

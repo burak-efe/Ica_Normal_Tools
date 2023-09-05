@@ -10,25 +10,26 @@ using UnityEngine.TestTools;
 
 namespace Ica.Normal.Tests.PlayMode
 {
-    public class PlayMode1
+    public class PlayModeTest1
     {
         [Test]
         public void Check_Split_Geometry_Sphere()
         {
             var obj = Ica.Utils.Editor.AssetUtils.FindAndInstantiateAsset("SphereFromTwoHalfGeometryPrefab");
             var solver = obj.GetComponent<IcaNormalMorphedMeshSolver>();
+            solver.RecalculateOnStart = false;
             solver.Init();
+            
+            //smooth all branch
+            solver.Angle = 180f;
             solver.RecalculateNormals();
-            var mesh = obj.GetComponent<SkinnedMeshRenderer>().sharedMesh;
-            var mda = Mesh.AcquireReadOnlyMeshData(mesh);
-
-            var vertices = new NativeList<float3>(1, Allocator.Temp);
-            var normals = new NativeList<float3>(1, Allocator.Temp);
-            mda[0].GetVerticesDataAsList(ref vertices);
-            mda[0].GetNormalsDataAsList(ref normals);
-            Assert.IsTrue(vertices.Length == mesh.vertexCount);
-            Assert.IsTrue(normals.Length == mesh.vertexCount);
-            Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(vertices, normals));
+            Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(solver._meshDataCache.VertexData, solver._meshDataCache.NormalData));
+            
+            //angle respected branch
+            solver.Angle = 175f;
+            solver.RecalculateNormals();
+            Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(solver._meshDataCache.VertexData, solver._meshDataCache.NormalData));
+            
         }
 
          [Test]
