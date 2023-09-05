@@ -33,32 +33,27 @@ namespace Ica.Normal
             }
 
             //outRealConnectedCount = new NativeList<int>(vertices.Length, allocator);
-            //outRealConnectedCount.Resize(vertices.Length,NativeArrayOptions.ClearMemory);
+            //outRealConnectedCount.Resize(vertices.Length, NativeArrayOptions.ClearMemory);
 
-            var unrolledListLength = 0;
-            //for every triangle
-            for (int indicesIndex = 0; indicesIndex < indices.Length; indicesIndex += 3)
+            //for every index
+            for (int i = 0; i < indices.Length; i++)
             {
-                int triIndex = indicesIndex / 3;
-                //for three connected vertex of triangle
-                for (int v = 0; v < 3; v++)
-                {
-                    int indexofSubVertexOfTriangle = indices[indicesIndex + v];
-                    float3 pos = vertices[indexofSubVertexOfTriangle];
-                    NativeList<int> listOfVerticesOnThatPosition = vertexPosHashMap[pos];
+                int triIndex = i / 3;
+                int vertexIndex = indices[i];
+                float3 pos = vertices[vertexIndex];
+                NativeList<int> listOfVerticesOnThatPosition = vertexPosHashMap[pos];
 
-                    // for every vertices on that position, add current triangle index
-                    for (int i = 0; i < listOfVerticesOnThatPosition.Length; i++)
-                    {
-                        var vertexIndex = listOfVerticesOnThatPosition.ElementAt(i);
-                        tempAdjData.ElementAt(vertexIndex).Add(triIndex);
-                        unrolledListLength++;
-                    }
+                // for every vertices on that position, add current triangle index
+                for (int j = 0; j < listOfVerticesOnThatPosition.Length; j++)
+                {
+                    var vertexOnThatPos = listOfVerticesOnThatPosition.ElementAt(j);
+                    tempAdjData.ElementAt(vertexOnThatPos).Add(triIndex);
                 }
+                //}
             }
 
-            outAdjacencyList = new NativeList<int>(unrolledListLength, allocator);
-            outStartIndicesMap = new NativeList<int>(vertices.Length + 1, allocator);
+            outAdjacencyList = new NativeList<int>(allocator);
+            outStartIndicesMap = new NativeList<int>(allocator);
 
             NativeContainerUtils.UnrollListsToList(tempAdjData, ref outAdjacencyList, ref outStartIndicesMap);
         }
