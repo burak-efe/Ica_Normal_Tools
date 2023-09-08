@@ -142,15 +142,15 @@ namespace Ica.Normal
                     // Calculate the normal of the triangle
                     float3 p1 = vertices[i2] - vertices[i1];
                     float3 p2 = vertices[i3] - vertices[i1];
-                    float3 triCross = math.cross(p1, p2);
-                    float magnitude = math.length(triCross);
+                    float3 triNormal = math.cross(p1, p2);
+                    float magnitude = math.length(triNormal);
                     if (magnitude > 0)
                     {
-                        triCross /= magnitude;
+                        triNormal /= magnitude;
                     }
 
                     var array = triNormals[subMeshIndex];
-                    array[triIndex] = triCross;
+                    array[triIndex] = triNormal;
 
                     VertexKey key;
                     NativeList<VertexEntry> entry;
