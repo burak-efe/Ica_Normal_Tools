@@ -12,6 +12,13 @@ namespace Ica.Normal
     [BurstCompile]
     public static class CachedParallelMethod
     {
+        public static void RecalculateNormalsIca(this Mesh mesh, float angle = 180f)
+        {
+            CalculateNormalDataUncached(mesh, out var outNormals, Allocator.TempJob, angle);
+            mesh.SetNormals(outNormals.AsArray().Reinterpret<Vector2>());
+            outNormals.Dispose();
+        }
+
         /// <summary>
         /// For procedural mesh.
         /// </summary>
@@ -124,8 +131,10 @@ namespace Ica.Normal
                     TriNormals = triNormals.AsArray(),
                     Normals = outNormals.AsArray(),
                     ConnectedMapper = connectedCountMap.AsArray(),
-                    CosineThreshold = math.cos(angle * Mathf.Deg2Rad)
+                    CosineThreshold = Mathf.Cos(angle * Mathf.Deg2Rad)
                 };
+
+                //Debug.Log(math.cos(angle * Mathf.Deg2Rad));
                 handle = vertexNormalJob.ScheduleParallel(vertices.Length, JobUtils.GetBatchCountThatMakesSense(vertices.Length), triNormalJobHandle);
             }
 

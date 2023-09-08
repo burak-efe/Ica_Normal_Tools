@@ -23,5 +23,22 @@ namespace Ica.Utils.Tests
                 Assert.AreEqual(listOriginal[i], listModified[i + 1]);
             }
         }
+        
+        [Test]
+        public void InsertAtBeginningToEmptyList()
+        {
+
+            var list = new NativeList<int>( Allocator.Temp) ;
+            list.InsertAtBeginning(3);
+            list.InsertAtBeginning(2);
+            list.InsertAtBeginning(1);
+            list.InsertAtBeginning(0);
+
+            Assert.AreEqual(list.Length, 4);
+            for (int i = 0; i < list.Length; i++)
+            {
+                Assert.AreEqual(list[i], i);
+            }
+        }
     }
 }

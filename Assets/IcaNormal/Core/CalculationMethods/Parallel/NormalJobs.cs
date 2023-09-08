@@ -24,12 +24,13 @@ namespace Ica.Normal
 
                 // Calculate the normal of the triangle
                 float3 crossProduct = math.cross(vertexB - vertexA, vertexC - vertexA);
+                //var normalized = math.normalize(crossProduct);
                 TriNormals[index] = crossProduct;
             }
         }
 
 
-        [BurstCompile]
+        //[BurstCompile]
         public struct AngleBasedVertexNormalJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;
@@ -44,36 +45,68 @@ namespace Ica.Normal
                 int subArrayStart = AdjacencyMapper[vertexIndex];
                 int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
                 int connectedCount = ConnectedMapper[vertexIndex];
-                double3 dotProdSum = 0;
+                double3 sum = 0;
 
-                //Debug.Log( $" total count {subArrayCount}, connected count {connectedCount}, non connected count {subArrayCount - connectedCount}");
-                
+
+                // for (int i = 0; i < subArrayCount; i++)
+                // {
+                //     var firstIndex = AdjacencyList[subArrayStart + i];
+                //     var firstNormal = TriNormals[firstIndex];
+                //
+                //     for (int j = 0; j < subArrayCount; j++)
+                //     {
+                //         var secondIndex = AdjacencyList[subArrayStart + j];
+                //         
+                //         if (firstIndex == secondIndex)
+                //         {
+                //             Debug.Log("true");
+                //             sum += TriNormals[AdjacencyList[subArrayStart + j]];
+                //             continue;
+                //         }
+                //
+                //         // var secondNormal = TriNormals[secondIndex];
+                //         // var dot = math.dot(math.normalize(firstNormal), math.normalize(secondNormal));
+                //         //
+                //         // if (dot >= CosineThreshold)
+                //         // {
+                //         //     Debug.Log(dot + " is bigger than " + CosineThreshold);
+                //         //     sum += secondNormal;
+                //         // }
+                //         // else
+                //         // {
+                //         //     Debug.Log(dot + " is NOT bigger than " + CosineThreshold);
+                //         // }
+                //     }
+                // }
+
+
                 //for every connected triangle
                 for (int i = 0; i < connectedCount; ++i)
                 {
                     int triID = AdjacencyList[subArrayStart + i];
-                    dotProdSum += TriNormals[triID];
+                    sum += TriNormals[triID];
                 }
-
-                double3 normalsOfConnectedTriangles = math.normalize(dotProdSum);
                 
-
+                double3 normalFromConnectedTriangles = math.normalize(sum);
+                
                 //for every non connected (but adjacent) triangle
                 for (int i = 0; i < subArrayCount - connectedCount; i++)
                 {
                     int triID = AdjacencyList[subArrayStart + connectedCount + i];
-                    double dotProd = math.dot(TriNormals[triID], normalsOfConnectedTriangles);
+                    var normalizedCurrentTri = math.normalize(TriNormals[triID]);
+                    double dotProd = math.dot(normalFromConnectedTriangles, normalizedCurrentTri);
                     
                     // include it to final vertex normal if angle smooth enough
                     if (dotProd >= CosineThreshold)
-                        dotProdSum += TriNormals[triID];
+                    {
+                        sum += TriNormals[triID];
+                    }
                 }
-                
-                Normals[vertexIndex] = (float3)math.normalize(dotProdSum);
+
+                Normals[vertexIndex] = (float3)math.normalize(sum);
             }
         }
-        
-        
+
 
         [BurstCompile]
         public struct SmoothVertexNormalJob : IJobFor
@@ -88,7 +121,7 @@ namespace Ica.Normal
                 int subArrayStart = AdjacencyMapper[vertexIndex];
                 int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
                 double3 dotProdSum = 0;
-                
+
                 //for every adjacent triangle
                 for (int i = 0; i < subArrayCount; ++i)
                 {

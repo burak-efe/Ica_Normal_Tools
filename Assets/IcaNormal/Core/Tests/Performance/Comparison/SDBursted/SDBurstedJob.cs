@@ -25,6 +25,7 @@
 // http://www.terathon.com/code/tangent.html
 
 using System;
+using System.Linq;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -147,7 +148,7 @@ namespace Ica.Normal
                     {
                         triCross /= magnitude;
                     }
-
+                    
                     var array = triNormals[subMeshIndex];
                     array[triIndex] = triCross;
 
