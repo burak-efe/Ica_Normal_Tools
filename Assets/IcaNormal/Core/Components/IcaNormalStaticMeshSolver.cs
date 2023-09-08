@@ -18,11 +18,8 @@ namespace Ica.Normal
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
-            Ica.Normal.CachedParallelMethod.CalculateNormalDataUncached(TargetMesh, out var normals, Allocator.TempJob, Angle);
-            
-            TargetMesh.SetNormals(normals.AsArray().Reinterpret<Vector3>());
-
-            normals.Dispose();
+            TargetMesh.RecalculateNormalsIca();
+   
         }
     }
 }

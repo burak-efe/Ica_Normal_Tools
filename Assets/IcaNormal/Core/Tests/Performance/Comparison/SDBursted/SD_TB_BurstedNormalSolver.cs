@@ -7,39 +7,38 @@ namespace Ica.Normal
 {
     public static class SD_TB_BurstedNormalSolver
     {
-        public static void RecalculateNormals(this Mesh mesh, float angle, bool recalculateTangents = true)
+        public static void RecalculateNormals(this Mesh mesh, float angle, bool recalculateTangents = false)
         {
             var dataArray = Mesh.AcquireReadOnlyMeshData(mesh);
             var data = dataArray[0];
-            var outputData = new NativeList<float3>(data.vertexCount, Allocator.TempJob);
-            var outputTangents = new NativeList<float4>(data.vertexCount, Allocator.TempJob);
-            
+            var outNormals = new NativeArray<float3>(data.vertexCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            var outTangents = new NativeArray<float4>(data.vertexCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+
             var normalJob = new SDBurstedJob
             {
                 Data = data,
                 Angle = angle,
-                Normals = outputData,
-                Tangents = outputTangents,
+                Normals = outNormals,
+                Tangents = outTangents,
                 RecalculateTangents = recalculateTangents
             };
             var handle = normalJob.Schedule();
             handle.Complete();
 
-            mesh.SetNormals(outputData.AsArray());
+            mesh.SetNormals(outNormals);
 
             if (recalculateTangents)
             {
-                mesh.SetTangents(outputTangents.AsArray());
+                mesh.SetTangents(outTangents);
             }
-            
-            outputData.Dispose();
-            outputTangents.Dispose();
+
+            outNormals.Dispose();
+            outTangents.Dispose();
             dataArray.Dispose();
         }
 
-        public static void CalculateNormalData(Mesh.MeshData meshData, float angle, ref NativeList<float3> normalOut, ref NativeList<float4> tangentOut)
+        public static void CalculateNormalData(Mesh.MeshData meshData, float angle, ref NativeArray<float3> normalOut, ref NativeArray<float4> tangentOut)
         {
-            
             var normalJob = new SDBurstedJob
             {
                 Data = meshData,
@@ -50,9 +49,6 @@ namespace Ica.Normal
             };
             var handle = normalJob.Schedule();
             handle.Complete();
-
         }
-
-
     }
 }

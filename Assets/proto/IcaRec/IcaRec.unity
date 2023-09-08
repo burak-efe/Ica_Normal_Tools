@@ -258,8 +258,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c67a974326a4386a93b104c08e7f106, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetMesh: {fileID: -462981019419857548, guid: 466ae09a211aa0d48a151c2d2bbac107, type: 3}
-  Angle: 180
 --- !u!114 &196518770
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -567,7 +565,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!135 &1406944326
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -652,7 +650,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1509964706
 PrefabInstance:
@@ -772,8 +770,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c67a974326a4386a93b104c08e7f106, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetMesh: {fileID: 289301614986012343, guid: a23d8ba426a05404eb0a8823fd783bc7, type: 3}
-  Angle: 41
 --- !u!1001 &1954184966
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -945,9 +941,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed8e0271e373d7a4ea26f0ca293e3ac8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seg1: 400
-  seg2: 400
-  rad: 2
+  seg1: 301
+  seg2: 301
+  rad: 5
+  mesh: {fileID: 0}
 --- !u!4 &2005801367
 Transform:
   m_ObjectHideFlags: 0
@@ -961,7 +958,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2027050497
 PrefabInstance:

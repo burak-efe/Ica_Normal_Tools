@@ -54,19 +54,14 @@ namespace Ica.Normal.Editor
 
                     if (rend is SkinnedMeshRenderer smr)
                     {
-                        CachedParallelMethod.CalculateNormalDataUncached(smr.sharedMesh, out var normals, Allocator.Temp);
-                        smr.sharedMesh.SetNormals(normals.AsArray().Reinterpret<Vector3>());
+                        smr.sharedMesh.RecalculateNormalsIca();
                     }
                     else if (rend is MeshRenderer)
                     {
-                        var mesh = o.GetComponent<MeshFilter>().sharedMesh;
-                        CachedParallelMethod.CalculateNormalDataUncached(mesh, out var normals, Allocator.TempJob);
-                        mesh.SetNormals(normals.AsArray().Reinterpret<Vector3>());
-                        normals.Dispose();
+                        o.GetComponent<MeshFilter>().sharedMesh.RecalculateNormalsIca();
                     }
                 }
             }
         }
-        
     }
 }

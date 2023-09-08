@@ -34,6 +34,27 @@ namespace Ica.Utils
         }
 
         [BurstCompile]
+        public static unsafe void UnrollUnsafeListsToList<T>([NoAlias] in UnsafeList<UnsafeList<T>> nestedData, [NoAlias] ref NativeList<T> outUnrolledData, [NoAlias] ref NativeList<int> startIndices)
+            where T : unmanaged
+        {
+            GetTotalSizeOfNestedContainer(nestedData, out var size);
+            outUnrolledData.SetCapacity(size);
+            startIndices.SetCapacity(nestedData.Length + 1);
+            outUnrolledData.Clear();
+            startIndices.Clear();
+            var startIndex = 0;
+            for (int i = 0; i < nestedData.Length; i++)
+            {
+                startIndices.Add(startIndex);
+                outUnrolledData.AddRange(nestedData[i].Ptr, nestedData[i].Length);
+                startIndex += nestedData[i].Length;
+            }
+
+            startIndices.Add(startIndex);
+        }
+
+
+        [BurstCompile]
         public static void UnrollArraysToList<T>([NoAlias] in UnsafeList<NativeArray<T>> nestedData, [NoAlias] ref NativeList<T> outUnrolledData, [NoAlias] ref NativeList<int> startIndices)
             where T : unmanaged
         {
@@ -85,6 +106,16 @@ namespace Ica.Utils
 
         [BurstCompile]
         public static void GetTotalSizeOfNestedContainer<T>([NoAlias] in UnsafeList<NativeArray<T>> nestedContainer, [NoAlias] out int size) where T : unmanaged
+        {
+            size = 0;
+            for (int i = 0; i < nestedContainer.Length; i++)
+            {
+                size += nestedContainer[i].Length;
+            }
+        }
+
+        [BurstCompile]
+        public static void GetTotalSizeOfNestedContainer<T>([NoAlias] in UnsafeList<UnsafeList<T>> nestedContainer, [NoAlias] out int size) where T : unmanaged
         {
             size = 0;
             for (int i = 0; i < nestedContainer.Length; i++)

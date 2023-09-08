@@ -158,7 +158,7 @@ namespace Ica.Normal
         {
             UpdateVertices();
             CachedParallelMethod.RecalculateNormalsAndGetHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
-                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.ConnectedCountMapper, _meshDataCache.TriNormalData, out var normalHandle,
+                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.ConnectedCountMapper, out var normalHandle,
                 Angle);
 
             if (AlsoRecalculateTangents)

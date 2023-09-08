@@ -4,7 +4,7 @@
 * http://threepointsoft.altervista.org
 *
 =====================================================*/
-/* 
+/*
  * The following code was taken from: https://schemingdeveloper.com
  *
  * Visit our game studio website: http://stopthegnomes.com
@@ -103,8 +103,8 @@ namespace Ica.Normal
         [ReadOnly] public Mesh.MeshData Data;
         [ReadOnly] public float Angle;
         [ReadOnly] public bool RecalculateTangents;
-        public NativeList<float3> Normals;
-        public NativeList<float4> Tangents;
+        public NativeArray<float3> Normals;
+        public NativeArray<float4> Tangents;
 
 
         // cognitive complexity value of this method is 390%.So I cant turn it into parallel job because my brain melted
@@ -114,12 +114,12 @@ namespace Ica.Normal
             //0.017453292f == deg2rad
             float cosineThreshold = math.cos(Angle * 0.017453292f);
 
-            var vertices = new NativeArray<float3>(vertexCount, Allocator.Temp);
+            var vertices = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             Data.GetVertices(vertices.Reinterpret<Vector3>());
 
-            var triangles = new NativeArray<NativeArray<int>>(Data.subMeshCount, Allocator.Temp);
+            var triangles = new NativeArray<NativeArray<int>>(Data.subMeshCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             // Holds the normal of each triangle in each sub mesh.
-            var triNormals = new NativeArray<NativeArray<float3>>(Data.subMeshCount, Allocator.Temp);
+            var triNormals = new NativeArray<NativeArray<float3>>(Data.subMeshCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             var dictionary = new UnsafeHashMap<VertexKey, NativeList<VertexEntry>>(Data.vertexCount, Allocator.Temp);
 
 
@@ -148,7 +148,7 @@ namespace Ica.Normal
                     {
                         triCross /= magnitude;
                     }
-                    
+
                     var array = triNormals[subMeshIndex];
                     array[triIndex] = triCross;
 
@@ -227,11 +227,11 @@ namespace Ica.Normal
                 // Lengyel, Eric. Computing Tangent Space Basis Vectors for an Arbitrary Mesh.
                 // Terathon Software 3D Graphics Library, 2001.
                 // http://www.terathon.com/code/tangent.html
-                var uv = new NativeArray<float2>(vertexCount, Allocator.Temp);
+                var uv = new NativeArray<float2>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
                 Data.GetUVs(0, uv.Reinterpret<Vector2>());
 
-                var tan1 = new NativeArray<float3>(vertexCount, Allocator.Temp);
-                var tan2 = new NativeArray<float3>(vertexCount, Allocator.Temp);
+                var tan1 = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+                var tan2 = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
                 for (int subMeshIndex = 0; subMeshIndex < Data.subMeshCount; subMeshIndex++)
                 {
