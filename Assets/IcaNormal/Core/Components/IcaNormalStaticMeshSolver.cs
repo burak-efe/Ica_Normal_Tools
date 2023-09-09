@@ -18,7 +18,7 @@ namespace Ica.Normal
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
-            TargetMesh.RecalculateNormalsIca();
+            TargetMesh.RecalculateNormalsIca(Angle);
    
         }
     }

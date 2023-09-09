@@ -104,15 +104,14 @@ namespace Ica.Normal
         [ReadOnly] public float Angle;
         [ReadOnly] public bool RecalculateTangents;
         public NativeArray<float3> Normals;
-        public NativeArray<float4> Tangents;
+        [WriteOnly] public NativeArray<float4> Tangents;
 
 
         // cognitive complexity value of this method is 390%.So I cant turn it into parallel job because my brain melted
         public void Execute()
         {
             var vertexCount = Data.vertexCount;
-            //0.017453292f == deg2rad
-            float cosineThreshold = math.cos(Angle * 0.017453292f);
+            float cosineThreshold = math.cos(Angle * Mathf.Deg2Rad);
 
             var vertices = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             Data.GetVertices(vertices.Reinterpret<Vector3>());
@@ -120,7 +119,7 @@ namespace Ica.Normal
             var triangles = new NativeArray<NativeArray<int>>(Data.subMeshCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             // Holds the normal of each triangle in each sub mesh.
             var triNormals = new NativeArray<NativeArray<float3>>(Data.subMeshCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            var dictionary = new UnsafeHashMap<VertexKey, NativeList<VertexEntry>>(Data.vertexCount, Allocator.Temp);
+            var dictionary = new UnsafeHashMap<float3, NativeList<VertexEntry>>(Data.vertexCount, Allocator.Temp);
 
 
             for (int subMeshIndex = 0; subMeshIndex < Data.subMeshCount; ++subMeshIndex)
@@ -152,29 +151,29 @@ namespace Ica.Normal
                     var array = triNormals[subMeshIndex];
                     array[triIndex] = triNormal;
 
-                    VertexKey key;
+                    //VertexKey key;
                     NativeList<VertexEntry> entry;
 
-                    if (!dictionary.TryGetValue(key = new VertexKey(vertices[i1]), out entry))
+                    if (!dictionary.TryGetValue(vertices[i1], out entry))
                     {
                         entry = new NativeList<VertexEntry>(3, Allocator.Temp);
-                        dictionary.Add(key, entry);
+                        dictionary.Add(vertices[i1], entry);
                     }
 
                     entry.Add(new VertexEntry(subMeshIndex, triIndex, i1));
 
-                    if (!dictionary.TryGetValue(key = new VertexKey(vertices[i2]), out entry))
+                    if (!dictionary.TryGetValue(vertices[i2], out entry))
                     {
                         entry = new NativeList<VertexEntry>(3, Allocator.Temp);
-                        dictionary.Add(key, entry);
+                        dictionary.Add(vertices[i2], entry);
                     }
 
                     entry.Add((new VertexEntry(subMeshIndex, triIndex, i2)));
 
-                    if (!dictionary.TryGetValue(key = new VertexKey(vertices[i3]), out entry))
+                    if (!dictionary.TryGetValue(vertices[i3], out entry))
                     {
                         entry = new NativeList<VertexEntry>(3, Allocator.Temp);
-                        dictionary.Add(key, entry);
+                        dictionary.Add(vertices[i3], entry);
                     }
 
                     entry.Add((new VertexEntry(subMeshIndex, triIndex, i3)));

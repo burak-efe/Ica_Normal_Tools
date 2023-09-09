@@ -1,9 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.Profiling;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,8 +26,6 @@ namespace Ica.Normal.JobStructs
             TriNormals[index] = crossProduct;
         }
     }
-
-
 
 
     [BurstCompile]
@@ -134,81 +130,6 @@ namespace Ica.Normal.JobStructs
             var normalized = math.normalize(dotProdSum);
 
             Normals[vertexIndex] = (float3)normalized;
-        }
-    }
-    
-    
-        [BurstCompile]
-    public struct VertexNormalJob : IJob
-    {
-        [ReadOnly] public NativeArray<float3> TriNormals;
-        [ReadOnly] public NativeArray<float3> Vertices;
-        [ReadOnly] public NativeArray<int> Indices;
-        [WriteOnly] public NativeArray<float3> OutNormals;
-        [ReadOnly] public float CosineThreshold;
-
-        public void Execute()
-        {
-            var pGetVertexPosHashMap = new ProfilerMarker("pGetVertexPosHashMap");
-            var pAddToList = new ProfilerMarker("pAddToList");
-            var pAddNewPair = new ProfilerMarker("pAddNewPair");
-            var pCreateList = new ProfilerMarker("pCreateList");
-            pGetVertexPosHashMap.Begin();
-
-            var posMap = new UnsafeHashMap<float3, NativeList<int>>(Vertices.Length, Allocator.Temp);
-
-            for (int vertexIndex = 0; vertexIndex < Vertices.Length; vertexIndex++)
-            {
-                if (posMap.TryGetValue(Vertices[vertexIndex], out var vertexIndexList))
-                {
-                    pAddToList.Begin();
-                    vertexIndexList.Add(vertexIndex);
-                    pAddToList.End();
-                }
-                else
-                {
-                    pCreateList.Begin();
-                    vertexIndexList = new NativeList<int>(1, Allocator.Temp) { vertexIndex };
-                    pCreateList.End();
-
-                    //vertexIndexList.Add(vertexIndex);
-                    pAddNewPair.Begin();
-                    posMap.Add(Vertices[vertexIndex], vertexIndexList);
-                    pAddNewPair.End();
-                }
-            }
-
-            pGetVertexPosHashMap.End();
-
-
-            foreach (var kvPair in posMap)
-            {
-                var list = kvPair.Value;
-                for (int i = 0; i < list.Length; i++)
-                {
-                    double3 sum = 0;
-
-
-                    for (int j = 0; j < list.Length; j++)
-                    {
-                        if (Indices[i] == Indices[j])
-                        {
-                            sum += TriNormals[Indices[j]];
-                        }
-                        else
-                        {
-                            var dot = math.dot(math.normalize(TriNormals[Indices[i]]), math.normalize(TriNormals[Indices[j]]));
-
-                            if (dot >= CosineThreshold)
-                            {
-                                sum += TriNormals[Indices[j]];
-                            }
-                        }
-                    }
-
-                    OutNormals[i] = (float3)math.normalize(sum);
-                }
-            }
         }
     }
 }

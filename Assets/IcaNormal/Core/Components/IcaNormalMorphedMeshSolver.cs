@@ -163,7 +163,7 @@ namespace Ica.Normal
 
             if (AlsoRecalculateTangents)
             {
-                CachedParallelMethod.ScheduleAndGetTangentJobHandle(
+                Tangent.ScheduleAndGetTangentJobHandle(
                     _meshDataCache.VertexData,
                     _meshDataCache.NormalData,
                     _meshDataCache.IndexData,

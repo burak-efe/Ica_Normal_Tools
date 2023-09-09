@@ -11,5 +11,6 @@ namespace Ica.Utils
             UnsafeUtility.MemMove(list.GetUnsafeList()->Ptr + 1, list.GetUnsafeList()->Ptr, sizeof(T) * (list.Length - 1));
             list[0] = element;
         }
+        
     }
 }

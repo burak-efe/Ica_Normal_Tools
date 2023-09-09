@@ -23,10 +23,10 @@ namespace Ica.Normal.Tests.Performance
             Measure.Method(() => mesh.RecalculateNormals()).SampleGroup(group1).MeasurementCount(10).Run();
 
             SampleGroup group2 = new SampleGroup("Ica", SampleUnit.Millisecond);
-            Measure.Method(() => mesh.RecalculateNormalsIca()).SampleGroup(group2).MeasurementCount(10).Run();
+            Measure.Method(() => mesh.RecalculateNormalsIca()).SampleGroup(group2).MeasurementCount(20).Run();
             
             SampleGroup group3 = new SampleGroup("SD_TB", SampleUnit.Millisecond);
-            Measure.Method(() => mesh.RecalculateNormals(180f)).SampleGroup(group3).MeasurementCount(10).Run();
+            Measure.Method(() => mesh.RecalculateNormals(180f)).SampleGroup(group3).MeasurementCount(20).Run();
         }
     }
 }
