@@ -22,7 +22,7 @@ namespace Ica.Normal
         public bool RecalculateOnStart;
         public bool AlsoRecalculateTangents;
 
-        [FormerlySerializedAs("_dataCacheAsset")] [Tooltip("Cache asset will faster initialization")]
+         [Tooltip("Cache asset will faster initialization")]
         public MeshDataCacheAsset DataCacheAsset;
 
         public List<SkinnedMeshRenderer> TargetSkinnedMeshRenderers;
@@ -152,37 +152,20 @@ namespace Ica.Normal
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
-            RecalculateCachedParallel();
+            UpdateVertices();
+            RecalculateCached();
         }
 
-        private void RecalculateCachedParallel()
+        private void RecalculateCached()
         {
-            UpdateVertices();
-            CachedMethod.RecalculateNormalsAndGetHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
-                ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.ConnectedCountMapper, out var normalHandle,
-                Angle);
-
+            _meshDataCache.RecalculateNormals(Angle,AlsoRecalculateTangents);
             if (AlsoRecalculateTangents)
             {
-                TangentMethods.ScheduleAndGetTangentJobHandle(
-                    _meshDataCache.VertexData,
-                    _meshDataCache.NormalData,
-                    _meshDataCache.IndexData,
-                    _meshDataCache.UVData,
-                    _meshDataCache.AdjacencyList,
-                    _meshDataCache.AdjacencyMapper,
-                    _meshDataCache.Tan1Data,
-                    _meshDataCache.Tan2Data,
-                    ref _meshDataCache.TangentData,
-                    ref normalHandle,
-                    out var tangentHandle);
-                tangentHandle.Complete();
                 SetNormals();
                 SetTangents();
             }
             else
             {
-                normalHandle.Complete();
                 SetNormals();
             }
         }

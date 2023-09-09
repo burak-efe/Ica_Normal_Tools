@@ -13,9 +13,9 @@ namespace Ica.Normal
         public Mesh mesh;
         private void Start()
         {
-            var a = new GameObject();
-            MeshCreate.CreateUvSphere(a,seg1,seg2,rad);
-            mesh = a.GetComponent<MeshFilter>().sharedMesh;
+
+            var o =  MeshCreate.CreateUvSphere(seg1,seg2,rad);
+            mesh = o.GetComponent<MeshFilter>().sharedMesh;
 
         }
 

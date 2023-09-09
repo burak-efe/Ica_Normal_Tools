@@ -88,6 +88,33 @@ namespace Ica.Normal
             _initialized = true;
         }
 
+        public void RecalculateNormals(float Angle, bool recalculateTangents = false)
+        {
+            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyMapper, ConnectedCountMapper, out var normalHandle, Angle);
+
+            if (recalculateTangents)
+            {
+                TangentMethods.ScheduleAndGetTangentJobHandle(
+                    VertexData,
+                    NormalData,
+                    IndexData,
+                    UVData,
+                    AdjacencyList,
+                    AdjacencyMapper,
+                    Tan1Data,
+                    Tan2Data,
+                    ref TangentData,
+                    ref normalHandle,
+                    out var tangentHandle);
+                tangentHandle.Complete();
+
+            }
+            else
+            {
+                normalHandle.Complete();
+            }
+        }
+
         public void UpdateOnlyVertexData(in Mesh.MeshDataArray mda)
         {
             Profiler.BeginSample("UpdateOnlyVertexData");

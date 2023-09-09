@@ -12,35 +12,40 @@ namespace Ica.Normal.Tests.PlayMode
 {
     public class PlayModeTest1
     {
-        // [Test]
-        // public void Check_Split_Geometry_Sphere()
-        // {
-        //     var obj = Ica.Utils.Editor.AssetUtils.FindAndInstantiateAsset("SphereFromTwoHalfGeometryPrefab");
-        //     var solver = obj.GetComponent<IcaNormalMorphedMeshSolver>();
-        //     solver.RecalculateOnStart = false;
-        //     solver.Init();
-        //     
-        //     //smooth all branch
-        //     solver.Angle = 180f;
-        //     solver.RecalculateNormals();
-        //     Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(solver._meshDataCache.VertexData, solver._meshDataCache.NormalData));
-        //     
-        //     //angle respected branch
-        //     solver.Angle = 175f;
-        //     solver.RecalculateNormals();
-        //     Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(solver._meshDataCache.VertexData, solver._meshDataCache.NormalData));
-        //     
-        // }
-        //
-        //  [Test]
-        //  public void Is_All_Normals_are_Normalized()
-        //  {
-        //      var obj = Ica.Utils.Editor.AssetUtils.FindAndInstantiateAsset("SphereFromTwoHalfGeometryPrefab");
-        //      var solver = obj.GetComponent<IcaNormalMorphedMeshSolver>();
-        //      solver.Init();
-        //      solver.RecalculateNormals();
-        //      var mesh = obj.GetComponent<SkinnedMeshRenderer>().sharedMesh;
-        //      Assert.IsTrue(TestUtils.IsEveryNormalAreUnitVectors(mesh, 0.000001f));
-        //  }
+        [Test]
+        public void CachedSmoothMethod_TwoCubes_NormalsAreSameForSamePosition()
+        {
+            var cubeTop = MeshCreate.CreateCube(new Vector3(0, 0.5f, 0), new Vector3(1, 1, 1));
+            var cubeBottom = MeshCreate.CreateCube(new Vector3(0, -0.5f, 0), new Vector3(1, 1, 1));
+
+            //var mda = Mesh.AcquireReadOnlyMeshData(new List<Mesh>() { cubeTop.GetComponent<MeshFilter>().sharedMesh, cubeBottom.GetComponent<MeshFilter>().sharedMesh, });
+
+            var mdc = new MeshDataCache();
+            mdc.InitFromMultipleMesh(new List<Mesh>() { cubeTop.GetComponent<MeshFilter>().sharedMesh, cubeBottom.GetComponent<MeshFilter>().sharedMesh, }, false);
+            mdc.RecalculateNormals(180f,false);
+            
+            Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(mdc.VertexData, mdc.NormalData));
+        }
+
+
+        [Test]
+        public void UncachedSmoothMethod_AllNormals_ShouldNormalized()
+        {
+            var obj = MeshCreate.CreateUvSphere(10, 10, 1);
+            var mesh = obj.GetComponent<MeshFilter>().sharedMesh;
+
+            mesh.RecalculateNormalsIca();
+            Assert.IsTrue(TestUtils.IsEveryNormalAreUnitVectors(mesh, 0.000001f));
+        }
+
+        [Test]
+        public void UncachedAngledMethod_AllNormals_ShouldNormalized()
+        {
+            var obj = MeshCreate.CreateUvSphere(10, 10, 1);
+            var mesh = obj.GetComponent<MeshFilter>().sharedMesh;
+
+            mesh.RecalculateNormalsIca(5f);
+            Assert.IsTrue(TestUtils.IsEveryNormalAreUnitVectors(mesh, 0.000001f));
+        }
     }
 }
