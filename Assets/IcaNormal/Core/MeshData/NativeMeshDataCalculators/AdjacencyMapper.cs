@@ -58,14 +58,14 @@ namespace Ica.Normal
                 {
                     int vertexOnThatPos = listOfVerticesOnThatPosition.ElementAt(j);
 
-                    // //physically connected
-                    // if (vertexIndex == vertexOnThatPos)
-                    // {
-                    //     tempAdjData.ElementAt(vertexOnThatPos).InsertAtBeginning(triIndex);
-                    //     outRealConnectedCount[vertexIndex]++;
-                    // }
-                    // //not physically connected
-                    // else
+                    //physically connected
+                    if (vertexIndex == vertexOnThatPos)
+                    {
+                        tempAdjData.ElementAt(vertexOnThatPos).InsertAtBeginning(triIndex);
+                        outRealConnectedCount[vertexIndex]++;
+                    }
+                    //not physically connected
+                    else
                         tempAdjData.ElementAt(vertexOnThatPos).Add(triIndex);
                 }
             }

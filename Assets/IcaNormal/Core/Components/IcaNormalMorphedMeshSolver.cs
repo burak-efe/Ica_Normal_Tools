@@ -17,6 +17,7 @@ namespace Ica.Normal
         }
 
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
+        [Range(0,180)]
         public float Angle = 180f;
         public bool RecalculateOnStart;
         public bool AlsoRecalculateTangents;
@@ -157,13 +158,13 @@ namespace Ica.Normal
         private void RecalculateCachedParallel()
         {
             UpdateVertices();
-            CachedParallelMethod.RecalculateNormalsAndGetHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
+            CachedMethod.RecalculateNormalsAndGetHandle(_meshDataCache.VertexData, _meshDataCache.IndexData,
                 ref _meshDataCache.NormalData, _meshDataCache.AdjacencyList, _meshDataCache.AdjacencyMapper, _meshDataCache.ConnectedCountMapper, out var normalHandle,
                 Angle);
 
             if (AlsoRecalculateTangents)
             {
-                Tangent.ScheduleAndGetTangentJobHandle(
+                TangentMethods.ScheduleAndGetTangentJobHandle(
                     _meshDataCache.VertexData,
                     _meshDataCache.NormalData,
                     _meshDataCache.IndexData,

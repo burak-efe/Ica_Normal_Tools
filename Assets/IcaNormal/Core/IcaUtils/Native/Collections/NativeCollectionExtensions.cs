@@ -12,5 +12,12 @@ namespace Ica.Utils
             list[0] = element;
         }
         
+        public static void InsertAtBeginning<T>(this ref UnsafeList<T> list, T element) where T : unmanaged
+        {
+            list.Add(new T());
+            UnsafeUtility.MemMove(list.Ptr + 1, list.Ptr, sizeof(T) * (list.Length - 1));
+            list[0] = element;
+        }
+        
     }
 }

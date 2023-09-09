@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using Ica.Utils;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
@@ -20,7 +21,7 @@ namespace Ica.Normal.JobStructs
     }
 
     [BurstCompile(FloatMode = FloatMode.Fast)]
-    public struct UncachedVertexNormalJob : IJob
+    public struct UncachedAngleVertexNormalJob : IJob
     {
         [ReadOnly] public NativeArray<float3> TriNormals;
         [ReadOnly] public NativeArray<float3> Vertices;
@@ -28,13 +29,14 @@ namespace Ica.Normal.JobStructs
         public NativeArray<float3> OutNormals;
         [ReadOnly] public float CosineThreshold;
 
+
         public ProfilerMarker PGetVertexPosHashMap;
         public ProfilerMarker PCalculate;
 
 
         public void Execute()
         {
-            PGetVertexPosHashMap.Begin();
+             PGetVertexPosHashMap.Begin();
 
             var posMap = new UnsafeHashMap<float3, NativeList<VertexEntry>>(Vertices.Length, Allocator.Temp);
 
@@ -96,6 +98,77 @@ namespace Ica.Normal.JobStructs
                     OutNormals[lhsEntry.VertexIndex] = normalized;
                 }
             }
+
+            PCalculate.End();
+        }
+    }
+
+    [BurstCompile(FloatMode = FloatMode.Fast)]
+    public struct UncachedSmoothVertexNormalJob : IJob
+    {
+        [ReadOnly] public NativeArray<float3> TriNormals;
+        [ReadOnly] public NativeArray<float3> Vertices;
+        [ReadOnly] public NativeArray<int> Indices;
+        public NativeArray<float3> OutNormals;
+
+        public ProfilerMarker PGetVertexPosHashMap;
+        public ProfilerMarker PCalculate;
+
+
+        public void Execute()
+        {
+             PGetVertexPosHashMap.Begin();
+
+            var posMap = new UnsafeHashMap<float3, NativeList<VertexEntry>>(Vertices.Length, Allocator.Temp);
+
+            for (int i = 0; i < Indices.Length; i += 3)
+            {
+                int triIndex = i / 3;
+
+                for (int j = 0; j < 3; j++)
+                {
+                    int subVertexIndex = Indices[i + j];
+
+                    if (posMap.TryGetValue(Vertices[subVertexIndex], out var vEntry))
+                    {
+                        vEntry.Add(new VertexEntry(subVertexIndex, triIndex));
+                    }
+                    else
+                    {
+                        vEntry = new NativeList<VertexEntry>(3, Allocator.Temp) { new VertexEntry(subVertexIndex, triIndex) };
+                        posMap.Add(Vertices[subVertexIndex], vEntry);
+                    }
+                }
+            }
+
+            PGetVertexPosHashMap.End();
+
+
+            PCalculate.Begin();
+            for (int i = 0; i < Indices.Length; i += 3)
+            {
+                int triIndex = i / 3;
+
+                for (int j = 0; j < 3; j++)
+                {
+                    int subVertexIndex = Indices[i + j];
+
+                    var map = posMap[Vertices[subVertexIndex]];
+
+                    for (int k = 0; k < map.Length; k++)
+                    {
+                        OutNormals[map[k].VertexIndex] += TriNormals[triIndex];
+                    }
+
+
+                }
+            }
+
+            for (int i = 0; i < OutNormals.Length; i++)
+            {
+                OutNormals[i] = math.normalize(OutNormals[i]);
+            }
+
 
             PCalculate.End();
         }

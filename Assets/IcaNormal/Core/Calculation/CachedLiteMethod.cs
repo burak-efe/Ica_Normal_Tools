@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -16,6 +17,7 @@ namespace Ica.Normal
     /// EXPERIMENTAL DO NOT USE!!!
     /// </summary>
     [BurstCompile]
+    [Obsolete]
     public static class CachedLiteMethod
     {
         

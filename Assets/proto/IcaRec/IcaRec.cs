@@ -14,6 +14,8 @@ namespace Ica.Normal
         public float rad;
 
         public Mesh mesh;
+        [Range(0,180)]
+        public float Angle;
         private void Start()
         {
             var a = new GameObject();
@@ -24,7 +26,7 @@ namespace Ica.Normal
 
         private void Update()
         {
-            mesh.RecalculateNormalsIca();
+            mesh.RecalculateNormalsIca(Angle);
         }
     }
     
