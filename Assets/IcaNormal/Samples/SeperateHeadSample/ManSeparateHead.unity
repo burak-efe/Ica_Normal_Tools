@@ -552,7 +552,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NormalOutputTarget: 1
-  Angle: 80
+  Angle: 180
   RecalculateOnStart: 1
   AlsoRecalculateTangents: 0
   DataCacheAsset: {fileID: 0}

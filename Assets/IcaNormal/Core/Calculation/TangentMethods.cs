@@ -52,7 +52,7 @@ namespace Ica.Normal
                 Tan2 = tan2.AsArray()
             };
 
-            var vertexTangentJob = new TangentJobs.VertexTangentJob
+            var vertexTangentJob = new TangentJobs.CachedVertexTangentJob
             {
                 AdjacencyList = adjacencyList.AsArray(),
                 AdjacencyStartIndices = adjacencyMap.AsArray(),

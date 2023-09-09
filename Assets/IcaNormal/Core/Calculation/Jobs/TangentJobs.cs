@@ -8,7 +8,6 @@ namespace Ica.Normal
 {
     public class TangentJobs
     {
-        
         [BurstCompile]
         public struct TriTangentJob : IJobFor
         {
@@ -56,7 +55,7 @@ namespace Ica.Normal
         }
 
         [BurstCompile]
-        public struct VertexTangentJob : IJobFor
+        public struct CachedVertexTangentJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;
             [ReadOnly] public NativeArray<int> AdjacencyStartIndices;

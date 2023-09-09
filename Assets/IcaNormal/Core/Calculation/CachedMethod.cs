@@ -21,7 +21,9 @@ namespace Ica.Normal
         /// <param name="outNormals"></param>
         /// <param name="adjacencyList"></param>
         /// <param name="adjacencyStartIndicesMap"></param>
+        /// <param name="connectedCountMap"></param>
         /// <param name="handle"></param>
+        /// <param name="angle"></param>
         [BurstCompile]
         public static void RecalculateNormalsAndGetHandle
         (

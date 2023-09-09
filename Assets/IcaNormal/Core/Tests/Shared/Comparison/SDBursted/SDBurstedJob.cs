@@ -229,8 +229,8 @@ namespace Ica.Normal
                 var uv = new NativeArray<float2>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
                 Data.GetUVs(0, uv.Reinterpret<Vector2>());
 
-                var tan1 = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-                var tan2 = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+                var tan1 = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.ClearMemory);
+                var tan2 = new NativeArray<float3>(vertexCount, Allocator.Temp, NativeArrayOptions.ClearMemory);
 
                 for (int subMeshIndex = 0; subMeshIndex < Data.subMeshCount; subMeshIndex++)
                 {
@@ -282,9 +282,7 @@ namespace Ica.Normal
                 {
                     Vector3 nTemp = Normals[a];
                     Vector3 tTemp = tan1[a];
-
-                    //TODOifYouHaveNoPurposeInLife Use math library and float3 here, and remove temp values.
-                    //Why new math does not have OrthoNormalize counterpart.And Vector3 one buried in c++ engine so cant recreate it :C
+                    
                     Vector3.OrthoNormalize(ref nTemp, ref tTemp);
 
                     float3 n = nTemp;
