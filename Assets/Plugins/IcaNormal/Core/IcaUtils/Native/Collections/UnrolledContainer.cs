@@ -8,39 +8,43 @@ namespace Ica.Utils
 {
     public struct UnrolledList<T> : IDisposable where T : unmanaged
     {
-        public NativeList<T> _data;
-        public int SubContainerCount { get; }
-        public NativeList<int> _startIndices;
+        public NativeList<T> Data;
+        public int SubContainerCount => StartIndices.Length - 1;
+        public NativeList<int> StartIndices;
 
-        public void Add(int subArrayIndex, int index, T item)
+        public void Add(int subArrayIndex, T item)
         {
-            _data.Insert(_startIndices[subArrayIndex] + index, item);
+            Data.Insert(StartIndices[subArrayIndex] + GetSubArrayLength(subArrayIndex), item);
+            for (int i = subArrayIndex + 1; i < StartIndices.Length; i++)
+            {
+                StartIndices[i]++;
+            }
         }
 
         public UnrolledList(in UnsafeList<NativeList<T>> nestedData, Allocator allocator)
         {
             Assert.IsTrue(nestedData.Length > 0, "nested list count should be more than zero");
-            SubContainerCount = nestedData.Length;
+            
             NativeContainerUtils.GetTotalSizeOfNestedContainer(nestedData, out var totalSize);
-            _data = new NativeList<T>(totalSize, allocator);
-            _startIndices = new NativeList<int>(SubContainerCount + 1, allocator);
-            NativeContainerUtils.UnrollListsToList(nestedData, ref _data, ref _startIndices);
+            Data = new NativeList<T>(totalSize, allocator);
+            StartIndices = new NativeList<int>(nestedData.Length + 1, allocator);
+            NativeContainerUtils.UnrollListsToList(nestedData, ref Data, ref StartIndices);
         }
 
         public NativeArray<T> GetSubArray(int index)
         {
-            return _data.AsArray().GetSubArray(_startIndices[index], GetSubArrayLength(index));
+            return Data.AsArray().GetSubArray(StartIndices[index], GetSubArrayLength(index));
         }
 
         public int GetSubArrayLength(int subArrayIndex)
         {
-            return _startIndices[subArrayIndex + 1] - _startIndices[subArrayIndex];
+            return StartIndices[subArrayIndex + 1] - StartIndices[subArrayIndex];
         }
 
         public void Dispose()
         {
-            _data.Dispose();
-            _startIndices.Dispose();
+            Data.Dispose();
+            StartIndices.Dispose();
         }
     }
 }

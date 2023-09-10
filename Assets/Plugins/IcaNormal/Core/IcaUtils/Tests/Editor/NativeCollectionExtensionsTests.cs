@@ -56,11 +56,33 @@ namespace Ica.Utils.Tests
         [Test]
         public void InsertNativeList_InsertIntToEnd_()
         {
-            var list = new NativeList<int>(Allocator.Temp) { 0, 1, 2, 3, 4 };
+            var list = new NativeList<int>(Allocator.Temp) { 0  };
 
             var toCompare = new NativeList<int>(Allocator.Temp) { 0, 1, 2, 3, 4, 5 };
 
-            list.Insert(5, 5);
+            list.Insert(list.Length, 1);
+            list.Insert(list.Length, 2);
+            list.Insert(list.Length, 3);
+            list.Insert(list.Length, 4);
+            list.Insert(list.Length, 5);
+
+
+            Assert.AreEqual(list.AsArray().ToArray(), toCompare.AsArray().ToArray());
+        }
+        [Test]
+        public void InsertNativeList_InsertIntToEndEptyList_()
+        {
+            var list = new NativeList<int>(Allocator.Temp) {  };
+
+            var toCompare = new NativeList<int>(Allocator.Temp) { 0, 1, 2, 3, 4, 5 };
+
+            list.Insert(list.Length, 0);
+            list.Insert(list.Length, 1);
+            list.Insert(list.Length, 2);
+            list.Insert(list.Length, 3);
+            list.Insert(list.Length, 4);
+            list.Insert(list.Length, 5);
+
 
             Assert.AreEqual(list.AsArray().ToArray(), toCompare.AsArray().ToArray());
         }
