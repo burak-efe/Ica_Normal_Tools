@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using NUnit.Framework;
 using Unity.Collections;
 using UnityEditor;
@@ -9,7 +10,7 @@ namespace Ica.Utils.Tests
     public class NativeCollectionExtensionsTests
     {
         [Test]
-        public void InsertAtBeginning()
+        public void InsertAtBeginningNativeList_InsertInt_()
         {
             var toInsert = 98765;
             var listOriginal = new NativeList<int>(1, Allocator.Temp) { 0, 1, 2, 3, 4 };
@@ -23,12 +24,11 @@ namespace Ica.Utils.Tests
                 Assert.AreEqual(listOriginal[i], listModified[i + 1]);
             }
         }
-        
-        [Test]
-        public void InsertAtBeginningToEmptyList()
-        {
 
-            var list = new NativeList<int>( Allocator.Temp) ;
+        [Test]
+        public void InsertAtBeginningNativeList_EmptyList_()
+        {
+            var list = new NativeList<int>(Allocator.Temp);
             list.InsertAtBeginning(3);
             list.InsertAtBeginning(2);
             list.InsertAtBeginning(1);
@@ -39,6 +39,30 @@ namespace Ica.Utils.Tests
             {
                 Assert.AreEqual(list[i], i);
             }
+        }
+
+        [Test]
+        public void InsertNativeList_InsertIntToMiddle_()
+        {
+            var list = new NativeList<int>(Allocator.Temp) { 0, 1, 2, 4, 5 };
+
+            var toCompare = new NativeList<int>(Allocator.Temp) { 0, 1, 2, 3, 4, 5 };
+
+            list.Insert(3, 3);
+
+            Assert.AreEqual(list.AsArray().ToArray(), toCompare.AsArray().ToArray());
+        }
+
+        [Test]
+        public void InsertNativeList_InsertIntToEnd_()
+        {
+            var list = new NativeList<int>(Allocator.Temp) { 0, 1, 2, 3, 4 };
+
+            var toCompare = new NativeList<int>(Allocator.Temp) { 0, 1, 2, 3, 4, 5 };
+
+            list.Insert(5, 5);
+
+            Assert.AreEqual(list.AsArray().ToArray(), toCompare.AsArray().ToArray());
         }
     }
 }
