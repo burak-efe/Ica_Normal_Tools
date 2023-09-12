@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using Ica.Utils.Mesh;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
 namespace Ica.Normal
@@ -17,21 +19,21 @@ namespace Ica.Normal
         }
 
         public NormalOutputEnum NormalOutputTarget = NormalOutputEnum.WriteToMesh;
-        [Range(0,180)]
+
+        [Range(0, 180)]
         public float Angle = 180f;
+
         public bool RecalculateOnStart;
         public bool AlsoRecalculateTangents;
 
-         [Tooltip("Cache asset will faster initialization")]
+        [Tooltip("Cache asset will faster initialization")]
         public MeshDataCacheAsset DataCacheAsset;
 
-        public List<SkinnedMeshRenderer> TargetSkinnedMeshRenderers;
-        internal MeshDataCache _meshDataCache;
+        [Tooltip("Asset of this model in zero pose.")]
+        public List<SmrPair> SmrPairs;
+
         private List<Mesh> _meshes;
-
-        [Tooltip("Asset of this model in zero pose. Only necessary when using Calculate Blend Shapes option")]
-        public List<GameObject> Prefabs;
-
+        internal MeshDataCache _meshDataCache;
         private List<GameObject> TempObjects;
         private List<Mesh> _tempMeshes;
         private List<SkinnedMeshRenderer> TempSMRs;
@@ -53,21 +55,37 @@ namespace Ica.Normal
         {
             if (_isInitialized)
             {
-                OnDestroy();
+                Dispose();
             }
 
-            var meshCount = TargetSkinnedMeshRenderers.Count;
+            var meshCount = SmrPairs.Count;
 
             _meshes = new List<Mesh>(meshCount);
             TempObjects = new List<GameObject>(meshCount);
             TempSMRs = new List<SkinnedMeshRenderer>(meshCount);
             _tempMeshes = new List<Mesh>(meshCount);
 
-
-            foreach (var smr in TargetSkinnedMeshRenderers)
+            foreach (var pair in SmrPairs)
             {
-                _meshes.Add(smr.sharedMesh);
-                _tempMeshes.Add(new Mesh());
+                if (pair.Prefab == null)
+                {
+                    Debug.LogError("IcaNormal: Prefab of the pair is null!", this);
+                    return;
+                }
+
+                if (pair.SMR == null)
+                {
+                    Debug.LogError("IcaNormal: SMR of the pair is null!", this);
+                    return;
+                }
+
+                _meshes.Add(pair.SMR.sharedMesh);
+                _tempMeshes.Add(new Mesh() { indexFormat = IndexFormat.UInt32 });
+
+                var obj = Instantiate(pair.Prefab, transform);
+                obj.SetActive(false);
+                TempObjects.Add(obj);
+                TempSMRs.Add(obj.GetComponentInChildren<SkinnedMeshRenderer>());
             }
 
             _meshDataCache = new MeshDataCache();
@@ -83,13 +101,6 @@ namespace Ica.Normal
                 SetupForWriteToMaterial();
             }
 
-            for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
-            {
-                var obj = Instantiate(Prefabs[meshIndex], transform);
-                obj.SetActive(false);
-                TempObjects.Add(obj);
-                TempSMRs.Add(obj.GetComponentInChildren<SkinnedMeshRenderer>());
-            }
 
             _isInitialized = true;
             if (RecalculateOnStart)
@@ -98,13 +109,13 @@ namespace Ica.Normal
 
         private void SetupForWriteToMaterial()
         {
-            var meshCount = TargetSkinnedMeshRenderers.Count;
+            var meshCount = SmrPairs.Count;
             _normalBuffers = new List<ComputeBuffer>(meshCount);
             _tangentBuffers = new List<ComputeBuffer>(meshCount);
             _materials = new List<List<Material>>(meshCount);
             for (int i = 0; i < meshCount; i++)
             {
-                var smr = TargetSkinnedMeshRenderers[i];
+                var smr = SmrPairs[i].SMR;
                 var mats = new List<Material>(1);
                 smr.GetMaterials(mats);
                 _materials.Add(mats);
@@ -125,6 +136,11 @@ namespace Ica.Normal
         }
 
         private void OnDestroy()
+        {
+            Dispose();
+        }
+
+        private void Dispose()
         {
             _meshDataCache.Dispose();
 
@@ -152,66 +168,67 @@ namespace Ica.Normal
         [ContextMenu("RecalculateNormals")]
         public void RecalculateNormals()
         {
+            if (!_isInitialized)
+            {
+                Init();
+            }
+
             UpdateVertices();
             RecalculateCached();
         }
 
         private void RecalculateCached()
         {
-            _meshDataCache.RecalculateNormals(Angle,AlsoRecalculateTangents);
+            _meshDataCache.RecalculateNormals(Angle, AlsoRecalculateTangents);
+            SetNormals();
+
             if (AlsoRecalculateTangents)
             {
-                SetNormals();
                 SetTangents();
-            }
-            else
-            {
-                SetNormals();
             }
         }
 
         private void SetNormals()
         {
-            if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
-                _meshDataCache.ApplyNormalsToMeshes(_meshes);
-            else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
-                _meshDataCache.ApplyNormalsToBuffers(_normalBuffers);
+            switch (NormalOutputTarget)
+            {
+                case NormalOutputEnum.WriteToMesh:
+                    _meshDataCache.ApplyNormalsToMeshes(_meshes);
+                    break;
+                case NormalOutputEnum.WriteToMaterial:
+                    _meshDataCache.ApplyNormalsToBuffers(_normalBuffers);
+                    break;
+            }
         }
 
         private void SetTangents()
         {
-            if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
-                _meshDataCache.ApplyTangentsToMeshes(_meshes);
-            else if (NormalOutputTarget == NormalOutputEnum.WriteToMaterial)
-                _meshDataCache.ApplyTangentsToMaterialBuffers(_tangentBuffers);
+            switch (NormalOutputTarget)
+            {
+                case NormalOutputEnum.WriteToMesh:
+                    _meshDataCache.ApplyTangentsToMeshes(_meshes);
+                    break;
+                case NormalOutputEnum.WriteToMaterial:
+                    _meshDataCache.ApplyTangentsToMaterialBuffers(_tangentBuffers);
+                    break;
+            }
         }
 
         /// <summary>
-        /// Vertex Data need to updated after blend shape changes.
+        /// Vertex Data need to be updated after blend shape changes.
         /// </summary>
-        public void UpdateVertices()
+        internal void UpdateVertices()
         {
-            Profiler.BeginSample("UpdateVertices");
-            Profiler.BeginSample("TransferBlendShapeValuesAndBake");
-            for (int meshIndex = 0; meshIndex < TargetSkinnedMeshRenderers.Count; meshIndex++)
+            for (int meshIndex = 0; meshIndex < SmrPairs.Count; meshIndex++)
             {
-                var smr = TargetSkinnedMeshRenderers[meshIndex];
-                for (int bsIndex = 0; bsIndex < smr.sharedMesh.blendShapeCount; bsIndex++)
-                {
-                    TempSMRs[meshIndex].SetBlendShapeWeight(bsIndex, smr.GetBlendShapeWeight(bsIndex));
-                }
-
-                Profiler.BeginSample("BakeMesh");
+                var smr = SmrPairs[meshIndex].SMR;
+                MeshUtils.TransferBlendShapeValues(smr, TempSMRs[meshIndex]);
                 TempSMRs[meshIndex].BakeMesh(_tempMeshes[meshIndex]);
-                Profiler.EndSample();
             }
-
-            Profiler.EndSample();
 
             var tempMDA = Mesh.AcquireReadOnlyMeshData(_tempMeshes);
             _meshDataCache.UpdateOnlyVertexData(tempMDA);
             tempMDA.Dispose();
-            Profiler.EndSample();
         }
     }
 }

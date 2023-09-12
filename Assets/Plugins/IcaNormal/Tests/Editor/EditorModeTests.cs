@@ -2,9 +2,9 @@ using Ica.Normal;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace Ica.Normal.Tests
+namespace Ica.Normal.Tests.Editor
 {
-    public class EditMode1
+    public class EditorModeTests
     {
 
     }

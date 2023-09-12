@@ -1,6 +1,6 @@
 {
-    "name": "Ica.Normal.Tests",
-    "rootNamespace": "Ica.Normal.Tests",
+    "name": "Ica.Normal.Tests.Editor",
+    "rootNamespace": "Ica.Normal.Tests.Editor",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",

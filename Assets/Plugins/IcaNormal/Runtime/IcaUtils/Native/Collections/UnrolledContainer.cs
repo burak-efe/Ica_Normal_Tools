@@ -21,10 +21,16 @@ namespace Ica.Utils
             }
         }
 
+        public UnrolledList(int subArrayCount, Allocator allocator)
+        {
+            Data = new NativeList<T>(0, allocator);
+            StartIndices = new NativeList<int>(subArrayCount + 1, allocator);
+            StartIndices.Resize(subArrayCount + 1,NativeArrayOptions.ClearMemory);
+        }
+
         public UnrolledList(in UnsafeList<NativeList<T>> nestedData, Allocator allocator)
         {
             Assert.IsTrue(nestedData.Length > 0, "nested list count should be more than zero");
-            
             NativeContainerUtils.GetTotalSizeOfNestedContainer(nestedData, out var totalSize);
             Data = new NativeList<T>(totalSize, allocator);
             StartIndices = new NativeList<int>(nestedData.Length + 1, allocator);

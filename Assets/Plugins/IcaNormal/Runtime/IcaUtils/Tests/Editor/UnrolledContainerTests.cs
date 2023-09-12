@@ -97,5 +97,29 @@ namespace Ica.Utils.Tests
             Assert.AreEqual(unrolled.GetSubArray(1).ToArray(), new int[] { 4, 5, 6, 7, 8, 9 });
             Assert.AreEqual(unrolled.GetSubArray(2).ToArray(), new int[] { 1, 2, 3 });
         }
+
+        [Test]
+        public void UnrolledContainer_EmptyConstructor_()
+        {
+            var unrolled = new UnrolledList<int>(3, Allocator.Temp);
+
+            unrolled.Add(0, 10);
+            unrolled.Add(0, 11);
+            unrolled.Add(0, 12);
+
+            unrolled.Add(2, 1);
+            unrolled.Add(2, 2);
+            unrolled.Add(2, 3);
+
+            unrolled.Add(1, 7);
+            unrolled.Add(1, 8);
+            unrolled.Add(1, 9);
+
+
+            Assert.AreEqual(unrolled.Data.Length, 9);
+            Assert.AreEqual(unrolled.GetSubArray(0).ToArray(), new int[] { 10, 11, 12 });
+            Assert.AreEqual(unrolled.GetSubArray(1).ToArray(), new int[] { 7, 8, 9 });
+            Assert.AreEqual(unrolled.GetSubArray(2).ToArray(), new int[] { 1, 2, 3 });
+        }
     }
 }

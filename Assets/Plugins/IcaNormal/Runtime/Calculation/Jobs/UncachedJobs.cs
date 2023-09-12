@@ -12,7 +12,6 @@ namespace Ica.Normal.JobStructs
     {
         public readonly int VertexIndex;
         public readonly int TriangleIndex;
-
         public VertexEntry(int vertexIndex, int triangleIndex)
         {
             VertexIndex = vertexIndex;
@@ -28,12 +27,10 @@ namespace Ica.Normal.JobStructs
         [ReadOnly] public NativeArray<int> Indices;
         public NativeArray<float3> OutNormals;
         [ReadOnly] public float CosineThreshold;
-
-
+        
         public ProfilerMarker PGetVertexPosHashMap;
         public ProfilerMarker PCalculate;
-
-
+        
         public void Execute()
         {
              PGetVertexPosHashMap.Begin();
@@ -59,12 +56,9 @@ namespace Ica.Normal.JobStructs
                     }
                 }
             }
-
             PGetVertexPosHashMap.End();
-
-
+            
             PCalculate.Begin();
-
             foreach (var kvp in posMap)
             {
                 for (int i = 0; i < kvp.Value.Length; ++i)
@@ -94,14 +88,15 @@ namespace Ica.Normal.JobStructs
                     }
 
                     var normalized = math.normalize(sum);
-
                     OutNormals[lhsEntry.VertexIndex] = normalized;
                 }
             }
-
             PCalculate.End();
         }
     }
+    
+    
+    
 
     [BurstCompile(FloatMode = FloatMode.Fast)]
     public struct UncachedSmoothVertexNormalJob : IJob

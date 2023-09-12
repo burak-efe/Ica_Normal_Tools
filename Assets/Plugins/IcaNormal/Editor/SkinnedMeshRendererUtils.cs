@@ -5,20 +5,13 @@ using UnityEngine;
 
 namespace Ica.Normal.Editor
 {
-    public static class SmrUtils
+    public static class SkinnedMeshRendererUtils
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyBlendShapes(SkinnedMeshRenderer from, SkinnedMeshRenderer to)
-        {
-            for (int i = 0; i < from.sharedMesh.blendShapeCount; i++)
-            {
-                to.SetBlendShapeWeight(i, from.GetBlendShapeWeight(i));
-            }
-        }
+
 
 
         [MenuItem("CONTEXT/Renderer/RecalculateNormals", false, 1923)]
-        public static void RecalculateNormalsOfMeshRenderer()
+        public static void RecalculateNormals()
         {
             var objs = Selection.gameObjects;
 
