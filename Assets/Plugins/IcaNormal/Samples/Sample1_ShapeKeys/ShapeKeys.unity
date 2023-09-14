@@ -706,6 +706,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b1eb00488d3e45b48ab67994de518c6f, type: 3}
   m_PrefabInstance: {fileID: 2061796316}
   m_PrefabAsset: {fileID: 0}
+--- !u!137 &1389649802 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -3887185075125053422, guid: b1eb00488d3e45b48ab67994de518c6f, type: 3}
+  m_PrefabInstance: {fileID: 2061796316}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1574888337
 GameObject:
   m_ObjectHideFlags: 0
@@ -780,7 +785,7 @@ MonoBehaviour:
 
     This meshs normal not recalculated at all, it
     uses static  blendshape delta values which results incorrect normal on  vertices
-    that manipulated by more thn one blend shape.'
+    that manipulated by more than one blend shape.'
 --- !u!222 &1574888340
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -798,6 +803,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1715854928}
+  - component: {fileID: 1715854929}
   m_Layer: 0
   m_Name: ShapeKeyNormal
   m_TagString: Untagged
@@ -822,6 +828,24 @@ Transform:
   - {fileID: 849608058}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1715854929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1715854927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdece0c09c9565940b927041a4f1beed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Frequency: 0.45
+  BuiltInSample:
+  - {fileID: 1389649802}
+  IcaSample:
+  - {fileID: 849608057}
+  Solver: {fileID: 849608056}
 --- !u!1001 &1891487506
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -905,7 +929,7 @@ PrefabInstance:
     - target: {fileID: -3887185075125053422, guid: 23d3e4404f7d46e4b8e0787e5ebaffab, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: fe83237dc224d054a8c5ee2fde05ccdc, type: 2}
+      objectReference: {fileID: 2100000, guid: 9194efb1cd7537745a28988e4b4e4ca7, type: 2}
     - target: {fileID: -3887185075125053422, guid: 23d3e4404f7d46e4b8e0787e5ebaffab, type: 3}
       propertyPath: m_BlendShapeWeights.Array.data[0]
       value: 100
@@ -1017,7 +1041,7 @@ PrefabInstance:
     - target: {fileID: -3887185075125053422, guid: b1eb00488d3e45b48ab67994de518c6f, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 0a4e8504e0fc48747be6b91498c1f95b, type: 2}
+      objectReference: {fileID: 2100000, guid: 8ab845010e1699d4594337de3618549e, type: 2}
     - target: {fileID: -3887185075125053422, guid: b1eb00488d3e45b48ab67994de518c6f, type: 3}
       propertyPath: m_BlendShapeWeights.Array.data[0]
       value: 100
