@@ -1,9 +1,12 @@
 ﻿using System;
 using UnityEngine;
 
-[Serializable]
-public sealed class GameObjectPair
+namespace Ica.Utils
 {
-    public GameObject First;
-    public GameObject Second;
+    [Serializable]
+    public sealed class GameObjectPair
+    {
+        public GameObject First;
+        public GameObject Second;
+    }
 }

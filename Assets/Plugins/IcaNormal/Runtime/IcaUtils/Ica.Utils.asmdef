@@ -1,12 +1,8 @@
 {
-    "name": "Ica.Utils.Editor",
-    "rootNamespace": "Ica.Utils.Editor",
-    "references": [
-        "GUID:61b61935899704748b3c537804f1954e"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "name": "Ica.Utils",
+    "rootNamespace": "Ica.Utils",
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

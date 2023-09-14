@@ -1,19 +1,24 @@
 {
-    "name": "Ica.Normal.Tests.Shared",
-    "rootNamespace": "Ica.Normal.Tests.Shared",
+    "name": "Ica.Normal.Tests.Performance",
+    "rootNamespace": "Ica.Normal.Tests.Performance",
     "references": [
+        "GUID:27619889b8ba8c24980f49ee34dbb44a",
+        "GUID:0acc523941302664db1f4e527237feb3",
+        "GUID:c0dd0d10738d4ad4a9de57c559d0ca1b",
+        "GUID:9f843d4b38153f04b9cee0502d568525",
         "GUID:2665a8d13d1b3f18800f46e256720795",
         "GUID:e0cd26848372d4e5c891c569017e11f1",
         "GUID:d8b63aba1907145bea998dd612889d6b",
         "GUID:8c58f6672a67f2e4fb71bea67d13a4a4",
-        "GUID:e0c6d4b9ddd76bb43ab9984d42626908",
-        "GUID:d9c56ff8129f5a0489b41636f34fb613"
+        "GUID:602ba2ce066e64f4c95a608c5ccdcb61"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
