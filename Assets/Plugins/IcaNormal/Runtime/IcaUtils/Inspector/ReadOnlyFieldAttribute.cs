@@ -1,2 +1,8 @@
 ﻿using UnityEngine;
-public class ReadOnlyFieldAttribute :PropertyAttribute { }
+
+namespace Ica.Utils
+{
+    public class ReadOnlyFieldAttribute : PropertyAttribute
+    {
+    }
+}

@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using Ica.Utils.Mesh;
 using UnityEngine;
-using UnityEngine.Profiling;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
 namespace Ica.Normal
 {
@@ -222,7 +219,7 @@ namespace Ica.Normal
             for (int meshIndex = 0; meshIndex < SmrPairs.Count; meshIndex++)
             {
                 var smr = SmrPairs[meshIndex].SMR;
-                MeshUtils.TransferBlendShapeValues(smr, TempSMRs[meshIndex]);
+                Ica.Utils.Mesh.MeshUtils.TransferBlendShapeValues(smr, TempSMRs[meshIndex]);
                 TempSMRs[meshIndex].BakeMesh(_tempMeshes[meshIndex]);
             }
 

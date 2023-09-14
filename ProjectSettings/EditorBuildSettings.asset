@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Plugins/IcaNormal/Samples/SeperateHeadSample/ManSeparateHead.unity
+    path: Assets/Plugins/IcaNormal/Samples/Sample2_SeperateMesh/ManSeparateHead.unity
     guid: 4977532c8e8577247b0c4e342d4c0d28
   m_configObjects: {}

@@ -6,9 +6,8 @@ namespace Ica.Normal.Editor
 {
     public class Attributes
     {
-        
     }
-    
+
 #if UNITY_EDITOR
     // taken from https://forum.unity.com/threads/read-only-fields.68976/#post-2729947
     [CustomPropertyDrawer(typeof(ReadOnlyInspectorAttribute))]
@@ -21,6 +20,9 @@ namespace Ica.Normal.Editor
             GUI.enabled = true;
         }
     }
-    public class ReadOnlyInspectorAttribute : PropertyAttribute { }
+
+    public class ReadOnlyInspectorAttribute : PropertyAttribute
+    {
+    }
 #endif
 }
