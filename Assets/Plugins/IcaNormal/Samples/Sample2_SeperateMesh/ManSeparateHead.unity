@@ -554,8 +554,8 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 1
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 0.42
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -821,7 +821,7 @@ GameObject:
   - component: {fileID: 1805070858}
   - component: {fileID: 1805070857}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Tester
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -839,6 +839,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdece0c09c9565940b927041a4f1beed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Frequency: 1
   BuiltInSample:
   - {fileID: 1389065780}
   - {fileID: 1389065781}
