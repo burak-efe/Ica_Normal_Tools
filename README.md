@@ -20,11 +20,12 @@ But there is a problem, firstly method not counting vertices that same position 
 Also built in method not takes angle as an argument,so smooth all vertices no matter of how sharp is angle. Another downside this method not suitable for fix blendshape normals directly.<br />
 
 On skinned mesh renderers that stored delta values can only be correct when blend shapes not change same vertices. Which is very rare on morphs that used for character creation and face animations.
-	
-
+![](https://imgur.com/jQ9bSZn.gif)
+![](https://imgur.com/4T421VY.gif)
 ![compare](https://github.com/burak-efe/Ica-Normal-Recalculation/assets/82805019/9fee8357-13d9-40f2-8e76-44c5d894b08a)
 
-## Ica Normal Recalculation Provides 2 Normal Recalculation method
+
+## Ica Normal Tools Provides 2 Normal Recalculation method
 1: Cached: This method suitable for recalculating same meshs normals and tangents over and over. But mesh structure should not be changed. Its suitable for skinned mesh renderers with blendshapes.
 	(Derived from:
 	 https://medium.com/@fra3point/runtime-normals-recalculation-in-unity-a-complete-approach-db42490a5644 )<br />
