@@ -27,8 +27,6 @@ On skinned mesh renderers that stored delta values can only be correct when blen
 
 ## Ica Normal Tools Provides 2 Normal Recalculation method
 1: Cached: This method suitable for recalculating same meshs normals and tangents over and over. But mesh structure should not be changed. Its suitable for skinned mesh renderers with blendshapes.
-	(Derived from:
-	 https://medium.com/@fra3point/runtime-normals-recalculation-in-unity-a-complete-approach-db42490a5644 )<br />
 	 
 2: Uncached: Suitable for one time only normal recalculation, slower than cached method. It is a good choice for procedural meshes.<br />
 
