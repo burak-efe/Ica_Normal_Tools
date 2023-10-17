@@ -43,7 +43,7 @@ namespace Ica.Normal.JobStructs
             int connectedCount = ConnectedMapper[vertexIndex];
             float3 sum = 0;
             
-            //for every connected triangle
+            //for every connected triangle, include it to final normal output no matter what
             for (int i = 0; i < connectedCount; ++i)
             {
                 int triID = AdjacencyList[subArrayStart + i];
@@ -52,14 +52,13 @@ namespace Ica.Normal.JobStructs
 
             float3 normalFromConnectedTriangles = math.normalize(sum);
 
-            //for every non connected (but adjacent) triangle
+            //for every non connected (but adjacent) triangle, include it to final vertex normal if angle smooth enough
             for (int i = 0; i < subArrayCount - connectedCount; i++)
             {
                 int triID = AdjacencyList[subArrayStart + connectedCount + i];
                 var normalizedCurrentTri = math.normalize(TriNormals[triID]);
                 double dotProd = math.dot(normalFromConnectedTriangles, normalizedCurrentTri);
-
-                // include it to final vertex normal if angle smooth enough
+                
                 if (dotProd >= CosineThreshold)
                 {
                     sum += TriNormals[triID];
