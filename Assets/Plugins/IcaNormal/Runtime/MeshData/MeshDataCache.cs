@@ -40,7 +40,7 @@ namespace Ica.Normal
         private bool _initialized;
         private bool _cachedForTangents;
 
-        public void InitFromMultipleMesh(List<Mesh> meshes, bool cacheForTangents)
+        public void Init(List<Mesh> meshes, bool cacheForTangents)
         {
             Dispose();
             _mda = Mesh.AcquireReadOnlyMeshData(meshes);
@@ -67,8 +67,8 @@ namespace Ica.Normal
             TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
 
             VertexPositionMapper.GetVertexPosHashMap(VertexData.AsArray(), out var tempPosGraph, Allocator.Temp);
-            Normal.AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph, out AdjacencyList, out AdjacencyMapper, out ConnectedCountMapper,
-                Allocator.Persistent);
+            Normal.AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph,
+                out AdjacencyList, out AdjacencyMapper, out ConnectedCountMapper, Allocator.Persistent);
 
             if (cacheForTangents)
             {
@@ -77,7 +77,9 @@ namespace Ica.Normal
                 UVData = new NativeList<float2>(TotalVertexCount, Allocator.Persistent);
                 _mda.GetMergedUVs(ref UVData, ref _vertexSeparatorData);
                 Tan1Data = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
+                Tan1Data.ResizeUninitialized(TotalIndexCount / 3);
                 Tan2Data = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
+                Tan2Data.ResizeUninitialized(TotalIndexCount / 3);
                 _cachedForTangents = true;
             }
 
@@ -153,9 +155,7 @@ namespace Ica.Normal
             Profiler.BeginSample("ApplyNormalsToBuffers");
             for (int meshIndex = 0; meshIndex < buffers.Count; meshIndex++)
             {
-                buffers[meshIndex].SetData(
-                    NormalData.AsArray().GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex])
-                );
+                buffers[meshIndex].SetData(NormalData.AsArray().GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex]));
             }
 
             Profiler.EndSample();

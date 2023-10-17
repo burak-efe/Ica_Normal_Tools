@@ -86,7 +86,7 @@ namespace Ica.Normal
             }
 
             _meshDataCache = new MeshDataCache();
-            _meshDataCache.InitFromMultipleMesh(_meshes, AlsoRecalculateTangents);
+            _meshDataCache.Init(_meshes, AlsoRecalculateTangents);
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {

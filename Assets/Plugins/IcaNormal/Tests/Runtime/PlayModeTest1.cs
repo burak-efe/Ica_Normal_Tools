@@ -18,7 +18,7 @@ namespace Ica.Normal.Tests.PlayMode
             var cubeTop = MeshCreate.CreateCube(new Vector3(0, 0.5f, 0), new Vector3(1, 1, 1));
             var cubeBottom = MeshCreate.CreateCube(new Vector3(0, -0.5f, 0), new Vector3(1, 1, 1));
             var mdc = new MeshDataCache();
-            mdc.InitFromMultipleMesh(new List<Mesh> { cubeTop.GetComponent<MeshFilter>().sharedMesh, cubeBottom.GetComponent<MeshFilter>().sharedMesh, }, false);
+            mdc.Init(new List<Mesh> { cubeTop.GetComponent<MeshFilter>().sharedMesh, cubeBottom.GetComponent<MeshFilter>().sharedMesh, }, false);
             mdc.RecalculateNormals(180f, false);
 
             Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(mdc.VertexData, mdc.NormalData));
