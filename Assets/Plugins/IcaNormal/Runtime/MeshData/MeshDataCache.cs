@@ -24,7 +24,7 @@ namespace Ica.Normal
         public NativeList<int> IndexData;
         public NativeList<float3> NormalData;
         public NativeList<int> AdjacencyList;
-        public NativeList<int> AdjacencyMapper;
+        public NativeList<int> AdjacencyListMapper;
         public NativeList<int> ConnectedCountMapper;
         private NativeList<int> _vertexSeparatorData;
         private NativeList<int> _indexSeparatorData;
@@ -34,12 +34,18 @@ namespace Ica.Normal
         public NativeList<float3> Tan1Data;
         public NativeList<float3> Tan2Data;
         public NativeList<float2> UVData;
-        public NativeList<float3> TriNormalData;
+        //public NativeList<float3> TriNormalData;
 
         private Mesh.MeshDataArray _mda;
         private bool _initialized;
         private bool _cachedForTangents;
 
+        /// <summary>
+        /// Cache mesh data to be ready for normal nad tangent calculation.
+        /// If multiple meshes provided, their data's will be merged like a one mesh to allow smooth normals between mesh boundaries.
+        /// </summary>
+        /// <param name="meshes"></param>
+        /// <param name="cacheForTangents"></param>
         public void Init(List<Mesh> meshes, bool cacheForTangents)
         {
             Dispose();
@@ -57,18 +63,19 @@ namespace Ica.Normal
             VertexData = new NativeList<float3>(TotalVertexCount, Allocator.Persistent);
             _mda.GetMergedVertices(ref VertexData, ref _vertexSeparatorData);
 
+            // Get Merged indices by adding total index count previous meshes. 
             IndexData = new NativeList<int>(TotalIndexCount, Allocator.Persistent);
             _mda.GetMergedIndices(ref IndexData, ref _indexSeparatorData);
 
             NormalData = new NativeList<float3>(TotalVertexCount, Allocator.Persistent);
             _mda.GetMergedNormals(ref NormalData, ref _vertexSeparatorData);
 
-            TriNormalData = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
-            TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
+            //TriNormalData = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
+            //TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
 
             VertexPositionMapper.GetVertexPosHashMap(VertexData.AsArray(), out var tempPosGraph, Allocator.Temp);
-            Normal.AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph,
-                out AdjacencyList, out AdjacencyMapper, out ConnectedCountMapper, Allocator.Persistent);
+            AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph,
+                out AdjacencyList, out AdjacencyListMapper, out ConnectedCountMapper, Allocator.Persistent);
 
             if (cacheForTangents)
             {
@@ -85,14 +92,14 @@ namespace Ica.Normal
 
             Assert.IsTrue(VertexData.Length == TotalVertexCount);
             Assert.IsTrue(IndexData.Length == TotalIndexCount);
-            Assert.IsTrue(TriNormalData.Length == IndexData.Length / 3);
+            //Assert.IsTrue(TriNormalData.Length == IndexData.Length / 3);
 
             _initialized = true;
         }
 
         public void RecalculateNormals(float angle, bool recalculateTangents = false)
         {
-            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyMapper, ConnectedCountMapper, out var normalHandle, angle);
+            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyListMapper, ConnectedCountMapper, out var normalHandle, angle);
 
             if (recalculateTangents)
             {
@@ -102,7 +109,7 @@ namespace Ica.Normal
                     IndexData,
                     UVData,
                     AdjacencyList,
-                    AdjacencyMapper,
+                    AdjacencyListMapper,
                     Tan1Data,
                     Tan2Data,
                     ref TangentData,
@@ -202,10 +209,10 @@ namespace Ica.Normal
             IndexData.Dispose();
             NormalData.Dispose();
             AdjacencyList.Dispose();
-            AdjacencyMapper.Dispose();
+            AdjacencyListMapper.Dispose();
             _vertexSeparatorData.Dispose();
             _indexSeparatorData.Dispose();
-            TriNormalData.Dispose();
+            //TriNormalData.Dispose();
 
             if (_cachedForTangents)
             {

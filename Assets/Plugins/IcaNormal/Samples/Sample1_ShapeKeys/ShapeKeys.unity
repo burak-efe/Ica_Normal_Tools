@@ -526,7 +526,7 @@ MonoBehaviour:
   NormalOutputTarget: 1
   Angle: 180
   RecalculateOnStart: 1
-  AlsoRecalculateTangents: 1
+  AlsoRecalculateTangents: 0
   DataCacheAsset: {fileID: 0}
   SmrPairs:
   - SMR: {fileID: 849608057}

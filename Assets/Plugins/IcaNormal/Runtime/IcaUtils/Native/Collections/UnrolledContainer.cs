@@ -7,13 +7,17 @@ using UnityEngine.Assertions;
 namespace Ica.Utils
 {
     /// <summary>
-    /// Unrolled 2D native list. Add operations involve a MemMove, similar to List.Insert.
+    /// Unrolled 2D native list. Add operations involve a MemMove, similar to List Insert. So adding to last lists cheaper than adding to first lists.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of data that list holds</typeparam>
     public struct UnrolledList<T> : IDisposable where T : unmanaged
     {
         public NativeList<T> _data;
         public int SubContainerCount => StartIndices.Length - 1;
+        
+        /// <summary>
+        /// Start indices of sub array on _data. Last element is total count of data;
+        /// </summary>
         public NativeList<int> StartIndices;
 
         public void Add(int subArrayIndex, T item)
