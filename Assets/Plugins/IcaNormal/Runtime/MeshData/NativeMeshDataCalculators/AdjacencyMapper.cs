@@ -4,7 +4,6 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using Unity.Profiling;
-using UnityEngine;
 
 namespace Ica.Normal
 {
@@ -46,7 +45,8 @@ namespace Ica.Normal
             outRealConnectedCount.Resize(vertices.Length, NativeArrayOptions.ClearMemory);
 
             pCalculate.Begin();
-            //for every index
+            
+            //for every tri index
             for (int i = 0; i < indices.Length; i++)
             {
                 int triIndex = i / 3;

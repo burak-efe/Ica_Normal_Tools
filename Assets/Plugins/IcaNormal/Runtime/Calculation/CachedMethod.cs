@@ -23,7 +23,7 @@ namespace Ica.Normal
         /// <param name="adjacencyStartIndicesMap"></param>
         /// <param name="connectedCountMap"></param>
         /// <param name="handle"></param>
-        /// <param name="angle"></param>
+        /// <param name="angle">180 is default value which result  smooth angles</param>
         [BurstCompile]
         public static void RecalculateNormalsAndGetHandle
         (

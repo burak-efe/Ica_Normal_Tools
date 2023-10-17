@@ -7,12 +7,12 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
-using UnityEngine.Rendering;
 
 namespace Ica.Normal
 {
     /// <summary>
-    /// A big data container that hold mesh data (or merged data of list of meshes) for needed to normal and tangent calculation
+    /// A big data container that hold mesh data (or merged data of list of meshes) for needed to normal and tangent calculation.
+    /// Need to be disposed manually.
     /// </summary>
     public class MeshDataCache : IDisposable
     {
@@ -88,9 +88,9 @@ namespace Ica.Normal
             _initialized = true;
         }
 
-        public void RecalculateNormals(float Angle, bool recalculateTangents = false)
+        public void RecalculateNormals(float angle, bool recalculateTangents = false)
         {
-            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyMapper, ConnectedCountMapper, out var normalHandle, Angle);
+            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyMapper, ConnectedCountMapper, out var normalHandle, angle);
 
             if (recalculateTangents)
             {
@@ -105,9 +105,9 @@ namespace Ica.Normal
                     Tan2Data,
                     ref TangentData,
                     ref normalHandle,
-                    out var tangentHandle);
+                    out var tangentHandle
+                );
                 tangentHandle.Complete();
-
             }
             else
             {
@@ -161,7 +161,7 @@ namespace Ica.Normal
             Profiler.EndSample();
         }
 
-        public void ApplyTangentsToMaterialBuffers(List<ComputeBuffer> buffers)
+        public void ApplyTangentsToBuffers(List<ComputeBuffer> buffers)
         {
             for (int meshIndex = 0; meshIndex < buffers.Count; meshIndex++)
             {
@@ -191,7 +191,7 @@ namespace Ica.Normal
             }
         }
 
-        // if there is a persistent allocate, there should be dispose #deepProgrammingQuotes #nativeLifeHacks
+        // "if there is a persistent allocate, there should be dispose" #deepProgrammingQuotes #nativeMemoryLifeHacks
         public void Dispose()
         {
             if (_initialized == false)
@@ -217,7 +217,8 @@ namespace Ica.Normal
             }
         }
 
-        // // try something this to remove requirement of read/ write enabled
+        //experimental
+        //try something like this to remove requirement of read/ write enabled
         // public static Mesh MakeReadableMeshCopy(Mesh nonReadableMesh)
         // {
         //     Mesh meshCopy = new Mesh();

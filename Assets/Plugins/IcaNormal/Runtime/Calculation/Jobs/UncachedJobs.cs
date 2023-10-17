@@ -7,6 +7,9 @@ using Unity.Profiling;
 
 namespace Ica.Normal.JobStructs
 {
+    
+    //Originally from
+    //https://web.archive.org/web/20220624174317/http://schemingdeveloper.com/2017/03/26/better-method-recalculate-normals-unity-part-2/
     public struct VertexEntry
     {
         public readonly int VertexIndex;
@@ -18,7 +21,7 @@ namespace Ica.Normal.JobStructs
         }
     }
 
-    [BurstCompile(FloatMode = FloatMode.Fast)]
+    [BurstCompile]
     public struct UncachedAngleVertexNormalJob : IJob
     {
         [ReadOnly] public NativeArray<float3> TriNormals;
@@ -97,7 +100,7 @@ namespace Ica.Normal.JobStructs
     
     
 
-    [BurstCompile(FloatMode = FloatMode.Fast)]
+    [BurstCompile]
     public struct UncachedSmoothVertexNormalJob : IJob
     {
         [ReadOnly] public NativeArray<float3> TriNormals;

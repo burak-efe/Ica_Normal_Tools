@@ -8,8 +8,13 @@ namespace Ica.Normal
 {
     public class TangentJobs
     {
-        //taken from
-        //https://www.cs.upc.edu/~virtual/G/1.%20Teoria/06.%20Textures/Tangent%20Space%20Calculation.pdf
+        // Recalculates mesh tangents
+        // For some reason the built-in RecalculateTangents function produces artifacts on dense geometries.
+        // This implementation id derived from:
+        // Lengyel, Eric. Computing Tangent Space Basis Vectors for an Arbitrary Mesh.
+        // Terathon Software 3D Graphics Library, 2001.
+        // http://www.terathon.com/code/tangent.html
+        
         [BurstCompile]
         public struct TriTangentJob : IJobFor
         {

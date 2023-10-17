@@ -206,7 +206,7 @@ namespace Ica.Normal
                     _meshDataCache.ApplyTangentsToMeshes(_meshes);
                     break;
                 case NormalOutputEnum.WriteToMaterial:
-                    _meshDataCache.ApplyTangentsToMaterialBuffers(_tangentBuffers);
+                    _meshDataCache.ApplyTangentsToBuffers(_tangentBuffers);
                     break;
             }
         }
