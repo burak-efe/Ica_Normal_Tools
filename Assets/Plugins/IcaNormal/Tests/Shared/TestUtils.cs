@@ -56,8 +56,6 @@ namespace Ica.Tests.Shared
                 if (math.abs(dif) > precision)
                 {
                     countOfNonUnit++;
-                    //Debug.LogError("Normal at index " +i+ " not normalized "+ length );
-                    //return false;
                 }
             }
 

@@ -2,8 +2,6 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEditor;
-using UnityEngine;
 
 namespace Ica.Normal.JobStructs
 {
@@ -22,7 +20,7 @@ namespace Ica.Normal.JobStructs
 
             // Calculate the normal of the triangle
             float3 crossProduct = math.cross(vertexB - vertexA, vertexC - vertexA);
-            //var normalized = math.normalize(crossProduct);
+            
             TriNormals[index] = crossProduct;
         }
     }
@@ -44,40 +42,7 @@ namespace Ica.Normal.JobStructs
             int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
             int connectedCount = ConnectedMapper[vertexIndex];
             double3 sum = 0;
-
-
-            // for (int i = 0; i < subArrayCount; i++)
-            // {
-            //     var firstIndex = AdjacencyList[subArrayStart + i];
-            //     var firstNormal = TriNormals[firstIndex];
-            //
-            //     for (int j = 0; j < subArrayCount; j++)
-            //     {
-            //         var secondIndex = AdjacencyList[subArrayStart + j];
-            //         
-            //         if (firstIndex == secondIndex)
-            //         {
-            //             Debug.Log("true");
-            //             sum += TriNormals[AdjacencyList[subArrayStart + j]];
-            //             continue;
-            //         }
-            //
-            //         // var secondNormal = TriNormals[secondIndex];
-            //         // var dot = math.dot(math.normalize(firstNormal), math.normalize(secondNormal));
-            //         //
-            //         // if (dot >= CosineThreshold)
-            //         // {
-            //         //     Debug.Log(dot + " is bigger than " + CosineThreshold);
-            //         //     sum += secondNormal;
-            //         // }
-            //         // else
-            //         // {
-            //         //     Debug.Log(dot + " is NOT bigger than " + CosineThreshold);
-            //         // }
-            //     }
-            // }
-
-
+            
             //for every connected triangle
             for (int i = 0; i < connectedCount; ++i)
             {

@@ -1,5 +1,4 @@
-﻿using Ica.Utils;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
@@ -78,9 +77,9 @@ namespace Ica.Normal.JobStructs
                         {
                             // The dot product is the cosine of the angle between the two triangles.
                             // A larger cosine means a smaller angle.
-                            float dot = math.dot(TriNormals[lhsEntry.TriangleIndex], TriNormals[rhsEntry.TriangleIndex]);
+                            float dotProduct = math.dot(TriNormals[lhsEntry.TriangleIndex], TriNormals[rhsEntry.TriangleIndex]);
 
-                            if (dot >= CosineThreshold)
+                            if (dotProduct >= CosineThreshold)
                             {
                                 sum += TriNormals[rhsEntry.TriangleIndex];
                             }

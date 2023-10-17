@@ -16,7 +16,7 @@ namespace Ica.Normal
     /// <summary>
     /// EXPERIMENTAL DO NOT USE!!!
     /// </summary>
-    [BurstCompile]
+    //[BurstCompile]
     [Obsolete]
     public static class CachedLiteMethod
     {

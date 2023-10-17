@@ -25,6 +25,7 @@ namespace Ica.Normal.Tests.PlayMode
             mdc.RecalculateNormals(180f,false);
             
             Assert.IsTrue(TestUtils.IsNormalsAreSameForSamePosition(mdc.VertexData, mdc.NormalData));
+            mdc.Dispose();
         }
 
 

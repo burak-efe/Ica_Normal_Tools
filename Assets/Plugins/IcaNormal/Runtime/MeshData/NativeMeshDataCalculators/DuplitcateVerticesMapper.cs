@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -10,19 +9,28 @@ namespace Ica.Normal
     [BurstCompile]
     public static class DuplicateVerticesMapper
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>
+        /// Takes vertex Pos hashMap and return only duplicate ones.
+        /// </summary>
+        /// <param name="vertexPosHashMap"></param>
+        /// <param name="outDuplicateVerticesMap"></param>
+        /// <param name="allocator"></param>
         [BurstCompile]
         public static void GetDuplicateVerticesMap
-        (in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
-            out UnsafeList<NativeArray<int>> outMap, Allocator allocator)
+        (
+            in UnsafeHashMap<float3, NativeList<int>> vertexPosHashMap,
+            out UnsafeList<NativeArray<int>> outDuplicateVerticesMap,
+            Allocator allocator
+        )
         {
-            outMap = new UnsafeList<NativeArray<int>>(16, allocator);
+            outDuplicateVerticesMap = new UnsafeList<NativeArray<int>>(16, allocator);
 
             foreach (var kvp in vertexPosHashMap)
             {
+                //If there is more than one vertex on that position that means vertices are duplicate
                 if (kvp.Value.Length > 1)
                 {
-                    outMap.Add(new NativeArray<int>(kvp.Value.AsArray(), allocator));
+                    outDuplicateVerticesMap.Add(new NativeArray<int>(kvp.Value.AsArray(), allocator));
                 }
             }
         }

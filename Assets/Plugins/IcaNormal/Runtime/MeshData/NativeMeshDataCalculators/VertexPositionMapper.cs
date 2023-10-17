@@ -35,6 +35,7 @@ namespace Ica.Normal
 
             for (int vertexIndex = 0; vertexIndex < vertices.Length; vertexIndex++)
             {
+                //if position already occurs before, add current vertex index to list. This means this vertex duplicate.
                 if (posVertexIndicesPair.TryGetValue(vertices[vertexIndex], out var vertexIndexList))
                 {
                     pAddToList.Begin();
@@ -47,7 +48,6 @@ namespace Ica.Normal
                     vertexIndexList = new NativeList<int>(1, allocator) { vertexIndex };
                     pCreateList.End();
                     
-                    //vertexIndexList.Add(vertexIndex);
                     pAddNewPair.Begin();
                     posVertexIndicesPair.Add(vertices[vertexIndex], vertexIndexList);
                     pAddNewPair.End();
