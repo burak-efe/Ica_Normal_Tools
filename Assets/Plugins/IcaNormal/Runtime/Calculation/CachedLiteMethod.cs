@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -7,7 +6,6 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 
 namespace Ica.Normal
@@ -16,12 +14,10 @@ namespace Ica.Normal
     /// <summary>
     /// EXPERIMENTAL DO NOT USE!!!
     /// </summary>
-    [BurstCompile]
+    //[BurstCompile]
     [Obsolete]
     public static class CachedLiteMethod
     {
-        
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompile]
         public static void NormalizeDuplicateVertices(in UnsafeList<NativeArray<int>> duplicatesData, ref NativeArray<float3> normals, ref NativeArray<float4> tangents)
@@ -32,11 +28,8 @@ namespace Ica.Normal
                 Normals = normals,
                 Tangents = tangents
             };
-            
             job.Run();
         }
-        
-        
         
         [BurstCompile]
         private struct NormalizeDuplicateVerticesJob : IJob
@@ -72,7 +65,6 @@ namespace Ica.Normal
                         Tangents[DuplicatesData[duplicatePos][i]] = tangentSum;
                     }
                 }
-
             }
         }
     }

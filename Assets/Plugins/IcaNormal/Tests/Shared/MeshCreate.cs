@@ -17,6 +17,7 @@ namespace Ica.Tests.Shared
             // Generate vertices, normals, and UVs
             Vector3[] vertices = new Vector3[(numLongitudeSegments + 1) * (numLatitudeSegments + 1)];
             Vector3[] normals = new Vector3[vertices.Length];
+            Vector4[] tangents = new Vector4[vertices.Length];
             Vector2[] uv = new Vector2[vertices.Length];
 
             for (int lat = 0; lat <= numLatitudeSegments; lat++)
@@ -65,6 +66,7 @@ namespace Ica.Tests.Shared
             mesh.normals = normals;
             mesh.uv = uv;
             mesh.triangles = triangles;
+            mesh.tangents = tangents;
 
             meshFilter.sharedMesh = mesh;
             // Assign a material for rendering

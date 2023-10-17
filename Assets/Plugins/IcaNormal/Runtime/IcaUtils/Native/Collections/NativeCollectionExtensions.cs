@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Ica.Utils
@@ -9,8 +8,8 @@ namespace Ica.Utils
         public static void InsertAtBeginning<T>(this ref NativeList<T> list, T element) where T : unmanaged
         {
             list.Add(new T());
-            var destination = list.GetUnsafeList()->Ptr + 1;
-            var source = list.GetUnsafeList()->Ptr;
+            T* destination = list.GetUnsafeList()->Ptr + 1;
+            T* source = list.GetUnsafeList()->Ptr;
             long size = sizeof(T) * (list.Length - 1);
             UnsafeUtility.MemMove(destination, source, size);
             list[0] = element;

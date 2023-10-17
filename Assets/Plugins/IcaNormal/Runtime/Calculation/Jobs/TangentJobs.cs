@@ -8,6 +8,13 @@ namespace Ica.Normal
 {
     public class TangentJobs
     {
+        // Recalculates mesh tangents
+        // For some reason the built-in RecalculateTangents function produces artifacts on dense geometries.
+        // This implementation id derived from:
+        // Lengyel, Eric. Computing Tangent Space Basis Vectors for an Arbitrary Mesh.
+        // Terathon Software 3D Graphics Library, 2001.
+        // http://www.terathon.com/code/tangent.html
+        
         [BurstCompile]
         public struct TriTangentJob : IJobFor
         {
@@ -58,7 +65,7 @@ namespace Ica.Normal
         public struct CachedVertexTangentJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;
-            [ReadOnly] public NativeArray<int> AdjacencyStartIndices;
+            [ReadOnly] public NativeArray<int> AdjacencyListMapper;
             [ReadOnly] public NativeArray<float3> Normals;
             [ReadOnly] public NativeArray<float3> Tan1;
             [ReadOnly] public NativeArray<float3> Tan2;
@@ -66,8 +73,8 @@ namespace Ica.Normal
 
             public void Execute(int vertexIndex)
             {
-                int subArrayStart = AdjacencyStartIndices[vertexIndex];
-                int subArrayCount = AdjacencyStartIndices[vertexIndex + 1] - AdjacencyStartIndices[vertexIndex];
+                int subArrayStart = AdjacencyListMapper[vertexIndex];
+                int subArrayCount = AdjacencyListMapper[vertexIndex + 1] - AdjacencyListMapper[vertexIndex];
                 float3 t1Sum = new float3();
                 float3 t2Sum = new float3();
 
@@ -86,7 +93,13 @@ namespace Ica.Normal
 
                 float3 n = nTemp;
                 float3 t = tTemp;
-                var w = (math.dot(math.cross(n, t), t2Sum) < 0.0f) ? -1.0f : 1.0f;
+                
+                float w;
+                
+                if (math.dot(math.cross(n, t), t2Sum) < 0.0f)
+                    w = -1.0f;
+                else
+                    w = 1.0f;
                 Tangents[vertexIndex] = new float4(t.x, t.y, t.z, w);
             }
         }

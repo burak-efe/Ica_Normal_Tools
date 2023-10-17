@@ -55,7 +55,7 @@ namespace Ica.Normal
             var vertexTangentJob = new TangentJobs.CachedVertexTangentJob
             {
                 AdjacencyList = adjacencyList.AsArray(),
-                AdjacencyStartIndices = adjacencyMap.AsArray(),
+                AdjacencyListMapper = adjacencyMap.AsArray(),
                 Normals = normals.AsArray(),
                 Tan1 = tan1.AsArray(),
                 Tan2 = tan2.AsArray(),

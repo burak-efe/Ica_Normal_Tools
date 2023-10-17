@@ -86,7 +86,7 @@ namespace Ica.Normal
             }
 
             _meshDataCache = new MeshDataCache();
-            _meshDataCache.InitFromMultipleMesh(_meshes, AlsoRecalculateTangents);
+            _meshDataCache.Init(_meshes, AlsoRecalculateTangents);
 
             if (NormalOutputTarget == NormalOutputEnum.WriteToMesh)
             {
@@ -206,7 +206,7 @@ namespace Ica.Normal
                     _meshDataCache.ApplyTangentsToMeshes(_meshes);
                     break;
                 case NormalOutputEnum.WriteToMaterial:
-                    _meshDataCache.ApplyTangentsToMaterialBuffers(_tangentBuffers);
+                    _meshDataCache.ApplyTangentsToBuffers(_tangentBuffers);
                     break;
             }
         }

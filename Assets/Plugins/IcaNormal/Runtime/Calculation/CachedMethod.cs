@@ -23,7 +23,7 @@ namespace Ica.Normal
         /// <param name="adjacencyStartIndicesMap"></param>
         /// <param name="connectedCountMap"></param>
         /// <param name="handle"></param>
-        /// <param name="angle"></param>
+        /// <param name="angle">180 is default value which result  smooth angles</param>
         [BurstCompile]
         public static void RecalculateNormalsAndGetHandle
         (
@@ -37,14 +37,11 @@ namespace Ica.Normal
             float angle = 180f
         )
         {
-            angle = math.clamp(angle, 0, 180);
-            Assert.IsTrue(vertices.Length == outNormals.Length);
-            
             var pSchedule = new ProfilerMarker("pSchedule");
-
-            var triangleCount = indices.Length / 3;
-
             pSchedule.Begin();
+
+            angle = math.clamp(angle, 0, 180);
+            var triangleCount = indices.Length / 3;
 
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             var triNormalJob = new TriNormalJob

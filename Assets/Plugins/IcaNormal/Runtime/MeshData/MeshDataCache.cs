@@ -7,12 +7,12 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
-using UnityEngine.Rendering;
 
 namespace Ica.Normal
 {
     /// <summary>
-    /// A big data container that hold mesh data (or merged data of list of meshes) for needed to normal and tangent calculation
+    /// A big data container that hold mesh data (or merged data of list of meshes) for needed to normal and tangent calculation.
+    /// Need to be disposed manually.
     /// </summary>
     public class MeshDataCache : IDisposable
     {
@@ -24,7 +24,7 @@ namespace Ica.Normal
         public NativeList<int> IndexData;
         public NativeList<float3> NormalData;
         public NativeList<int> AdjacencyList;
-        public NativeList<int> AdjacencyMapper;
+        public NativeList<int> AdjacencyListMapper;
         public NativeList<int> ConnectedCountMapper;
         private NativeList<int> _vertexSeparatorData;
         private NativeList<int> _indexSeparatorData;
@@ -34,13 +34,19 @@ namespace Ica.Normal
         public NativeList<float3> Tan1Data;
         public NativeList<float3> Tan2Data;
         public NativeList<float2> UVData;
-        public NativeList<float3> TriNormalData;
+        //public NativeList<float3> TriNormalData;
 
         private Mesh.MeshDataArray _mda;
         private bool _initialized;
         private bool _cachedForTangents;
 
-        public void InitFromMultipleMesh(List<Mesh> meshes, bool cacheForTangents)
+        /// <summary>
+        /// Cache mesh data to be ready for normal nad tangent calculation.
+        /// If multiple meshes provided, their data's will be merged like a one mesh to allow smooth normals between mesh boundaries.
+        /// </summary>
+        /// <param name="meshes"></param>
+        /// <param name="cacheForTangents"></param>
+        public void Init(List<Mesh> meshes, bool cacheForTangents)
         {
             Dispose();
             _mda = Mesh.AcquireReadOnlyMeshData(meshes);
@@ -57,18 +63,19 @@ namespace Ica.Normal
             VertexData = new NativeList<float3>(TotalVertexCount, Allocator.Persistent);
             _mda.GetMergedVertices(ref VertexData, ref _vertexSeparatorData);
 
+            // Get Merged indices by adding total index count previous meshes. 
             IndexData = new NativeList<int>(TotalIndexCount, Allocator.Persistent);
             _mda.GetMergedIndices(ref IndexData, ref _indexSeparatorData);
 
             NormalData = new NativeList<float3>(TotalVertexCount, Allocator.Persistent);
             _mda.GetMergedNormals(ref NormalData, ref _vertexSeparatorData);
 
-            TriNormalData = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
-            TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
+            //TriNormalData = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
+            //TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
 
             VertexPositionMapper.GetVertexPosHashMap(VertexData.AsArray(), out var tempPosGraph, Allocator.Temp);
-            Normal.AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph, out AdjacencyList, out AdjacencyMapper, out ConnectedCountMapper,
-                Allocator.Persistent);
+            AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph,
+                out AdjacencyList, out AdjacencyListMapper, out ConnectedCountMapper, Allocator.Persistent);
 
             if (cacheForTangents)
             {
@@ -77,20 +84,22 @@ namespace Ica.Normal
                 UVData = new NativeList<float2>(TotalVertexCount, Allocator.Persistent);
                 _mda.GetMergedUVs(ref UVData, ref _vertexSeparatorData);
                 Tan1Data = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
+                Tan1Data.ResizeUninitialized(TotalIndexCount / 3);
                 Tan2Data = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
+                Tan2Data.ResizeUninitialized(TotalIndexCount / 3);
                 _cachedForTangents = true;
             }
 
             Assert.IsTrue(VertexData.Length == TotalVertexCount);
             Assert.IsTrue(IndexData.Length == TotalIndexCount);
-            Assert.IsTrue(TriNormalData.Length == IndexData.Length / 3);
+            //Assert.IsTrue(TriNormalData.Length == IndexData.Length / 3);
 
             _initialized = true;
         }
 
-        public void RecalculateNormals(float Angle, bool recalculateTangents = false)
+        public void RecalculateNormals(float angle, bool recalculateTangents = false)
         {
-            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyMapper, ConnectedCountMapper, out var normalHandle, Angle);
+            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyListMapper, ConnectedCountMapper, out var normalHandle, angle);
 
             if (recalculateTangents)
             {
@@ -100,14 +109,14 @@ namespace Ica.Normal
                     IndexData,
                     UVData,
                     AdjacencyList,
-                    AdjacencyMapper,
+                    AdjacencyListMapper,
                     Tan1Data,
                     Tan2Data,
                     ref TangentData,
                     ref normalHandle,
-                    out var tangentHandle);
+                    out var tangentHandle
+                );
                 tangentHandle.Complete();
-
             }
             else
             {
@@ -153,15 +162,13 @@ namespace Ica.Normal
             Profiler.BeginSample("ApplyNormalsToBuffers");
             for (int meshIndex = 0; meshIndex < buffers.Count; meshIndex++)
             {
-                buffers[meshIndex].SetData(
-                    NormalData.AsArray().GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex])
-                );
+                buffers[meshIndex].SetData(NormalData.AsArray().GetSubArray(_vertexSeparatorData[meshIndex], _vertexSeparatorData[meshIndex + 1] - _vertexSeparatorData[meshIndex]));
             }
 
             Profiler.EndSample();
         }
 
-        public void ApplyTangentsToMaterialBuffers(List<ComputeBuffer> buffers)
+        public void ApplyTangentsToBuffers(List<ComputeBuffer> buffers)
         {
             for (int meshIndex = 0; meshIndex < buffers.Count; meshIndex++)
             {
@@ -191,7 +198,7 @@ namespace Ica.Normal
             }
         }
 
-        // if there is a persistent allocate, there should be dispose #deepProgrammingQuotes #nativeLifeHacks
+        // "if there is a persistent allocate, there should be dispose" #deepProgrammingQuotes #nativeMemoryLifeHacks
         public void Dispose()
         {
             if (_initialized == false)
@@ -202,10 +209,10 @@ namespace Ica.Normal
             IndexData.Dispose();
             NormalData.Dispose();
             AdjacencyList.Dispose();
-            AdjacencyMapper.Dispose();
+            AdjacencyListMapper.Dispose();
             _vertexSeparatorData.Dispose();
             _indexSeparatorData.Dispose();
-            TriNormalData.Dispose();
+            //TriNormalData.Dispose();
 
             if (_cachedForTangents)
             {
@@ -217,7 +224,8 @@ namespace Ica.Normal
             }
         }
 
-        // // try something this to remove requirement of read/ write enabled
+        //experimental
+        //try something like this to remove requirement of read/ write enabled
         // public static Mesh MakeReadableMeshCopy(Mesh nonReadableMesh)
         // {
         //     Mesh meshCopy = new Mesh();

@@ -45,6 +45,7 @@ namespace Ica.Normal
 
             var triNormalJobHandle = triNormalJob.ScheduleParallel(indices.Length / 3, JobUtils.GetBatchCountThatMakesSense(indices.Length / 3), default);
 
+            //smooth version runs faster
             if (angle == 180f)
             {
                 var vertexNormalJob = new UncachedSmoothVertexNormalJob()
@@ -101,9 +102,6 @@ namespace Ica.Normal
 
             outNormals = new NativeList<float3>(meshData.vertexCount, allocator);
             outNormals.Resize(meshData.vertexCount, NativeArrayOptions.ClearMemory);
-
-            // outTangents = new NativeList<float4>(meshData.vertexCount, allocator);
-            // outTangents.Resize(meshData.vertexCount, NativeArrayOptions.ClearMemory);
 
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             var triNormalJob = new TriNormalJob

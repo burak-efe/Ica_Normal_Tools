@@ -19,7 +19,7 @@ namespace Ica.Utils.Tests
 
             var unrolled = new UnrolledList<int>(nested, Allocator.Temp);
 
-            Assert.IsTrue(unrolled.Data.Length == 6, "Unrolled Data size not correct");
+            Assert.IsTrue(unrolled._data.Length == 6, "Unrolled Data size not correct");
             Assert.IsTrue(unrolled.GetSubArrayLength(0) == 1, "a");
             Assert.IsTrue(unrolled.GetSubArrayLength(1) == 2, "b");
             Assert.IsTrue(unrolled.GetSubArrayLength(2) == 3, "c");
@@ -51,7 +51,8 @@ namespace Ica.Utils.Tests
 
             var unrolled = new UnrolledList<int>(nested, Allocator.Temp);
             unrolled.Add(1, 34);
-            Assert.AreEqual(unrolled.Data.Length, 10);
+            Assert.AreEqual(unrolled._data.Length, 10);
+            Assert.AreEqual(unrolled.SubContainerCount, 3);
             Assert.AreEqual(unrolled.GetSubArray(1).ToArray()[^1], 34);
         }
 
@@ -66,7 +67,7 @@ namespace Ica.Utils.Tests
 
             var unrolled = new UnrolledList<int>(nested, Allocator.Temp);
             unrolled.Add(1, 34);
-            Assert.AreEqual(unrolled.Data.Length, 1);
+            Assert.AreEqual(unrolled._data.Length, 1);
             Assert.AreEqual(unrolled.GetSubArray(1)[0], 34);
         }
 
@@ -92,14 +93,14 @@ namespace Ica.Utils.Tests
             unrolled.Add(1, 9);
 
 
-            Assert.AreEqual(unrolled.Data.Length, 15);
+            Assert.AreEqual(unrolled._data.Length, 15);
             Assert.AreEqual(unrolled.GetSubArray(0).ToArray(), new int[] { 7, 8, 9, 10, 11, 12 });
             Assert.AreEqual(unrolled.GetSubArray(1).ToArray(), new int[] { 4, 5, 6, 7, 8, 9 });
             Assert.AreEqual(unrolled.GetSubArray(2).ToArray(), new int[] { 1, 2, 3 });
         }
 
         [Test]
-        public void UnrolledContainer_EmptyConstructor_()
+        public void UnrolledContainer_EmptyConstructorAddToSubContainer_()
         {
             var unrolled = new UnrolledList<int>(3, Allocator.Temp);
 
@@ -116,7 +117,7 @@ namespace Ica.Utils.Tests
             unrolled.Add(1, 9);
 
 
-            Assert.AreEqual(unrolled.Data.Length, 9);
+            Assert.AreEqual(unrolled._data.Length, 9);
             Assert.AreEqual(unrolled.GetSubArray(0).ToArray(), new int[] { 10, 11, 12 });
             Assert.AreEqual(unrolled.GetSubArray(1).ToArray(), new int[] { 7, 8, 9 });
             Assert.AreEqual(unrolled.GetSubArray(2).ToArray(), new int[] { 1, 2, 3 });
