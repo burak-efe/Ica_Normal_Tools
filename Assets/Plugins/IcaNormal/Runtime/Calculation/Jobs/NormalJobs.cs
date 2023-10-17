@@ -41,7 +41,7 @@ namespace Ica.Normal.JobStructs
             int subArrayStart = AdjacencyMapper[vertexIndex];
             int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
             int connectedCount = ConnectedMapper[vertexIndex];
-            double3 sum = 0;
+            float3 sum = 0;
             
             //for every connected triangle
             for (int i = 0; i < connectedCount; ++i)
@@ -50,7 +50,7 @@ namespace Ica.Normal.JobStructs
                 sum += TriNormals[triID];
             }
 
-            double3 normalFromConnectedTriangles = math.normalize(sum);
+            float3 normalFromConnectedTriangles = math.normalize(sum);
 
             //for every non connected (but adjacent) triangle
             for (int i = 0; i < subArrayCount - connectedCount; i++)
@@ -66,7 +66,7 @@ namespace Ica.Normal.JobStructs
                 }
             }
 
-            Normals[vertexIndex] = (float3)math.normalize(sum);
+            Normals[vertexIndex] = math.normalize(sum);
         }
     }
 
@@ -83,7 +83,7 @@ namespace Ica.Normal.JobStructs
         {
             int subArrayStart = AdjacencyMapper[vertexIndex];
             int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
-            double3 dotProdSum = 0;
+            float3 dotProdSum = 0;
 
             //for every adjacent triangle
             for (int i = 0; i < subArrayCount; ++i)
@@ -94,7 +94,7 @@ namespace Ica.Normal.JobStructs
 
             var normalized = math.normalize(dotProdSum);
 
-            Normals[vertexIndex] = (float3)normalized;
+            Normals[vertexIndex] = normalized;
         }
     }
 }
