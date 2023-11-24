@@ -7,13 +7,13 @@ using Unity.Profiling;
 
 namespace Ica.Normal.JobStructs
 {
-    
     //Originally from
     //https://web.archive.org/web/20220624174317/http://schemingdeveloper.com/2017/03/26/better-method-recalculate-normals-unity-part-2/
     public struct VertexEntry
     {
         public readonly int VertexIndex;
         public readonly int TriangleIndex;
+
         public VertexEntry(int vertexIndex, int triangleIndex)
         {
             VertexIndex = vertexIndex;
@@ -29,13 +29,13 @@ namespace Ica.Normal.JobStructs
         [ReadOnly] public NativeArray<int> Indices;
         public NativeArray<float3> OutNormals;
         [ReadOnly] public float CosineThreshold;
-        
+
         public ProfilerMarker PGetVertexPosHashMap;
         public ProfilerMarker PCalculate;
-        
+
         public void Execute()
         {
-             PGetVertexPosHashMap.Begin();
+            PGetVertexPosHashMap.Begin();
 
             var posMap = new UnsafeHashMap<float3, NativeList<VertexEntry>>(Vertices.Length, Allocator.Temp);
 
@@ -58,8 +58,9 @@ namespace Ica.Normal.JobStructs
                     }
                 }
             }
+
             PGetVertexPosHashMap.End();
-            
+
             PCalculate.Begin();
             foreach (var kvp in posMap)
             {
@@ -93,12 +94,11 @@ namespace Ica.Normal.JobStructs
                     OutNormals[lhsEntry.VertexIndex] = normalized;
                 }
             }
+
             PCalculate.End();
         }
     }
-    
-    
-    
+
 
     [BurstCompile]
     public struct UncachedSmoothVertexNormalJob : IJob
@@ -114,7 +114,7 @@ namespace Ica.Normal.JobStructs
 
         public void Execute()
         {
-             PGetVertexPosHashMap.Begin();
+            PGetVertexPosHashMap.Begin();
 
             var posMap = new UnsafeHashMap<float3, NativeList<VertexEntry>>(Vertices.Length, Allocator.Temp);
 
@@ -156,8 +156,6 @@ namespace Ica.Normal.JobStructs
                     {
                         OutNormals[map[k].VertexIndex] += TriNormals[triIndex];
                     }
-
-
                 }
             }
 
