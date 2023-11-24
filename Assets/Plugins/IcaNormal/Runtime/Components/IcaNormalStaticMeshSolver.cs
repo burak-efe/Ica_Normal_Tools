@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Ica.Normal
@@ -19,7 +20,9 @@ namespace Ica.Normal
         public void RecalculateNormals()
         {
             TargetMesh.RecalculateNormalsIca(Angle);
-   
+           var mda = Mesh.AcquireReadOnlyMeshData(TargetMesh);
+
+
         }
     }
 }
