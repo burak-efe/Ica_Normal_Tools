@@ -7,11 +7,12 @@ using UnityEngine.Profiling;
 
 namespace Ica.Normal
 {
+  //TODO
     /// <summary>
     /// A mesh data cache asset to eliminate data calculation time on start
     /// </summary>
-    [PreferBinarySerialization]
-    [CreateAssetMenu(menuName = "Plugins/IcaNormalRecalculation/MeshDataCache", fileName = "IcaMeshDataCache")]
+   // [PreferBinarySerialization]
+   // [CreateAssetMenu(menuName = "Plugins/IcaNormalRecalculation/MeshDataCacheAsset", fileName = "IcaMeshDataCacheAsset")]
     public class MeshDataCacheAsset : ScriptableObject
     {
         public Mesh TargetMesh;
@@ -31,7 +32,7 @@ namespace Ica.Normal
 
             Profiler.BeginSample("GetVertices");
             var vertices = new NativeList<float3>(data.vertexCount, Allocator.Temp);
-            data.GetVertices(vertices.AsArray().Reinterpret<Vector3>());
+            data.GetVerticesDataAsList(ref vertices);
             Profiler.EndSample();
 
             Profiler.BeginSample("GetIndices");

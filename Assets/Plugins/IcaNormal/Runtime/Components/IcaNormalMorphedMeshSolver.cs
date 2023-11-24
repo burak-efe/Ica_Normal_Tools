@@ -23,8 +23,9 @@ namespace Ica.Normal
         public bool RecalculateOnStart;
         public bool AlsoRecalculateTangents;
 
-        [Tooltip("Cache asset will faster initialization")]
-        public MeshDataCacheAsset DataCacheAsset;
+        //TODO
+        //[Tooltip("Cache asset will faster initialization")]
+        //public MeshDataCacheAsset DataCacheAsset;
 
         [Tooltip("Asset of this model in zero pose.")]
         public List<SmrPair> SmrPairs;
