@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Ica.Normal
 {
+    /// <summary>
+    /// Recalculate normals of a static mesh. Useful for testing.
+    /// </summary>
     public class IcaNormalStaticMeshSolver : MonoBehaviour
     {
         public Mesh TargetMesh;
@@ -20,9 +23,7 @@ namespace Ica.Normal
         public void RecalculateNormals()
         {
             TargetMesh.RecalculateNormalsIca(Angle);
-           var mda = Mesh.AcquireReadOnlyMeshData(TargetMesh);
-
-
+            
         }
     }
 }

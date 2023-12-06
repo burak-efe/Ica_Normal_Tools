@@ -14,6 +14,7 @@ namespace Ica.Normal
     public static class UncachedMethod
     {
         [BurstCompile]
+        //This is Buggy
         public static void UncachedNormalRecalculate
         (
             in Mesh.MeshData meshData,
@@ -54,8 +55,8 @@ namespace Ica.Normal
                     Vertices = vertices.AsArray(),
                     Indices = indices.AsArray(),
                     TriNormals = triNormals,
-                    PGetVertexPosHashMap = new ProfilerMarker("pPosMap"),
-                    PCalculate = new ProfilerMarker("pCalculate"),
+                    pmGetVertexPosHashMap = new ProfilerMarker("pPosMap"),
+                    pmCalculate = new ProfilerMarker("pCalculate"),
                 };
                 var handle = vertexNormalJob.Schedule(triNormalJobHandle);
                 handle.Complete();
@@ -122,8 +123,8 @@ namespace Ica.Normal
                     Vertices = vertices.AsArray(),
                     Indices = indices.AsArray(),
                     TriNormals = triNormals,
-                    PGetVertexPosHashMap = new ProfilerMarker("pPosMap"),
-                    PCalculate = new ProfilerMarker("pCalculate"),
+                    pmGetVertexPosHashMap = new ProfilerMarker("pPosMap"),
+                    pmCalculate = new ProfilerMarker("pCalculate"),
                 };
                 normalHandle = vertexNormalJob.Schedule(triNormalJobHandle);
             }

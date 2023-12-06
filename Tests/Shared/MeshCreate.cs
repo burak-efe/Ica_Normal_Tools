@@ -70,7 +70,15 @@ namespace Ica.Tests.Shared
 
             meshFilter.sharedMesh = mesh;
             // Assign a material for rendering
-            meshRenderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            if (QualitySettings.renderPipeline == null)
+            {
+                meshRenderer.material = new Material(Shader.Find("Standard"));
+            }
+            else
+            {
+                meshRenderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            }
+
             return obj;
         }
 

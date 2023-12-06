@@ -100,6 +100,7 @@ namespace Ica.Normal.JobStructs
     }
 
 
+    //
     [BurstCompile]
     public struct UncachedSmoothVertexNormalJob : IJob
     {
@@ -108,13 +109,13 @@ namespace Ica.Normal.JobStructs
         [ReadOnly] public NativeArray<int> Indices;
         public NativeArray<float3> OutNormals;
 
-        public ProfilerMarker PGetVertexPosHashMap;
-        public ProfilerMarker PCalculate;
+        public ProfilerMarker pmGetVertexPosHashMap;
+        public ProfilerMarker pmCalculate;
 
 
         public void Execute()
         {
-            PGetVertexPosHashMap.Begin();
+            pmGetVertexPosHashMap.Begin();
 
             var posMap = new UnsafeHashMap<float3, NativeList<VertexEntry>>(Vertices.Length, Allocator.Temp);
 
@@ -138,10 +139,10 @@ namespace Ica.Normal.JobStructs
                 }
             }
 
-            PGetVertexPosHashMap.End();
+            pmGetVertexPosHashMap.End();
 
 
-            PCalculate.Begin();
+            pmCalculate.Begin();
             for (int i = 0; i < Indices.Length; i += 3)
             {
                 int triIndex = i / 3;
@@ -165,7 +166,7 @@ namespace Ica.Normal.JobStructs
             }
 
 
-            PCalculate.End();
+            pmCalculate.End();
         }
     }
 }

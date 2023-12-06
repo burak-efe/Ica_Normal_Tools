@@ -24,8 +24,9 @@ namespace Ica.Normal.JobStructs
             TriNormals[index] = crossProduct;
         }
     }
-
-
+    
+    
+    
     [BurstCompile]
     public struct AngleBasedVertexNormalJob : IJobFor
     {
@@ -68,8 +69,7 @@ namespace Ica.Normal.JobStructs
             Normals[vertexIndex] = math.normalize(sum);
         }
     }
-
-
+    
     [BurstCompile]
     public struct SmoothVertexNormalJob : IJobFor
     {

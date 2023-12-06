@@ -10,7 +10,7 @@ namespace Ica.Normal.Samples
         public float Frequency = 1f;
         public List<SkinnedMeshRenderer> BuiltInSample;
         public List<SkinnedMeshRenderer> IcaSample;
-        public IcaNormalMorphedMeshSolver Solver;
+        public IcaNormalSkinnedMeshSolver Solver;
 
 
         void Update()

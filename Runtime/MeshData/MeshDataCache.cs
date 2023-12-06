@@ -74,6 +74,7 @@ namespace Ica.Normal
             //TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
 
             VertexPositionMapper.GetVertexPosHashMap(VertexData.AsArray(), out var tempPosGraph, Allocator.Temp);
+            
             AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph,
                 out AdjacencyList, out AdjacencyListMapper, out ConnectedCountMapper, Allocator.Persistent);
 
@@ -99,11 +100,11 @@ namespace Ica.Normal
 
         public void RecalculateNormals(float angle, bool recalculateTangents = false)
         {
-            CachedMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyListMapper, ConnectedCountMapper, out var normalHandle, angle);
+            CachedNormalMethod.RecalculateNormalsAndGetHandle(VertexData, IndexData, ref NormalData, AdjacencyList, AdjacencyListMapper, ConnectedCountMapper, out var normalHandle, angle);
 
             if (recalculateTangents)
             {
-                TangentMethods.ScheduleAndGetTangentJobHandle(
+                CachedTangentMethods.ScheduleAndGetTangentJobHandle(
                     VertexData,
                     NormalData,
                     IndexData,
@@ -197,19 +198,19 @@ namespace Ica.Normal
                 );
             }
         }
-
-        // "if there is a persistent allocate, there should be dispose" #deepProgrammingQuotes #nativeMemoryLifeHacks
+        
         public void Dispose()
         {
-            if (_initialized == false)
-                return;
+            if (_initialized == false) return;
             _initialized = false;
+            
             _mda.Dispose();
             VertexData.Dispose();
             IndexData.Dispose();
             NormalData.Dispose();
             AdjacencyList.Dispose();
             AdjacencyListMapper.Dispose();
+            ConnectedCountMapper.Dispose();
             _vertexSeparatorData.Dispose();
             _indexSeparatorData.Dispose();
             //TriNormalData.Dispose();

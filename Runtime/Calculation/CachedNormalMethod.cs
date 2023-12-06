@@ -5,13 +5,12 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Ica.Utils;
 
 namespace Ica.Normal
 {
     [BurstCompile]
-    public static class CachedMethod
+    public static class CachedNormalMethod
     {
         /// <summary>
         /// Scheduling the normal recalculating and returns to job handle.You can use that handle as dependency for tangent job. Do not forget to Complete() job handle!!!

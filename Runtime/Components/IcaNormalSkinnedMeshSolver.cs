@@ -7,7 +7,7 @@ namespace Ica.Normal
     /// <summary>
     /// The main Component of the package
     /// </summary>
-    public class IcaNormalMorphedMeshSolver : MonoBehaviour
+    public class IcaNormalSkinnedMeshSolver : MonoBehaviour
     {
         public enum NormalOutputEnum
         {

@@ -7,7 +7,7 @@ using Unity.Profiling;
 
 namespace Ica.Normal
 {
-    public static class TangentMethods
+    public static class CachedTangentMethods
     {
         /// <summary>
         /// Scheduling the tangent recalculating and returns to job handle. Do not forget to Complete job handle!!!
