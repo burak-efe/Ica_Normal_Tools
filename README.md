@@ -1,3 +1,5 @@
+# How to install
+You can install this package by pasting git url to package manager https://github.com/burak-efe/Ica_Normal_Tools.git
 
 # Warning!!
 This package still in Beta
@@ -73,12 +75,11 @@ NormalReceiver Shader just basic shader graph that sends custom normal and tange
 ## Caveats
 1: Meshes should be imported as Read/Write enabled. <br />
 2: Currently you need to manually call method for every blendshape change.
-3: MeshDataCaheAsset does not work for now.
 
 ## Why not Compute Shaders
 To calculate normals of the vertices we need to get mesh vertices after blend shape skinning but before Bone skinning. There is no way to get that from skinned mesh renderer component as I aware of. This can be achievable by writing custom skinned mesh renderer but this option way outside of the scope of this project.
 
 ## TODO
-More Unit Test <br />
-More Samples
+Create common mesh data asset to reduce ram usage <br />
+
 
