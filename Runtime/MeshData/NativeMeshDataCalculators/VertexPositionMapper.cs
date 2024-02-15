@@ -33,48 +33,49 @@ namespace Ica.Normal
 
             posVertexIndicesPair = new UnsafeHashMap<float3, NativeList<int>>(vertices.Length, allocator);
 
-            NativeList<int> outRef = new NativeList<int>(1, Allocator.Temp);
+            //NativeList<int> outRef = new NativeList<int>(1, Allocator.Temp);
             
             for (int vertexIndex = 0; vertexIndex < vertices.Length; vertexIndex++)
             {
                  
 
-                //if position already occurs before, add current vertex index to list. This means this vertex duplicate.
-                if (UnsafeHashMapAsRefExtensions.TryGetValueAsRef(ref posVertexIndicesPair, key: vertices[vertexIndex], outRef: ref outRef ))
-                {
-                    pAddToList.Begin();
-                    outRef.Add(vertexIndex);
-                    pAddToList.End();
-                }
-                else
-                {
-                    pCreateList.Begin();
-                    var vertexIndexList = new NativeList<int>(1, allocator) { vertexIndex };
-                    pCreateList.End();
-                
-                    pAddNewPair.Begin();
-                    posVertexIndicesPair.Add(vertices[vertexIndex], vertexIndexList);
-                    pAddNewPair.End();
-                }
-
-
+                //Get by ref test
                 // //if position already occurs before, add current vertex index to list. This means this vertex duplicate.
-                // if (posVertexIndicesPair.TryGetValue(vertices[vertexIndex], out var vertexIndexList))
+                // if (UnsafeHashMapAsRefExtensions.TryGetValueAsRef(ref posVertexIndicesPair, key: vertices[vertexIndex], outRef: ref outRef ))
                 // {
                 //     pAddToList.Begin();
-                //     vertexIndexList.Add(vertexIndex);
+                //     outRef.Add(vertexIndex);
                 //     pAddToList.End();
                 // }
                 // else
                 // {
                 //     pCreateList.Begin();
-                //     vertexIndexList = new NativeList<int>(1, allocator) { vertexIndex };
+                //     var vertexIndexList = new NativeList<int>(1, allocator) { vertexIndex };
                 //     pCreateList.End();
                 //
                 //     pAddNewPair.Begin();
                 //     posVertexIndicesPair.Add(vertices[vertexIndex], vertexIndexList);
                 //     pAddNewPair.End();
                 // }
+
+
+                //if position already occurs before, add current vertex index to list. This means this vertex duplicate.
+                if (posVertexIndicesPair.TryGetValue(vertices[vertexIndex], out var vertexIndexList))
+                {
+                    pAddToList.Begin();
+                    vertexIndexList.Add(vertexIndex);
+                    pAddToList.End();
+                }
+                else
+                {
+                    pCreateList.Begin();
+                    vertexIndexList = new NativeList<int>(1, allocator) { vertexIndex };
+                    pCreateList.End();
+                
+                    pAddNewPair.Begin();
+                    posVertexIndicesPair.Add(vertices[vertexIndex], vertexIndexList);
+                    pAddNewPair.End();
+                }
             }
 
 

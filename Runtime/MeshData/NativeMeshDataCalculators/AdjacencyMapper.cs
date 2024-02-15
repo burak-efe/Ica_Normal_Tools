@@ -45,7 +45,7 @@ namespace Ica.Normal
             outRealConnectedCount.Resize(vertices.Length, NativeArrayOptions.ClearMemory);
 
             pCalculate.Begin();
-            
+
             //for every index
             for (int i = 0; i < indices.Length; i++)
             {
@@ -77,11 +77,10 @@ namespace Ica.Normal
 
             pCalculate.End();
 
+            pUnroll.Begin();
+            //Unroll nested list to make calculation run faster on runtime.
             outUnrolledAdjacencyList = new NativeList<int>(allocator);
             outStartIndicesMap = new NativeList<int>(allocator);
-
-            //Unroll nested list to make calculation run faster on runtime.
-            pUnroll.Begin();
             NativeContainerUtils.UnrollUnsafeListsToList(tempAdjData, ref outUnrolledAdjacencyList, ref outStartIndicesMap);
             pUnroll.End();
             pAdjacencyMapper.End();
