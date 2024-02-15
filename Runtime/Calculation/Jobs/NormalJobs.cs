@@ -6,7 +6,7 @@ using Unity.Mathematics;
 namespace Ica.Normal.JobStructs
 {
     [BurstCompile]
-    public struct TriNormalJob : IJobFor
+    public struct TriangleNormalJob : IJobFor
     {
         [ReadOnly] public NativeArray<int> Indices;
         [ReadOnly] public NativeArray<float3> Vertices;

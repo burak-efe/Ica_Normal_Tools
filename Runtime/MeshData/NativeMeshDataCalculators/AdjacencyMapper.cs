@@ -34,7 +34,7 @@ namespace Ica.Normal
 
             var tempAdjData = new UnsafeList<UnsafeList<int>>(vertices.Length, Allocator.Temp);
 
-            //allocate a list for every vertex position. This is main bottleneck of this method.
+            //allocate a list for every vertex position.
             pAllocateForPerVertex.Begin();
             for (int i = 0; i < vertices.Length; i++)
                 tempAdjData.Add(new UnsafeList<int>(8, Allocator.Temp));
@@ -46,7 +46,7 @@ namespace Ica.Normal
 
             pCalculate.Begin();
             
-            //for every tri index
+            //for every index
             for (int i = 0; i < indices.Length; i++)
             {
                 int triIndex = i / 3;

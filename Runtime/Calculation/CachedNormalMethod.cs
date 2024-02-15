@@ -43,7 +43,7 @@ namespace Ica.Normal
             var triangleCount = indices.Length / 3;
 
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var triNormalJob = new TriNormalJob
+            var triNormalJob = new TriangleNormalJob
             {
                 Indices = indices.AsArray(),
                 TriNormals = triNormals,

@@ -37,7 +37,7 @@ namespace Ica.Normal
             outNormals.Resize(meshData.vertexCount, NativeArrayOptions.ClearMemory);
 
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var triNormalJob = new TriNormalJob
+            var triNormalJob = new TriangleNormalJob
             {
                 TriNormals = triNormals,
                 Vertices = vertices.AsArray(),
@@ -105,7 +105,7 @@ namespace Ica.Normal
             outNormals.Resize(meshData.vertexCount, NativeArrayOptions.ClearMemory);
 
             var triNormals = new NativeArray<float3>(indices.Length / 3, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var triNormalJob = new TriNormalJob
+            var triNormalJob = new TriangleNormalJob
             {
                 TriNormals = triNormals,
                 Vertices = vertices.AsArray(),

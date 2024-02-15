@@ -13,27 +13,28 @@ namespace Ica.Utils
     public struct UnrolledList<T> : IDisposable where T : unmanaged
     {
         public NativeList<T> _data;
-        public int SubContainerCount => StartIndices.Length - 1;
-        
+
         /// <summary>
         /// Start indices of sub array on _data. Last element is total count of data;
         /// </summary>
-        public NativeList<int> StartIndices;
+        public NativeList<int> _startIndices;
+        public int SubContainerCount => _startIndices.Length - 1;
+        
 
         public void Add(int subArrayIndex, T item)
         {
-            _data.Insert(StartIndices[subArrayIndex] + GetSubArrayLength(subArrayIndex), item);
-            for (int i = subArrayIndex + 1; i < StartIndices.Length; i++)
+            _data.Insert(_startIndices[subArrayIndex] + GetSubArrayLength(subArrayIndex), item);
+            for (int i = subArrayIndex + 1; i < _startIndices.Length; i++)
             {
-                StartIndices[i]++;
+                _startIndices[i]++;
             }
         }
 
         public UnrolledList(int subArrayCount, Allocator allocator)
         {
             _data = new NativeList<T>(0, allocator);
-            StartIndices = new NativeList<int>(subArrayCount + 1, allocator);
-            StartIndices.Resize(subArrayCount + 1,NativeArrayOptions.ClearMemory);
+            _startIndices = new NativeList<int>(subArrayCount + 1, allocator);
+            _startIndices.Resize(subArrayCount + 1,NativeArrayOptions.ClearMemory);
         }
 
         public UnrolledList(in UnsafeList<NativeList<T>> nestedData, Allocator allocator)
@@ -41,24 +42,24 @@ namespace Ica.Utils
             Assert.IsTrue(nestedData.Length > 0, "nested list count should be more than zero");
             NativeContainerUtils.GetTotalSizeOfNestedContainer(nestedData, out var totalSize);
             _data = new NativeList<T>(totalSize, allocator);
-            StartIndices = new NativeList<int>(nestedData.Length + 1, allocator);
-            NativeContainerUtils.UnrollListsToList(nestedData, ref _data, ref StartIndices);
+            _startIndices = new NativeList<int>(nestedData.Length + 1, allocator);
+            NativeContainerUtils.UnrollListsToList(nestedData, ref _data, ref _startIndices);
         }
 
         public NativeArray<T> GetSubArray(int index)
         {
-            return _data.AsArray().GetSubArray(StartIndices[index], GetSubArrayLength(index));
+            return _data.AsArray().GetSubArray(_startIndices[index], GetSubArrayLength(index));
         }
 
         public int GetSubArrayLength(int subArrayIndex)
         {
-            return StartIndices[subArrayIndex + 1] - StartIndices[subArrayIndex];
+            return _startIndices[subArrayIndex + 1] - _startIndices[subArrayIndex];
         }
 
         public void Dispose()
         {
             _data.Dispose();
-            StartIndices.Dispose();
+            _startIndices.Dispose();
         }
     }
 }
