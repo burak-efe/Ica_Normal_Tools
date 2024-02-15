@@ -15,7 +15,6 @@
     "includePlatforms": [],
     "excludePlatforms": [
         "Android",
-        "Editor",
         "EmbeddedLinux",
         "GameCoreScarlett",
         "GameCoreXboxOne",
