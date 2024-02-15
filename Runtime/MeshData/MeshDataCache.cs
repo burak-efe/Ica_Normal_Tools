@@ -72,11 +72,9 @@ namespace Ica.Normal
 
             //TriNormalData = new NativeList<float3>(TotalIndexCount / 3, Allocator.Persistent);
             //TriNormalData.Resize(TotalIndexCount / 3, NativeArrayOptions.UninitializedMemory);
-
-            VertexPositionMapper.GetVertexPosHashMap(VertexData.AsArray(), out var tempPosGraph, Allocator.Temp);
             
-            AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph,
-                out AdjacencyList, out AdjacencyListMapper, out ConnectedCountMapper, Allocator.Persistent);
+            CacheAdjacencyData();
+            
 
             if (cacheForTangents)
             {
@@ -93,9 +91,15 @@ namespace Ica.Normal
 
             Assert.IsTrue(VertexData.Length == TotalVertexCount);
             Assert.IsTrue(IndexData.Length == TotalIndexCount);
-            //Assert.IsTrue(TriNormalData.Length == IndexData.Length / 3);
 
             _initialized = true;
+        }
+
+        public void CacheAdjacencyData()
+        {
+            VertexPositionMapper.GetVertexPosHashMap(VertexData.AsArray(), out var tempPosGraph, Allocator.Temp);
+            AdjacencyMapper.CalculateAdjacencyData(VertexData.AsArray(), IndexData.AsArray(), tempPosGraph,
+                out AdjacencyList, out AdjacencyListMapper, out ConnectedCountMapper, Allocator.Persistent);
         }
 
         public void RecalculateNormals(float angle, bool recalculateTangents = false)
@@ -198,12 +202,12 @@ namespace Ica.Normal
                 );
             }
         }
-        
+
         public void Dispose()
         {
             if (_initialized == false) return;
             _initialized = false;
-            
+
             _mda.Dispose();
             VertexData.Dispose();
             IndexData.Dispose();

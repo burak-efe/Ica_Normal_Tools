@@ -12,7 +12,8 @@
         "Unity.Burst",
         "Ica.Normal.Tests.Shared"
     ],
-    "includePlatforms": [
+    "includePlatforms": [],
+    "excludePlatforms": [
         "Android",
         "Editor",
         "EmbeddedLinux",
@@ -29,12 +30,12 @@
         "Switch",
         "tvOS",
         "WSA",
+        "VisionOS",
         "WebGL",
         "WindowsStandalone32",
         "WindowsStandalone64",
         "XboxOne"
     ],
-    "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
