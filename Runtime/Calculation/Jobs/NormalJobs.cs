@@ -1,5 +1,6 @@
 ﻿using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 
@@ -20,13 +21,12 @@ namespace Ica.Normal.JobStructs
 
             // Calculate the normal of the triangle
             float3 crossProduct = math.cross(vertexB - vertexA, vertexC - vertexA);
-            
+
             TriNormals[index] = crossProduct;
         }
     }
-    
-    
-    
+
+
     [BurstCompile]
     public struct AngleBasedVertexNormalJob : IJobFor
     {
@@ -43,7 +43,7 @@ namespace Ica.Normal.JobStructs
             int subArrayCount = AdjacencyMapper[vertexIndex + 1] - AdjacencyMapper[vertexIndex];
             int connectedCount = ConnectedMapper[vertexIndex];
             float3 sum = 0;
-            
+
             //for every connected triangle, include it to final normal output no matter what
             for (int i = 0; i < connectedCount; ++i)
             {
@@ -59,7 +59,7 @@ namespace Ica.Normal.JobStructs
                 int triID = AdjacencyList[subArrayStart + connectedCount + i];
                 var normalizedCurrentTri = math.normalize(TriNormals[triID]);
                 double dotProd = math.dot(normalFromConnectedTriangles, normalizedCurrentTri);
-                
+
                 if (dotProd >= CosineThreshold)
                 {
                     sum += TriNormals[triID];
@@ -69,7 +69,7 @@ namespace Ica.Normal.JobStructs
             Normals[vertexIndex] = math.normalize(sum);
         }
     }
-    
+
     [BurstCompile]
     public struct SmoothVertexNormalJob : IJobFor
     {

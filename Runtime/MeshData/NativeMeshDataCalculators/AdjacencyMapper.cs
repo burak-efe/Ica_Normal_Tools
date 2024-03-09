@@ -29,6 +29,7 @@ namespace Ica.Normal
             var pUnroll = new ProfilerMarker("pUnroll");
             var pAllocateForPerVertex = new ProfilerMarker("pAllocateForPerVertex");
             var pCalculate = new ProfilerMarker("pCalculate");
+            var pInsertToList = new ProfilerMarker("pInsertToList");
 
             pAdjacencyMapper.Begin();
 
@@ -37,7 +38,10 @@ namespace Ica.Normal
             //allocate a list for every vertex position.
             pAllocateForPerVertex.Begin();
             for (int i = 0; i < vertices.Length; i++)
+            {
                 tempAdjData.Add(new UnsafeList<int>(8, Allocator.Temp));
+            }
+
             pAllocateForPerVertex.End();
 
 
@@ -64,8 +68,10 @@ namespace Ica.Normal
                     //physically connected
                     if (vertexIndex == vertexOnThatPos)
                     {
+                        pInsertToList.Begin();
                         tempAdjData.ElementAt(vertexOnThatPos).InsertAtBeginning(triIndex);
                         outRealConnectedCount[vertexIndex]++;
+                        pInsertToList.End();
                     }
                     //not physically connected
                     else
