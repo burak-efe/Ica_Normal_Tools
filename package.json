@@ -12,5 +12,8 @@
       "description": "Contains sample for Ica Normal Tools",
       "path": "Samples~/IcaNormalSamples"
     }
-  ]
+  ],
+  "dependencies": {
+    "com.unity.collections": "2.2.1"
+  }
 }
