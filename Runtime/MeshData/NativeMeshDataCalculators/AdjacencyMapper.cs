@@ -29,15 +29,19 @@ namespace Ica.Normal
             var pUnroll = new ProfilerMarker("pUnroll");
             var pAllocateForPerVertex = new ProfilerMarker("pAllocateForPerVertex");
             var pCalculate = new ProfilerMarker("pCalculate");
+            var pInsertToList = new ProfilerMarker("pInsertToList");
 
             pAdjacencyMapper.Begin();
 
             var tempAdjData = new UnsafeList<UnsafeList<int>>(vertices.Length, Allocator.Temp);
 
-            //allocate a list for every vertex position. This is main bottleneck of this method.
+            //allocate a list for every vertex position.
             pAllocateForPerVertex.Begin();
             for (int i = 0; i < vertices.Length; i++)
+            {
                 tempAdjData.Add(new UnsafeList<int>(8, Allocator.Temp));
+            }
+
             pAllocateForPerVertex.End();
 
 
@@ -45,8 +49,8 @@ namespace Ica.Normal
             outRealConnectedCount.Resize(vertices.Length, NativeArrayOptions.ClearMemory);
 
             pCalculate.Begin();
-            
-            //for every tri index
+
+            //for every index
             for (int i = 0; i < indices.Length; i++)
             {
                 int triIndex = i / 3;
@@ -64,8 +68,10 @@ namespace Ica.Normal
                     //physically connected
                     if (vertexIndex == vertexOnThatPos)
                     {
+                        pInsertToList.Begin();
                         tempAdjData.ElementAt(vertexOnThatPos).InsertAtBeginning(triIndex);
                         outRealConnectedCount[vertexIndex]++;
+                        pInsertToList.End();
                     }
                     //not physically connected
                     else
@@ -77,11 +83,10 @@ namespace Ica.Normal
 
             pCalculate.End();
 
+            pUnroll.Begin();
+            //Unroll nested list to make calculation run faster on runtime.
             outUnrolledAdjacencyList = new NativeList<int>(allocator);
             outStartIndicesMap = new NativeList<int>(allocator);
-
-            //Unroll nested list to make calculation run faster on runtime.
-            pUnroll.Begin();
             NativeContainerUtils.UnrollUnsafeListsToList(tempAdjData, ref outUnrolledAdjacencyList, ref outStartIndicesMap);
             pUnroll.End();
             pAdjacencyMapper.End();

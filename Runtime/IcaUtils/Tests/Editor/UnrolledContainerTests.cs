@@ -9,7 +9,7 @@ namespace Ica.Utils.Tests
     public class UnrolledContainerTests
     {
         [Test]
-        public void UnrollListToList_SubArrayLength()
+        public void UnrollListToList_CheckSubArrayLength()
         {
             var nested = new UnsafeList<NativeList<int>>(1, Allocator.Temp);
 
@@ -19,10 +19,10 @@ namespace Ica.Utils.Tests
 
             var unrolled = new UnrolledList<int>(nested, Allocator.Temp);
 
-            Assert.IsTrue(unrolled._data.Length == 6, "Unrolled Data size not correct");
-            Assert.IsTrue(unrolled.GetSubArrayLength(0) == 1, "a");
-            Assert.IsTrue(unrolled.GetSubArrayLength(1) == 2, "b");
-            Assert.IsTrue(unrolled.GetSubArrayLength(2) == 3, "c");
+            Assert.IsTrue(unrolled._data.Length == 6, "Unrolled Data size is not correct");
+            Assert.IsTrue(unrolled.GetSubArrayLength(0) == 1, "Unrolled Data size is not correct");
+            Assert.IsTrue(unrolled.GetSubArrayLength(1) == 2, "Unrolled Data size is not correct");
+            Assert.IsTrue(unrolled.GetSubArrayLength(2) == 3, "Unrolled Data size is not correct");
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace Ica.Utils.Tests
 
             var unrolled = new UnrolledList<int>(nested, Allocator.Temp);
 
-            Assert.IsTrue(unrolled.StartIndices.Length == 4, "mapper length is not correct");
+            Assert.IsTrue(unrolled._startIndices.Length == 4, "mapper length is not correct");
         }
 
 

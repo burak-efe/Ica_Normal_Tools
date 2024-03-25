@@ -1,13 +1,15 @@
 {
-  "name": "Ica.Utils.Tests",
-  "rootNamespace": "Ica.Utils.Tests",
+  "name": "Ica.Normal.Tests.Editor",
+  "rootNamespace": "Ica.Normal.Tests.Editor",
   "references": [
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner",
+    "Ica.Normal",
+    "Ica.Utils.Native",
+    "Ica.Utils.Editor",
     "Unity.Collections",
     "Unity.Mathematics",
-    "Ica.Utils.Native",
-    "Ica.Utils.Editor"
+    "Unity.Burst"
   ],
   "includePlatforms": [
     "Editor"

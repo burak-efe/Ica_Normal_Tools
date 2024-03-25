@@ -16,7 +16,7 @@ namespace Ica.Normal
         // http://www.terathon.com/code/tangent.html
         
         [BurstCompile]
-        public struct TriTangentJob : IJobFor
+        public struct TriangleTangentJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> Indices;
             [ReadOnly] public NativeArray<float3> Vertices;
@@ -62,7 +62,7 @@ namespace Ica.Normal
         }
 
         [BurstCompile]
-        public struct CachedVertexTangentJob : IJobFor
+        public struct VertexTangentJob : IJobFor
         {
             [ReadOnly] public NativeArray<int> AdjacencyList;
             [ReadOnly] public NativeArray<int> AdjacencyListMapper;

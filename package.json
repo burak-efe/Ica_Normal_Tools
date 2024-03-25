@@ -1,18 +1,20 @@
 ﻿{
   "name": "com.ica.normal",
   "displayName": "Ica Normal Tools",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "documentationUrl": "https://github.com/burak-efe/Ica_Normal_Tools",
   "changelogUrl": "https://github.com/burak-efe/Ica_Normal_Tools/releases",
   "licensesUrl": "https://github.com/burak-efe/Ica_Normal_Tools",
   "description": "A Normal and Tangent recalculation library for Unity",
-
   "samples": [
     {
       "displayName": "Ica Normal Samples",
       "description": "Contains sample for Ica Normal Tools",
       "path": "Samples~/IcaNormalSamples"
     }
-  ]
-
+  ],
+  "dependencies": {
+    "com.unity.collections": "2.2.1",
+    "com.unity.shadergraph": "14.0.10"
+  }
 }

@@ -43,7 +43,7 @@ namespace Ica.Normal
             var pCachedParallelTangent = new ProfilerMarker("pCachedParallelTangent");
             pCachedParallelTangent.Begin();
 
-            var triTangentJob = new TangentJobs.TriTangentJob
+            var triTangentJob = new TangentJobs.TriangleTangentJob
             {
                 Indices = indices.AsArray(),
                 Vertices = vertices.AsArray(),
@@ -52,7 +52,7 @@ namespace Ica.Normal
                 Tan2 = tan2.AsArray()
             };
 
-            var vertexTangentJob = new TangentJobs.CachedVertexTangentJob
+            var vertexTangentJob = new TangentJobs.VertexTangentJob
             {
                 AdjacencyList = adjacencyList.AsArray(),
                 AdjacencyListMapper = adjacencyMap.AsArray(),
