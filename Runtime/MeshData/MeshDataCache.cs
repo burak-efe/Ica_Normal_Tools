@@ -41,7 +41,7 @@ namespace Ica.Normal
         private bool _cachedForTangents;
 
         /// <summary>
-        /// Cache mesh data to be ready for normal nad tangent calculation.
+        /// Cache mesh data to be ready for normal and tangent calculation.
         /// If multiple meshes provided, their data's will be merged like a one mesh to allow smooth normals between mesh boundaries.
         /// </summary>
         /// <param name="meshes"></param>

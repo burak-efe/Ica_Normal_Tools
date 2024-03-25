@@ -1,25 +1,25 @@
 {
-    "name": "Ica.Normal.Tests.Shared",
-    "rootNamespace": "Ica.Normal.Tests.Shared",
-    "references": [
-        "GUID:2665a8d13d1b3f18800f46e256720795",
-        "GUID:e0cd26848372d4e5c891c569017e11f1",
-        "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:8c58f6672a67f2e4fb71bea67d13a4a4",
-        "GUID:e0c6d4b9ddd76bb43ab9984d42626908",
-        "GUID:d9c56ff8129f5a0489b41636f34fb613"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [
-        "UNITY_INCLUDE_TESTS"
-    ],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "Ica.Normal.Tests.Shared",
+  "rootNamespace": "Ica.Normal.Tests.Shared",
+  "references": [
+    "GUID:2665a8d13d1b3f18800f46e256720795",
+    "GUID:e0cd26848372d4e5c891c569017e11f1",
+    "GUID:d8b63aba1907145bea998dd612889d6b",
+    "GUID:8c58f6672a67f2e4fb71bea67d13a4a4",
+    "GUID:e0c6d4b9ddd76bb43ab9984d42626908",
+    "GUID:d9c56ff8129f5a0489b41636f34fb613"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
 }
